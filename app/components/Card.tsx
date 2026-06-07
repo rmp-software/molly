@@ -105,6 +105,7 @@ export function Card({
   return (
     <Tag
       className={className}
+      data-card=""
       style={cardStyle}
       onClick={onClick}
       {...a11yProps}

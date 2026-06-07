@@ -115,8 +115,9 @@ function isoToDateInput(iso: string): string {
 
 function dateInputToIso(dateStr: string, endOfDay = false): string {
   if (!dateStr) return "";
-  // "to" dates use end-of-day so episodes on that calendar day are included
-  return endOfDay ? dateStr + "T23:59:59.999Z" : dateStr + "T00:00:00.000Z";
+  // Use Brazil offset (UTC-3, no DST) so the full calendar day is captured
+  // in São Paulo time — avoids losing 21:00–23:59 BRT on the 'to' date.
+  return endOfDay ? `${dateStr}T23:59:59.999-03:00` : `${dateStr}T00:00:00.000-03:00`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -183,9 +184,10 @@ export default function ReportPage() {
   }, [fromDate, toDate, fetchReport]);
 
   function handleUpdate() {
+    // setFromDate/setToDate triggers the useEffect which calls fetchReport —
+    // no need to call it explicitly (would cause two concurrent identical requests).
     setFromDate(pendingFrom);
     setToDate(pendingTo);
-    fetchReport(pendingFrom, pendingTo);
   }
 
   const csvHref = fromDate && toDate
@@ -398,7 +400,16 @@ export default function ReportPage() {
             >
               <SummaryItem label="Total de crises" value={String(report.summary.total)} />
               <SummaryItem
-                label="Média por mês"
+                label={
+                  (() => {
+                    const f = new Date(report.range.from);
+                    const t = new Date(report.range.to);
+                    const months =
+                      (t.getFullYear() - f.getFullYear()) * 12 +
+                      (t.getMonth() - f.getMonth());
+                    return months <= 0 ? "Total no período" : "Média por mês";
+                  })()
+                }
                 value={fmtNum(report.summary.monthlyAverage)}
               />
               <SummaryItem

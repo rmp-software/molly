@@ -346,7 +346,6 @@ body {
   }
 
   /* Keep cards visible but simplify */
-  [class*="card"],
   [data-card] {
     border: 1px solid #ccc !important;
     box-shadow: none !important;

@@ -13,6 +13,15 @@ function defaultRange(): { from: Date; to: Date } {
 }
 
 /**
+ * Neutralize spreadsheet formula injection for user-controlled text.
+ * Leading `=`, `+`, `-`, `@`, tab, or CR are prefixed with a single quote,
+ * which causes spreadsheet apps to treat the cell as plain text.
+ */
+function sanitizeFormula(v: string): string {
+  return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+}
+
+/**
  * Quote a CSV field using `;`-delimited pt-BR convention.
  * Fields containing `;`, `"`, or newlines are wrapped in double-quotes.
  * Inner double-quotes are doubled ("").
@@ -116,7 +125,7 @@ export async function GET(request: Request) {
     const severidade = csvField(e.severity ? (SEVERITY_PT[e.severity] ?? e.severity) : "—");
     const cluster = csvField(e.isCluster ? "Sim" : "Não");
     const resgate = csvField(e.rescueGiven ? "Sim" : "Não");
-    const obs = csvField(e.notes ?? "");
+    const obs = csvField(sanitizeFormula(e.notes ?? ""));
 
     return [datePart, timePart, tipo, duracao, severidade, cluster, resgate, obs].join(DELIM);
   });
