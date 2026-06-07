@@ -1,0 +1,27 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Spacing scale (4px base)" subtitle="--space-1 → --space-16. Default gutter 16, card padding 24." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 18px 22px; }
+  .r { display:flex; align-items:center; gap:14px; padding: 3px 0; }
+  .tk { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); width: 96px; flex:none; }
+  .px { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); width: 40px; flex:none; }
+  .bar { height: 14px; background: var(--brand); border-radius: 3px; }
+</style>
+</head>
+<body>
+  <div id="wrap"></div>
+  <script>
+    const steps = [['--space-1','4'],['--space-2','8'],['--space-3','12'],['--space-4','16'],['--space-6','24'],['--space-8','32'],['--space-12','48'],['--space-16','64']];
+    const wrap = document.getElementById('wrap');
+    steps.forEach(([v,px]) => {
+      const el = document.createElement('div'); el.className='r';
+      el.innerHTML = `<div class="tk">${v}</div><div class="px">${px}px</div><div class="bar" style="width:${px}px"></div>`;
+      wrap.appendChild(el);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Brand" viewport="700x260" name="Logo & wordmark" subtitle="Bricolage Grotesque wordmark + Lucide paw-print mark in brand gold." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--bg); color: var(--fg); padding: 22px; }
+  .grid { display:flex; gap: 16px; flex-wrap:wrap; }
+  .tile { background: var(--surface); border:1px solid var(--border); border-radius:16px; padding: 22px 24px; display:flex; align-items:center; gap:11px; box-shadow:var(--shadow-xs); }
+  .tile.dark { background: var(--neutral-900); border-color: var(--neutral-800); }
+  .mark { display:grid; place-items:center; }
+  .mark svg { width: 30px; height: 30px; stroke-width: 2.25; }
+  .wm { font-family: var(--font-display); font-weight:700; font-size: 30px; letter-spacing:-0.02em; }
+  .badge { width:48px; height:48px; border-radius: 14px; background: var(--brand); display:grid; place-items:center; box-shadow: var(--shadow-sm); }
+  .badge svg { width: 26px; height:26px; color:#fff; stroke-width:2.5; }
+  .cap { font-family:var(--font-mono); font-size:11px; color:var(--fg-muted); margin-top:14px; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="tile">
+      <span class="mark" style="color:var(--brand)"><i data-lucide="paw-print"></i></span>
+      <span class="wm" style="color:var(--fg)">Molly</span>
+    </div>
+    <div class="tile dark">
+      <span class="mark" style="color:var(--gold-300)"><i data-lucide="paw-print"></i></span>
+      <span class="wm" style="color:#fff">Molly</span>
+    </div>
+    <div class="tile">
+      <span class="badge"><i data-lucide="paw-print"></i></span>
+    </div>
+  </div>
+  <div class="cap">App icon = paw-print on brand gold, 14px radius. Wordmark = Bricolage Grotesque 700, mark leads, optical gap ≈ 0.35× cap-height.</div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

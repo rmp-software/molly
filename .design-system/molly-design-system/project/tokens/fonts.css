@@ -1,0 +1,11 @@
+/* ============================================================
+   Molly — Webfonts
+   Loaded from Google Fonts. Free for commercial use.
+   - Bricolage Grotesque  → display / headings (warm, characterful)
+   - Hanken Grotesk       → body / UI (humanist, friendly, legible)
+   - IBM Plex Mono        → numbers / tabular (counts, days, mg/kg, dates)
+   Consumers also get these via @import; individual HTML files add a
+   <link> for the same families for faster first paint.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');

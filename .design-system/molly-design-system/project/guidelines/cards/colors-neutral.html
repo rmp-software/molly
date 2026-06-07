@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x120" name="Neutral scale (warm gray)" subtitle="Slight gold/brown undertone — never cold or clinical. 0→900." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 18px 20px; }
+  .row { display: flex; gap: 5px; }
+  .sw { flex:1; }
+  .chip { height: 44px; border-radius: 7px; border: 1px solid var(--border); }
+  .lbl { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); margin-top: 5px; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="row" id="row"></div>
+  <script>
+    const steps = [0,50,100,200,300,400,500,600,700,800,900];
+    const cs = getComputedStyle(document.documentElement);
+    const row = document.getElementById('row');
+    steps.forEach(s => {
+      const hex = cs.getPropertyValue('--neutral-' + s).trim();
+      const el = document.createElement('div'); el.className='sw';
+      el.innerHTML = `<div class="chip" style="background:${hex}"></div><div class="lbl">${s}</div>`;
+      row.appendChild(el);
+    });
+  </script>
+</body>
+</html>

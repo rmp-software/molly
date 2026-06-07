@@ -1,0 +1,39 @@
+<!-- @dsCard group="Colors" viewport="700x210" name="Semantic — surfaces & text" subtitle="--bg, --surface, --fg, --border and friends (light mode)." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--fg); padding: 20px; }
+  .grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tok { border-radius: 10px; overflow:hidden; border:1px solid var(--border); }
+  .tok .fill { height: 46px; }
+  .tok .meta { padding: 7px 9px; background: var(--surface); }
+  .tok .var { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg); font-weight:600; }
+  .tok .hex { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
+  .text-grid { display:flex; gap:18px; margin-top:14px; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+  .text-grid div { font-size: 15px; }
+  .small { font-size: 11px; color: var(--fg-muted); font-family: var(--font-mono); display:block; margin-top:2px; }
+</style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <div class="text-grid">
+    <div style="color:var(--fg)">Texto primário<span class="small">--fg</span></div>
+    <div style="color:var(--fg-2)">Texto secundário<span class="small">--fg-2</span></div>
+    <div style="color:var(--fg-muted)">Texto suave<span class="small">--fg-muted</span></div>
+  </div>
+  <script>
+    const toks = [['--bg','bg'],['--bg-2','bg-2'],['--surface','surface'],['--border','border']];
+    const cs = getComputedStyle(document.documentElement);
+    const grid = document.getElementById('grid');
+    toks.forEach(([v,n]) => {
+      const hex = cs.getPropertyValue(v).trim();
+      const el = document.createElement('div'); el.className='tok';
+      el.innerHTML = `<div class="fill" style="background:${hex}"></div><div class="meta"><div class="var">${v}</div><div class="hex">${hex.toUpperCase()}</div></div>`;
+      grid.appendChild(el);
+    });
+  </script>
+</body>
+</html>

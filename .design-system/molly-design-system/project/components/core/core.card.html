@@ -1,0 +1,83 @@
+<!-- @dsCard group="Components" viewport="700x440" name="Core — Button, StatusPill, Card" subtitle="Variants, sizes, states. Primary action in brand gold." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--bg); color: var(--fg); padding: 22px; }
+  h4 { margin: 0 0 10px; font-size: 11px; letter-spacing:.06em; text-transform:uppercase; color: var(--fg-muted); }
+  .sec { margin-bottom: 20px; }
+  .wrap { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { Button, StatusPill, Card, CardChip } = window.MollyDesignSystem_790ab3;
+  const I = (name, attrs={}) => React.createElement('i', {'data-lucide': name, ...attrs});
+
+  function Demo() {
+    return (
+      <div>
+        <div className="sec">
+          <h4>Buttons — variants</h4>
+          <div className="wrap">
+            <Button variant="primary" icon={I('paw-print')}>Registrar crise</Button>
+            <Button variant="secondary" icon={I('plus')}>Adicionar</Button>
+            <Button variant="ghost">Agora não</Button>
+            <Button variant="danger" icon={I('trash-2')}>Excluir</Button>
+          </div>
+        </div>
+        <div className="sec">
+          <h4>Sizes · states · icon-only</h4>
+          <div className="wrap">
+            <Button size="sm">Pequeno</Button>
+            <Button size="md">Médio</Button>
+            <Button size="lg">Grande</Button>
+            <Button loading>Salvando</Button>
+            <Button disabled>Desativado</Button>
+            <Button iconOnly aria-label="Mais" icon={I('more-horizontal')} />
+            <Button variant="secondary" iconOnly aria-label="Editar" icon={I('pencil')} />
+          </div>
+        </div>
+        <div className="sec">
+          <h4>Status pills</h4>
+          <div className="wrap">
+            <StatusPill status="ok" icon={I('check')}>Estoque OK</StatusPill>
+            <StatusPill status="reorder" icon={I('clock')}>Reabastecer em breve</StatusPill>
+            <StatusPill status="urgent" icon={I('alert-triangle')}>Acabando</StatusPill>
+            <StatusPill status="info" icon={I('info')}>Dose ajustada</StatusPill>
+          </div>
+        </div>
+        <div className="sec">
+          <h4>Cards</h4>
+          <div className="wrap" style={{alignItems:'stretch'}}>
+            <Card style={{flex:'1 1 200px'}}>
+              <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                <CardChip tone="brand" icon={I('pill')} />
+                <div>
+                  <div style={{font:'600 17px var(--font-display)'}}>Fenobarbital</div>
+                  <div style={{color:'var(--fg-muted)',fontSize:13}}>97,5 mg · 2× ao dia</div>
+                </div>
+              </div>
+            </Card>
+            <Card variant="highlighted" style={{flex:'1 1 200px'}}>
+              <div style={{fontSize:13,color:'var(--brand-press)',fontWeight:600}}>Próxima dose</div>
+              <div style={{font:'700 22px var(--font-display)',marginTop:2}}>Hoje, 20h00</div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+  setTimeout(()=>window.lucide.createIcons(), 30);
+</script>
+</body>
+</html>

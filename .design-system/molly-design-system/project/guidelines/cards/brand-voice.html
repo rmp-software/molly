@@ -1,0 +1,41 @@
+<!-- @dsCard group="Brand" viewport="700x290" name="Voice & tone" subtitle="Calm, warm, reassuring — a trusted companion. pt-BR, sentence case." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 20px 22px; line-height:1.5; }
+  .principles { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .chip { font-size:12px; font-weight:600; color:var(--brand); background:var(--brand-soft); padding:5px 11px; border-radius:999px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .col h4 { margin:0 0 8px; font-size:11px; letter-spacing:.06em; text-transform:uppercase; }
+  .yes h4 { color: var(--success); } .no h4 { color: var(--danger); }
+  .line { display:flex; gap:8px; align-items:flex-start; font-size:13.5px; padding:4px 0; }
+  .line svg, .line .i { flex:none; margin-top:1px; }
+  .yes .i { color: var(--success); } .no .i { color: var(--danger); }
+  .q { color: var(--fg); } .qmuted { color: var(--fg-muted); text-decoration: line-through; text-decoration-color: var(--red-200); }
+</style>
+</head>
+<body>
+  <div class="principles">
+    <span class="chip">Calmo</span><span class="chip">Acolhedor</span><span class="chip">Confiável</span>
+    <span class="chip" style="color:var(--fg-muted);background:var(--bg-2)">nunca clínico</span>
+    <span class="chip" style="color:var(--fg-muted);background:var(--bg-2)">nunca alarmista</span>
+  </div>
+  <div class="cols">
+    <div class="col yes">
+      <h4>✓ Escrevemos assim</h4>
+      <div class="line"><span class="i">✓</span><span class="q">“Faz 14 dias desde a última crise. Continue assim.”</span></div>
+      <div class="line"><span class="i">✓</span><span class="q">“O estoque de fenobarbital está acabando — que tal pedir mais?”</span></div>
+      <div class="line"><span class="i">✓</span><span class="q">“Anotado. Respire, você cuidou bem da Molly.”</span></div>
+    </div>
+    <div class="col no">
+      <h4>✕ Evitamos</h4>
+      <div class="line"><span class="i">✕</span><span class="qmuted">“ALERTA: nível crítico de medicação!”</span></div>
+      <div class="line"><span class="i">✕</span><span class="qmuted">“Registro de evento convulsivo salvo.”</span></div>
+      <div class="line"><span class="i">✕</span><span class="qmuted">“Ops! 🐶💊 Hora do remedinho!!”</span></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,174 @@
+/* ============================================================
+   Molly — Color tokens
+   Warm, calm, reassuring. Golden-retriever gold as the brand,
+   kept deliberately DEEPER + more bronze than the brighter
+   status "warning" amber so the two never read as the same thing.
+
+   Two layers:
+   1) Raw palette  — named scales (gold / green / amber / red / blue / neutral)
+   2) Semantic     — surfaces, text, borders, brand, status (+ -soft)
+
+   All status colors are paired with an icon + label in components —
+   never carried by hue alone (WCAG AA, color-blind safe).
+   ============================================================ */
+
+:root {
+  /* ---------- RAW PALETTE ---------------------------------- */
+
+  /* Gold — "Honey" (brand). Deep, bronzed, golden-retriever coat. */
+  --gold-50:  #FBF5E9;
+  --gold-100: #F5E6C6;
+  --gold-200: #EBCD8E;
+  --gold-300: #DEB055;
+  --gold-400: #CE9833;
+  --gold-500: #B27A22;   /* brand base */
+  --gold-600: #97651D;
+  --gold-700: #7A5219;
+  --gold-800: #5F4015;
+  --gold-900: #4A3211;
+
+  /* Green — success / OK */
+  --green-50:  #ECF7F0;
+  --green-100: #D2EDDC;
+  --green-200: #A6DBB8;
+  --green-300: #71C490;
+  --green-400: #45AC6C;
+  --green-500: #2E9457;   /* success base */
+  --green-600: #257A48;
+  --green-700: #1E613A;
+  --green-800: #184D2F;
+  --green-900: #133D26;
+
+  /* Amber — warning / reorder soon. Brighter + yellower than gold. */
+  --amber-50:  #FEF8E7;
+  --amber-100: #FDEEBF;
+  --amber-200: #FBDD84;
+  --amber-300: #F8C947;
+  --amber-400: #F0B41E;
+  --amber-500: #E5A50A;   /* warning base */
+  --amber-600: #B98300;
+  --amber-700: #8F6500;
+  --amber-800: #6E4E00;
+  --amber-900: #573E00;
+
+  /* Red — urgent / danger */
+  --red-50:  #FDECEC;
+  --red-100: #FAD1D1;
+  --red-200: #F2A3A3;
+  --red-300: #E76E6E;
+  --red-400: #DC4646;
+  --red-500: #C9302F;   /* danger base */
+  --red-600: #AB2625;
+  --red-700: #8A1F1E;
+  --red-800: #6E1A19;
+  --red-900: #571615;
+
+  /* Blue — neutral info. Calm slate-blue, cool counterweight to the warm UI. */
+  --blue-50:  #ECF3F8;
+  --blue-100: #D5E5F0;
+  --blue-200: #AECCE0;
+  --blue-300: #7FAECB;
+  --blue-400: #5891B5;
+  --blue-500: #3F77A1;   /* info base */
+  --blue-600: #336185;
+  --blue-700: #294E6B;
+  --blue-800: #213E55;
+  --blue-900: #1B3243;
+
+  /* Neutral — WARM gray (slight gold/brown undertone), never cold/clinical. */
+  --neutral-0:   #FFFFFF;
+  --neutral-50:  #FAF8F4;
+  --neutral-100: #F2EEE6;
+  --neutral-200: #E6E0D5;
+  --neutral-300: #D5CDBE;
+  --neutral-400: #B4AA98;
+  --neutral-500: #8C8273;
+  --neutral-600: #6A6153;
+  --neutral-700: #4E463A;
+  --neutral-800: #353027;
+  --neutral-900: #211D17;
+
+  /* ---------- SEMANTIC — LIGHT (priority) ------------------ */
+
+  /* Backgrounds & surfaces */
+  --bg:              #F7F3EC;   /* app canvas — warm cream */
+  --bg-2:            #F0EADF;   /* sunken / grouped sections */
+  --surface:         #FFFFFF;   /* cards, sheets */
+  --surface-raised:  #FFFFFF;   /* same fill, lifted with shadow */
+
+  /* Text */
+  --fg:        #2A251D;   /* primary — warm near-black */
+  --fg-2:      #524A3D;   /* secondary */
+  --fg-muted:  #8C8273;   /* tertiary / captions / placeholders */
+
+  /* Lines */
+  --border:         #E6E0D5;
+  --border-strong:  #D5CDBE;
+
+  /* Brand */
+  --brand:        #B27A22;
+  --brand-hover:  #97651D;
+  --brand-press:  #7A5219;
+  --brand-soft:   #F5E6C6;   /* tinted brand surface */
+  --brand-on:     #FFFFFF;   /* text/icon on brand fill (AA: 4.7:1) */
+
+  /* Status — each with a -soft tint for backgrounds */
+  --success:       #257A48;   /* AA on white & on -soft */
+  --success-soft:  #D2EDDC;
+  --warning:       #8F6500;   /* text/icon tone — AA on white & -soft */
+  --warning-accent:#E5A50A;   /* the bright amber for dots/bars/icons on dark or tinted */
+  --warning-soft:  #FDEEBF;
+  --danger:        #C9302F;
+  --danger-soft:   #FAD1D1;
+  --info:          #336185;
+  --info-soft:     #D5E5F0;
+
+  /* Focus ring — high-contrast, brand-tinted */
+  --focus-ring:        #B27A22;
+  --focus-ring-shadow: 0 0 0 3px rgba(178, 122, 34, 0.35);
+
+  /* Charts */
+  --chart-bar:        #CE9833;   /* gold-400 — calm, not alarming */
+  --chart-bar-strong: #B27A22;   /* highlighted / current period */
+  --chart-grid:       #E6E0D5;
+  --chart-track:      #F0EADF;
+}
+
+/* ---------- SEMANTIC — DARK (nice-to-have) ----------------- */
+[data-theme="dark"] {
+  --bg:              #1A1712;
+  --bg-2:            #211D17;
+  --surface:         #262119;
+  --surface-raised:  #2E281F;
+
+  --fg:        #F3EEE3;
+  --fg-2:      #C9C0AE;
+  --fg-muted:  #968B78;
+
+  --border:         #3A3329;
+  --border-strong:  #4E463A;
+
+  --brand:        #DEB055;   /* lift brand for dark bg legibility */
+  --brand-hover:  #E8C172;
+  --brand-press:  #CE9833;
+  --brand-soft:   #3A2F18;
+  --brand-on:     #2A251D;
+
+  --success:       #71C490;
+  --success-soft:  #16321F;
+  --warning:       #F0B41E;
+  --warning-accent:#F8C947;
+  --warning-soft:  #3A2C06;
+  --danger:        #E76E6E;
+  --danger-soft:   #3A1716;
+  --info:          #7FAECB;
+  --info-soft:     #16283A;
+
+  --focus-ring:        #DEB055;
+  --focus-ring-shadow: 0 0 0 3px rgba(222, 176, 85, 0.40);
+
+  --chart-bar:        #97651D;
+  --chart-bar-strong: #DEB055;
+  --chart-grid:       #3A3329;
+  --chart-track:      #211D17;
+}

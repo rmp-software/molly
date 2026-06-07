@@ -1,0 +1,39 @@
+<!-- @dsCard group="Colors" viewport="700x300" name="Brand gold vs. warning amber" subtitle="The one real trap: keep brand chrome from reading as a warning." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--fg); padding: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .panel { background: var(--surface); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing:.08em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 10px; }
+  .swatch { height: 52px; border-radius: 12px; display:flex; align-items:center; padding: 0 14px; font-weight: 700; }
+  .hex { font-family: var(--font-mono); font-size: 12px; opacity:.85; margin-left:auto; font-weight:500; }
+  .note { font-size: 12px; color: var(--fg-2); line-height: 1.5; margin-top: 12px; }
+  .mini-btn { display:inline-flex; align-items:center; gap:6px; background: var(--brand); color:#fff; font-weight:700; font-size:13px; padding:10px 14px; border-radius:var(--radius-pill); }
+  .pill { display:inline-flex; align-items:center; gap:6px; background: var(--warning-soft); color: var(--warning); border:1px solid var(--amber-300); font-weight:700; font-size:12px; padding:6px 12px; border-radius:var(--radius-pill); }
+  .dot { width:8px; height:8px; border-radius:50%; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="panel">
+      <div class="eyebrow">Marca · brand</div>
+      <div class="swatch" style="background:var(--brand); color:#fff">Gold <span class="hex">#B27A22</span></div>
+      <div class="note">Deep, bronzed honey. Lives in chrome: primary buttons, the “Registrar crise” action, active tabs, accents.</div>
+      <div style="margin-top:12px"><span class="mini-btn"><span class="dot" style="background:#fff"></span>Registrar crise</span></div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow">Aviso · warning</div>
+      <div class="swatch" style="background:var(--warning-accent); color:#3a2a00">Amber <span class="hex">#E5A50A</span></div>
+      <div class="note">Brighter, yellower, more saturated. Only ever appears as a status — paired with an icon + label, never as chrome.</div>
+      <div style="margin-top:12px"><span class="pill"><span class="dot" style="background:var(--warning-accent)"></span>Reabastecer em breve</span></div>
+    </div>
+  </div>
+  <div style="margin-top:14px; font-size:12px; color:var(--fg-2); background:var(--surface); border:1px dashed var(--border-strong); border-radius:12px; padding:12px 14px;">
+    <strong style="color:var(--fg)">Rule:</strong> brand gold is darker + more orange-brown; warning amber is lighter + yellower. Side by side the eye reads “identity” vs “caution”, not “two warnings.”
+  </div>
+</body>
+</html>

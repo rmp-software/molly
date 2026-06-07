@@ -35,10 +35,29 @@ week reorder lead time — never run out unexpectedly.
 
 - **Dose checklist + adherence (DoseLog)** — deferred to v2; tracked in Linear. Data model
   leaves room (`dose_logs` table sketched but not built).
+- **Reorder / "Pedir mais" purchase reminder** — dropped. The daily email digest + the dashboard
+  status already tell you when to reorder; a manual reminder is redundant. (The design-bundle
+  MedStatusCard has a "Pedir mais" action — omit it when implementing.)
 - **Cost tracking** on restocks — dropped.
 - **Rescue-med-as-its-own-stock** — only a boolean `rescue_given` flag on episodes for v1.
 - **Full Google Calendar API / OAuth** — using .ics instead.
 - **Web push notifications** — using email digest instead.
+
+## Design system (locked)
+
+Handoff bundle from claude.ai/design committed at `.design-system/molly-design-system/` and
+folded into `app_spec.txt`'s `design_system` section. Golden-retriever brand: deep bronze gold
+(`#B27A22`) kept distinct from the brighter status amber (`#E5A50A`). Fonts: Bricolage Grotesque
+(display) / Hanken Grotesk (body) / IBM Plex Mono (numbers). Working click-through prototype in
+`.design-system/.../project/ui_kits/molly_app/` — implement against `app/`, mirror it visually.
+
+Refinements the prototype introduced (now in the spec):
+- **Four seizure types** — Tônico-clônica / Focal / Ausência / Outra (was generalized/focal).
+- **Nav** — Início · Remédios · Tendências · Molly + center "Crise" paw FAB.
+- **"Próxima dose"** card on home (derived from active schedules).
+- **Richer dog profile** — breed, age, diagnosis, vet, emergency contact.
+- **Status labels/thresholds** — Estoque OK / Reabastecer em breve / Acabando, driven by per-med
+  lead time (prototype's fixed 4/14-day cutoffs were illustrative).
 
 ## Out of scope / non-goals
 

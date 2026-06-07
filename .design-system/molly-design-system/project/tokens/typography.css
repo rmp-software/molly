@@ -1,0 +1,51 @@
+/* ============================================================
+   Molly — Typography tokens
+   Display  : Bricolage Grotesque  (warm, characterful headings)
+   Body/UI  : Hanken Grotesk       (humanist, friendly, legible)
+   Mono     : IBM Plex Mono        (tabular numbers — counts, days, mg/kg, dates)
+
+   pt-BR copy, sentence case. Numbers use comma decimals (28,5) and the
+   mono face with tabular figures so digits never jitter as values change.
+   ============================================================ */
+
+:root {
+  /* ---------- Families ------------------------------------- */
+  --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
+  --font-body:    'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Numeric defaults — apply --num to any element showing figures */
+  --num: var(--font-mono);
+  --num-feat: "tnum" 1, "zero" 1; /* @kind font */
+
+  /* ---------- Weights -------------------------------------- */
+  --fw-regular:  400; /* @kind font */
+  --fw-medium:   500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold:     700; /* @kind font */
+
+  /* ---------- Type scale (mobile-first, rem) ---------------- */
+  --text-2xs:  0.6875rem;  /* 11px — micro labels, badges */
+  --text-xs:   0.75rem;    /* 12px — captions, meta */
+  --text-sm:   0.875rem;   /* 14px — secondary UI text */
+  --text-base: 1rem;       /* 16px — body (min for inputs, avoids iOS zoom) */
+  --text-lg:   1.125rem;   /* 18px — emphasized body */
+  --text-xl:   1.375rem;   /* 22px — card titles */
+  --text-2xl:  1.75rem;    /* 28px — screen titles */
+  --text-3xl:  2.25rem;    /* 36px — display */
+  --text-4xl:  3rem;       /* 48px — big stats */
+  --text-5xl:  4rem;       /* 64px — hero counter (time since last seizure) */
+
+  /* ---------- Line heights ---------------- (font @kind) -- */
+  --lh-tight:   1.08; /* @kind font */
+  --lh-snug:    1.25; /* @kind font */
+  --lh-normal:  1.5; /* @kind font */
+  --lh-relaxed: 1.65; /* @kind font */
+
+  /* ---------- Letter spacing -------------- (font @kind) -- */
+  --ls-tight:  -0.02em; /* @kind font */
+  --ls-snug:   -0.01em; /* @kind font */
+  --ls-normal:  0; /* @kind font */
+  --ls-wide:    0.04em; /* @kind font */
+  --ls-wider:   0.08em; /* @kind font */
+}

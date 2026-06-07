@@ -1,0 +1,34 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Brand gold — Honey scale" subtitle="gold-50 → gold-900. --brand = gold-500 (#B27A22)." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 20px; }
+  .row { display: flex; gap: 6px; }
+  .sw { flex: 1; display: flex; flex-direction: column; }
+  .chip { height: 56px; border-radius: 8px; border: 1px solid rgba(0,0,0,.05); }
+  .lbl { font-size: 11px; color: var(--fg-2); margin-top: 6px; font-weight: 600; }
+  .hex { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); margin-top: 1px; }
+  .brand-tag { display:inline-block; margin-top:2px; font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color: var(--brand); }
+</style>
+</head>
+<body>
+  <div class="row" id="row"></div>
+  <script>
+    const steps = [50,100,200,300,400,500,600,700,800,900];
+    const row = document.getElementById('row');
+    const cs = getComputedStyle(document.documentElement);
+    steps.forEach(s => {
+      const hex = cs.getPropertyValue('--gold-' + s).trim();
+      const el = document.createElement('div');
+      el.className = 'sw';
+      el.innerHTML = `<div class="chip" style="background:${hex}"></div>
+        <div class="lbl">${s}</div><div class="hex">${hex.toUpperCase()}</div>
+        ${s===500?'<span class="brand-tag">brand</span>':''}`;
+      row.appendChild(el);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!-- @dsCard group="Colors" viewport="700x320" name="Brand gold — Honey (chosen)" subtitle="Honey is locked in as --brand #B27A22. Caramel & Marigold kept as alternates." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--fg); padding: 20px; }
+  .dir { background: var(--surface); border:1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow-xs); }
+  .dir:last-child { margin-bottom: 0; }
+  .dir--chosen { border:1.5px solid var(--brand); box-shadow: var(--shadow-sm); }
+  .dir--alt { opacity: 0.62; }
+  .head { display:flex; align-items:center; gap:10px; margin-bottom: 10px; }
+  .title { font-family: var(--font-display); font-weight:700; font-size: 16px; }
+  .tag { font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#fff; background:var(--brand); padding:3px 9px; border-radius:999px; display:inline-flex; align-items:center; gap:4px; }
+  .alttag { font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--fg-muted); background:var(--bg-2); padding:3px 9px; border-radius:999px; }
+  .desc { font-size:12px; color:var(--fg-2); margin-left:auto; text-align:right; }
+  .row { display:flex; align-items:center; gap:8px; }
+  .ramp { display:flex; gap:4px; flex:1; }
+  .ramp div { flex:1; height:30px; border-radius:6px; border:1px solid rgba(0,0,0,.06); }
+  .vs { font-size:11px; color:var(--fg-muted); font-weight:700; padding:0 4px; }
+  .warn { width:62px; height:30px; border-radius:6px; background:var(--warning-accent); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#3a2a00; }
+  .hex { font-family:var(--font-mono); font-size:10px; color:var(--fg-muted); }
+</style>
+</head>
+<body>
+  <div class="dir dir--chosen">
+    <div class="head"><span class="title">Honey</span><span class="tag">✓ Escolhido · --brand</span><span class="desc">Bronzed, deepest separation from warning amber.</span></div>
+    <div class="row">
+      <div class="ramp">
+        <div style="background:var(--gold-100)"></div><div style="background:var(--gold-200)"></div><div style="background:var(--gold-400)"></div>
+        <div style="background:var(--gold-500)"></div><div style="background:var(--gold-600)"></div><div style="background:var(--gold-700)"></div>
+      </div>
+      <span class="vs">vs</span><div class="warn">aviso</div>
+    </div>
+    <div class="hex" style="margin-top:6px">brand 500 · #B27A22 — shipped across all tokens, components &amp; screens.</div>
+  </div>
+
+  <div class="dir dir--alt">
+    <div class="head"><span class="title">Caramel</span><span class="alttag">Alternativa</span><span class="desc">Warmest, most red-brown. Cozy but muddier in small UI.</span></div>
+    <div class="row">
+      <div class="ramp">
+        <div style="background:#EFDCC0"></div><div style="background:#DEBF8C"></div><div style="background:#C08B43"></div>
+        <div style="background:#A0682B"></div><div style="background:#855423"></div><div style="background:#6B431B"></div>
+      </div>
+      <span class="vs">vs</span><div class="warn">aviso</div>
+    </div>
+    <div class="hex" style="margin-top:6px">brand 500 · #A0682B</div>
+  </div>
+
+  <div class="dir dir--alt">
+    <div class="head"><span class="title">Marigold</span><span class="alttag">Alternativa</span><span class="desc">Brightest, sunniest. ⚠ Closest to warning amber — collision risk.</span></div>
+    <div class="row">
+      <div class="ramp">
+        <div style="background:#FBEBC2"></div><div style="background:#F4D585"></div><div style="background:#E0A52A"></div>
+        <div style="background:#CC8E1C"></div><div style="background:#AC7611"></div><div style="background:#8B5E0C"></div>
+      </div>
+      <span class="vs">vs</span><div class="warn">aviso</div>
+    </div>
+    <div class="hex" style="margin-top:6px">brand 500 · #CC8E1C</div>
+  </div>
+</body>
+</html>

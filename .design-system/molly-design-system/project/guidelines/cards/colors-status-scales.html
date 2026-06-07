@@ -1,0 +1,37 @@
+<!-- @dsCard group="Colors" viewport="700x250" name="Status scales" subtitle="Green (OK), Amber (reorder), Red (urgent), Blue (info). 50→900." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 18px 20px; }
+  .scale { margin-bottom: 12px; }
+  .scale:last-child { margin-bottom: 0; }
+  .name { font-size: 11px; font-weight: 700; letter-spacing:.04em; text-transform:uppercase; color: var(--fg-2); margin-bottom: 5px; }
+  .row { display: flex; gap: 4px; }
+  .chip { flex:1; height: 30px; border-radius: 6px; border: 1px solid rgba(0,0,0,.05); display:flex; align-items:flex-end; justify-content:center; padding-bottom:2px; }
+  .chip span { font-family: var(--font-mono); font-size: 9px; }
+</style>
+</head>
+<body>
+  <div id="wrap"></div>
+  <script>
+    const scales = [['green','OK / sucesso'],['amber','Reabastecer'],['red','Urgente'],['blue','Info']];
+    const steps = [50,100,200,300,400,500,600,700,800,900];
+    const cs = getComputedStyle(document.documentElement);
+    const wrap = document.getElementById('wrap');
+    scales.forEach(([key,label]) => {
+      const sc = document.createElement('div'); sc.className='scale';
+      let chips = '';
+      steps.forEach(s => {
+        const hex = cs.getPropertyValue(`--${key}-${s}`).trim();
+        const dark = s >= 400;
+        chips += `<div class="chip" style="background:${hex}"><span style="color:${dark?'#fff':'rgba(0,0,0,.45)'}">${s}</span></div>`;
+      });
+      sc.innerHTML = `<div class="name">${label}</div><div class="row">${chips}</div>`;
+      wrap.appendChild(sc);
+    });
+  </script>
+</body>
+</html>

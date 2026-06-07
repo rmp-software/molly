@@ -1,0 +1,179 @@
+<!-- @dsCard group="Molly App" viewport="402x720" name="Molly app — interactive prototype" subtitle="Home, meds, trends + the Registrar crise sheet. Tap around." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Molly</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #E9E2D6; font-family: var(--font-body); }
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
+  #scaler { transform-origin: center center; }
+  .molly-greet { font: 700 21px var(--font-display); color: var(--fg); letter-spacing: -0.02em; }
+  .molly-sub { font-size: 12.5px; color: var(--fg-muted); margin-top: 1px; }
+  .iconbtn { width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--fg-2); }
+</style>
+</head>
+<body>
+<div id="stage"><div id="scaler"><div id="root">
+  <div style="position:fixed;inset:0;display:grid;place-items:center;background:var(--bg)">
+    <div style="text-align:center">
+      <div style="font:700 30px var(--font-display);color:var(--brand);letter-spacing:-.02em">Molly</div>
+      <div id="loadmsg" style="font:500 13px var(--font-body);color:var(--fg-muted);margin-top:6px">carregando…</div>
+    </div>
+  </div>
+</div></div></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="Home.jsx"></script>
+<script type="text/babel" src="Meds.jsx"></script>
+<script type="text/babel" src="Trends.jsx"></script>
+<script type="text/babel" src="LogSeizure.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  const I = window.I;
+  const LAST_SEIZURE = new Date(Date.now() - (14 * 864e5 + 6 * 36e5 + 12 * 6e4));
+
+  function MollyProfile() {
+    const { Card } = window.MollyDesignSystem_790ab3;
+    const row = (icon, k, v) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderTop: '1px solid var(--border)' }}>
+        <span style={{ color: 'var(--brand)', display: 'inline-flex' }}>{I(icon, { size: 19, color: 'var(--brand)' })}</span>
+        <span style={{ fontSize: 14.5, color: 'var(--fg-2)' }}>{k}</span>
+        <span style={{ marginLeft: 'auto', fontSize: 14.5, fontWeight: 600, color: 'var(--fg)', fontFamily: k === 'Peso' ? 'var(--font-mono)' : 'inherit' }}>{v}</span>
+      </div>
+    );
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '4px 18px 8px' }}>
+        <Card padding="lg" style={{ textAlign: 'center' }}>
+          <div style={{ width: 88, height: 88, borderRadius: 999, margin: '4px auto 12px', background: 'var(--brand-soft)',
+            display: 'grid', placeItems: 'center', color: 'var(--brand)' }}>{I('paw-print', { size: 42, color: 'var(--brand)' })}</div>
+          <div style={{ font: '700 24px var(--font-display)', color: 'var(--fg)' }}>Molly</div>
+          <div style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 2 }}>Golden retriever · 6 anos</div>
+        </Card>
+        <Card padding="lg" style={{ paddingTop: 4, paddingBottom: 4 }}>
+          {row('weight', 'Peso', '29,4 kg')}
+          {row('stethoscope', 'Veterinária', 'Dra. Helena')}
+          {row('calendar-heart', 'Diagnóstico', 'Epilepsia idiopática')}
+          {row('phone', 'Emergência', '(11) 9 8765-4321')}
+        </Card>
+      </div>
+    );
+  }
+
+  const TITLES = {
+    home: { greet: 'Olá', sub: 'Está tudo bem com a Molly hoje' },
+    meds: { greet: 'Remédios', sub: 'Estoque e doses' },
+    trends: { greet: 'Tendências', sub: 'Histórico e padrões' },
+    molly: { greet: 'Molly', sub: 'Perfil e saúde' },
+  };
+
+  function App() {
+    const { TabBar, Logo } = window.MollyDesignSystem_790ab3;
+    const [tab, setTab] = React.useState('home');
+    const [sheet, setSheet] = React.useState(false);
+    const [toast, setToast] = React.useState(null);
+    const mainRef = React.useRef(null);
+
+    React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+    React.useEffect(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }, [tab]);
+
+    const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2600); };
+    const onSave = () => { setSheet(false); showToast('Anotado. Você cuidou bem da Molly.'); };
+    const onReorder = (name) => showToast('Lembrete de compra criado para ' + name + '.');
+
+    const t = TITLES[tab];
+    const screen = tab === 'home' ? <window.MollyHome onLog={() => setSheet(true)} lastSeizure={LAST_SEIZURE} />
+      : tab === 'meds' ? <window.MollyMeds onReorder={onReorder} />
+      : tab === 'trends' ? <window.MollyTrends />
+      : <MollyProfile />;
+
+    return (
+      <window.IOSDevice>
+        <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+          {/* Header */}
+          <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '58px 18px 12px', flex: 'none' }}>
+            <div style={{ flex: 1 }}>
+              <div className="molly-greet">{t.greet}</div>
+              <div className="molly-sub">{t.sub}</div>
+            </div>
+            {tab === 'home' && <Logo mark={I('paw-print', { size: 19 })} badge size="sm" />}
+            {tab !== 'home' && <button className="iconbtn" aria-label="Ajustes">{I('settings', { size: 19 })}</button>}
+          </header>
+
+          {/* Scrolling screen */}
+          <main ref={mainRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: 104 }}>
+            {screen}
+          </main>
+
+          {/* Toast */}
+          {toast && (
+            <div style={{
+              position: 'absolute', left: 16, right: 16, bottom: 108, zIndex: 250,
+              background: 'var(--neutral-900)', color: 'var(--neutral-50)', borderRadius: 'var(--radius-md)',
+              padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: 'var(--shadow-lg)',
+              font: '500 14px var(--font-body)',
+            }}>
+              <span style={{ color: 'var(--gold-300)', display: 'inline-flex' }}>{I('heart', { size: 18, color: 'var(--gold-300)' })}</span>
+              {toast}
+            </div>
+          )}
+
+          {/* Bottom tab bar with center action */}
+          <TabBar
+            active={tab}
+            onChange={setTab}
+            style={{ paddingBottom: 20 }}
+            items={[
+              { id: 'home', label: 'Início', icon: I('house', { size: 23 }) },
+              { id: 'meds', label: 'Remédios', icon: I('pill', { size: 23 }) },
+              { id: 'trends', label: 'Tendências', icon: I('chart-column', { size: 23 }) },
+              { id: 'molly', label: 'Molly', icon: I('paw-print', { size: 23 }) },
+            ]}
+            centerAction={{ label: 'Crise', icon: I('paw-print', { size: 26 }), onClick: () => setSheet(true) }} />
+
+          <window.MollyLogSeizure open={sheet} onClose={() => setSheet(false)} onSave={onSave} />
+        </div>
+      </window.IOSDevice>
+    );
+  }
+
+  function mount() {
+    if (!window.IOSDevice || !window.MollyHome || !window.MollyMeds || !window.MollyTrends
+      || !window.MollyLogSeizure || !window.MollyDesignSystem_790ab3) {
+      if (Date.now() - START > 8000) {
+        var m = document.getElementById('loadmsg');
+        if (m) m.textContent = 'Não foi possível carregar os componentes. Recarregue a página.';
+        return;
+      }
+      setTimeout(mount, 40); return;
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    setTimeout(() => window.lucide && window.lucide.createIcons(), 60);
+  }
+  const START = Date.now();
+  mount();
+
+  // Scale the fixed-size device to fit any viewport (guarded against collapse)
+  function fit() {
+    const dev = 402, devH = 874, m = 16;
+    const vw = document.documentElement.clientWidth || window.innerWidth || dev;
+    const vh = document.documentElement.clientHeight || window.innerHeight || devH;
+    let s = Math.min((vw - m) / dev, (vh - m) / devH, 1.1);
+    if (!isFinite(s) || s <= 0) s = 1;
+    s = Math.max(s, 0.4);
+    const sc = document.getElementById('scaler');
+    if (sc) sc.style.transform = 'scale(' + s + ')';
+  }
+  addEventListener('resize', fit); fit(); setTimeout(fit, 80); setTimeout(fit, 400);
+</script>
+</body>
+</html>

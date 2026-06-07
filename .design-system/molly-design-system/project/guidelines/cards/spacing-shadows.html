@@ -1,0 +1,25 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Shadows" subtitle="Warm, soft, layered. xs → lg, plus a brand glow under the FAB." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--bg); color: var(--fg); padding: 26px 22px; }
+  .row { display:flex; gap: 22px; }
+  .item { text-align:center; }
+  .box { width: 96px; height: 64px; background: var(--surface); border-radius: 14px; }
+  .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); margin-top: 14px; }
+  .brand { background: var(--brand); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-xs)"></div><div class="lbl">xs</div></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-sm)"></div><div class="lbl">sm</div></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-md)"></div><div class="lbl">md</div></div>
+    <div class="item"><div class="box" style="box-shadow:var(--shadow-lg)"></div><div class="lbl">lg</div></div>
+    <div class="item"><div class="box brand" style="box-shadow:var(--shadow-brand)"></div><div class="lbl">brand</div></div>
+  </div>
+</body>
+</html>

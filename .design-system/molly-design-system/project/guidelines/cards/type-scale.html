@@ -1,0 +1,41 @@
+<!-- @dsCard group="Type" viewport="700x300" name="Type scale" subtitle="2xs → 5xl. Mobile-first rem scale with role notes." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 18px 22px; }
+  .r { display:flex; align-items:baseline; gap:16px; padding:5px 0; border-bottom:1px solid var(--border); }
+  .r:last-child { border-bottom:0; }
+  .tk { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); width: 132px; flex:none; }
+  .sp { font-family: var(--font-display); font-weight:600; color: var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .role { font-size: 11px; color: var(--fg-muted); margin-left:auto; flex:none; }
+</style>
+</head>
+<body>
+  <div id="wrap"></div>
+  <script>
+    const rows = [
+      ['--text-5xl','64',  'Aa  Contador herói'],
+      ['--text-3xl','36',  'Aa  Display'],
+      ['--text-2xl','28',  'Aa  Título de tela'],
+      ['--text-xl','22',   'Aa  Título de card'],
+      ['--text-lg','18',   'Aa  Corpo destacado'],
+      ['--text-base','16', 'Aa  Corpo / inputs'],
+      ['--text-sm','14',   'Aa  UI secundária'],
+      ['--text-xs','12',   'Aa  Legenda / meta'],
+      ['--text-2xs','11',  'Aa  Micro rótulo'],
+    ];
+    const cs = getComputedStyle(document.documentElement);
+    const wrap = document.getElementById('wrap');
+    rows.forEach(([v,px,sample]) => {
+      const size = cs.getPropertyValue(v).trim();
+      const el = document.createElement('div'); el.className='r';
+      const cap = Math.min(parseInt(px), 34);
+      el.innerHTML = `<div class="tk">${v}</div><div class="sp" style="font-size:${cap}px">${sample}</div><div class="role">${px}px</div>`;
+      wrap.appendChild(el);
+    });
+  </script>
+</body>
+</html>

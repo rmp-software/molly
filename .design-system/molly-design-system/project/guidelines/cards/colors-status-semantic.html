@@ -1,0 +1,44 @@
+<!-- @dsCard group="Colors" viewport="700x200" name="Semantic — status (+ soft)" subtitle="success / warning / danger / info, each with a soft tint. Always + icon & label." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 20px; }
+  .grid { display:grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .col { }
+  .pair { display:flex; gap:6px; }
+  .solid, .soft { flex:1; height: 46px; border-radius: 10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; }
+  .name { font-size: 12px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .ic { width:14px; height:14px; }
+  .lbls { display:flex; gap:6px; margin-top:6px; }
+  .lbls span { flex:1; text-align:center; font-family: var(--font-mono); font-size:9.5px; color: var(--fg-muted); }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="col">
+      <div class="name" style="color:var(--success)">✓ Sucesso</div>
+      <div class="pair"><div class="solid" style="background:var(--success);color:#fff">solid</div><div class="soft" style="background:var(--success-soft);color:var(--success)">soft</div></div>
+      <div class="lbls"><span>--success</span><span>--success-soft</span></div>
+    </div>
+    <div class="col">
+      <div class="name" style="color:var(--warning)">⚠ Aviso</div>
+      <div class="pair"><div class="solid" style="background:var(--warning-accent);color:#3a2a00">accent</div><div class="soft" style="background:var(--warning-soft);color:var(--warning)">soft</div></div>
+      <div class="lbls"><span>--warning</span><span>--warning-soft</span></div>
+    </div>
+    <div class="col">
+      <div class="name" style="color:var(--danger)">⦿ Urgente</div>
+      <div class="pair"><div class="solid" style="background:var(--danger);color:#fff">solid</div><div class="soft" style="background:var(--danger-soft);color:var(--danger)">soft</div></div>
+      <div class="lbls"><span>--danger</span><span>--danger-soft</span></div>
+    </div>
+    <div class="col">
+      <div class="name" style="color:var(--info)">ⓘ Info</div>
+      <div class="pair"><div class="solid" style="background:var(--info);color:#fff">solid</div><div class="soft" style="background:var(--info-soft);color:var(--info)">soft</div></div>
+      <div class="lbls"><span>--info</span><span>--info-soft</span></div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--fg-2);margin:16px 0 0;line-height:1.5">Color never carries meaning alone — every status pairs a hue with an icon and a pt-BR label, and all text tones meet WCAG AA on their paired surface.</p>
+</body>
+</html>

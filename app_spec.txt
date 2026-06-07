@@ -72,22 +72,33 @@
     </auth>
 
     <home_dashboard>
-      - Route: / — the landing page, shared by both streams. Mobile-first.
-      - Leads with a large, thumb-reachable primary action: "Registrar crise" (log a seizure).
-      - "Tempo desde a última crise" — a prominent counter (e.g. "12 dias sem crises").
-      - Compact medication status strip: shows only meds that need attention (amber/red), each with
-        its "repor até" date. If everything is OK, a calm "Estoque em dia" state.
-      - Bottom tab navigation (mobile): Início · Crises · Medicamentos · Mais.
+      - Route: / — the calm landing page. Header greeting "Olá" + "Está tudo bem com a Molly hoje".
+      - Hero "tempo desde a última crise" counter (big mono, e.g. "14 dias"), subtitle
+        "Você está cuidando bem dela."
+      - Hero primary action "Registrar crise" (opens the log sheet) + caption
+        "Leva poucos segundos, com uma mão só." (Also reachable via the center paw FAB in the tab bar.)
+      - "Próxima dose" card (highlighted/brand-soft): the next upcoming scheduled dose derived from the
+        active MedicationSchedules, e.g. "Fenobarbital · hoje, 20h" with an "em 3h" countdown chip.
+      - "Crises por mês" mini frequency chart with a trend hint (e.g. "menos que antes") and
+        medication-change annotations.
+      - (Medications needing attention are surfaced on the Remédios tab's overview strip; see below.)
+      - Bottom tab navigation (mobile): Início · Remédios · Tendências · Molly, with an elevated center
+        action "Crise" (paw FAB) that opens the log sheet.
     </home_dashboard>
 
     <seizure_log>
       - Route: /crises
-      - Fast logging path:
-          * "Registrar crise" opens a minimal form pre-filled with the current date/time.
-          * Minimum to save: occurred_at (defaults to now, editable) + type (Generalizada | Focal).
-          * Everything else is optional and below the fold: duration, severity, rescue-given, notes.
-          * Optional duration timer: "Iniciar cronômetro" to time the episode live; stop auto-fills
-            duration_seconds. Duration can also be typed manually after the fact.
+      - Fast logging path (a bottom sheet, one-handed; lead copy "Respire. Vou guardar tudo pra você —
+        pode ajustar os detalhes depois."):
+          * "Registrar crise" / center "Crise" FAB opens the sheet pre-filled with the current date/time
+            ("Agora", shown as e.g. "07/06 · 16h42").
+          * Minimum to save: occurred_at (defaults to now, editable) + type. Save button: "Salvar registro";
+            on save, toast "Anotado. Você cuidou bem da Molly."
+          * Type (chips): Tônico-clônica | Focal | Ausência | Outra.
+          * Duration: a stepper (±5s, shown as "Nmin SSs") — optional, editable later. (An optional live
+            timer is a possible enhancement; the stepper is the primary input.)
+          * Also optional: severity, rescue-given, notes ("Observações", placeholder
+            "Estava dormindo, se recuperou rápido…").
       - Auto-flags on save:
           * is_cluster = true if another episode exists within the prior 24h of occurred_at.
           * Episodes with duration > 5 minutes are visually flagged as emergency-level (status epilepticus
@@ -102,26 +113,38 @@
       - Medication-change markers: vertical markers overlaid on the frequency chart, one per
         MedicationSchedule.effective_from, labeled with the med + change (e.g. "Fenobarbital ½ → 1").
         Lets the owner correlate a dose change with subsequent frequency.
-      - Time since last seizure: big counter + longest seizure-free streak.
-      - Breakdown: counts by type (generalized/focal), by severity, and by time-of-day; cluster events
-        called out separately.
+      - Headline stats (mono): "média / mês", "maior intervalo" (longest seizure-free interval, in days),
+        "total em [ano]". Plus a big "tempo desde a última crise" counter on home.
+      - "Registros recentes": recent episodes list (date/time, type, duration) → tap to view/edit.
+      - Breakdown: counts by type (Tônico-clônica / Focal / Ausência / Outra), by severity, and by
+        time-of-day; cluster events called out separately.
     </seizure_trends>
 
     <medication_management>
-      - Route: /medicamentos
-      - Medication list/dashboard: one card per active medication, color-coded by urgency:
-          * OK (verde) — comfortably above the reorder window.
-          * Reabastecer em breve (âmbar) — within the reorder lead-time window.
-          * Urgente (vermelho) — at/below the lead-time window, or out of stock.
-      - Each card shows: name, category, current stock (e.g. "28,5 comprimidos"), days remaining,
-        "repor até" date, the active schedule (doses × units), and (if strength_mg set) computed mg/kg
-        using the latest weight.
+      - Route: /remedios — header "Remédios" / "Estoque e doses".
+      - Overview strip at top: three counts — "em dia" (success), "reabastecer" (warning),
+        "acabando" (danger).
+      - Medication list: one MedStatusCard per active medication, color-coded by status (with icon+label,
+        never color alone):
+          * Estoque OK (verde) — comfortably above the reorder window.
+          * Reabastecer em breve (âmbar) — within the warning window.
+          * Acabando (vermelho) — within the lead-time window, or out of stock.
+        Status thresholds (driven by per-med reorder_lead_time_days, NOT hardcoded):
+          * urgent  when days_remaining <= reorder_lead_time_days   (you are inside the lead time — act now)
+          * reorder when days_remaining <= reorder_lead_time_days + WARNING_BUFFER_DAYS (default 7)
+          * ok      otherwise
+        (The prototype's demo used fixed 4/14-day cutoffs as illustration; production uses the per-med rule.)
+      - Each card shows: name, dose summary ("97,5 mg · 2× ao dia"), big mono days-remaining, a stock
+        "track" bar (days_remaining / capacity), and the status pill. If strength_mg is set, the card
+        can show computed mg/kg using the latest weight. (The prototype's MedStatusCard has a "Pedir mais"
+        text action — omit it; not used.)
+      - "Adicionar remédio" button creates a new medication.
       - Create medication: name, category (continuous | otc | compounded), form (pill | capsule | tablet),
         strength_mg (optional), starting stock, schedule (dose times + units_per_dose, allowing fractions
         like 0.5), reorder_lead_time_days (defaulted by category: compounded 7, otc/continuous 3).
       - Edit medication metadata (name, category, form, strength_mg, lead time, active flag).
       - Per-medication actions:
-          * "Repor estoque" — add a restock transaction (+N, with date).
+          * "Repor estoque" — record stock that arrived: a restock transaction (+N, with date).
           * "Corrigir estoque" — recount adjustment that snaps current stock to the actual counted number.
           * "Editar agendamento" — change dose times/units; writes a NEW MedicationSchedule row and closes
             the previous one (effective_to). This (a) adds a marker to the seizure timeline and
@@ -143,14 +166,15 @@
     </medication_management>
 
     <weight_and_dosing>
-      - Route: /mais (or a sub-page) — simple weight log (WeightEntry: date, weight_kg) with a trend sparkline.
+      - Route: /molly (the profile tab, or a sub-page) — simple weight log (WeightEntry: date, weight_kg)
+        with a trend sparkline.
       - On medication cards with strength_mg set, show mg/kg = (units_per_dose_per_day × strength_mg) / latest_weight_kg.
       - Soft "possível subdosagem" hint when weight has risen enough that mg/kg dropped below a prior level.
         Informational only — never prescriptive, never an instruction to change a dose.
     </weight_and_dosing>
 
     <vet_report_export>
-      - Route: /mais/relatorio — pick a date range, generate a pt-BR report containing:
+      - Route: /molly/relatorio — pick a date range, generate a pt-BR report containing:
           * Dog info + latest weight.
           * Seizure history table (date/time, type, duration, severity, cluster flag, notes) for the range.
           * Summary stats: total episodes, frequency (per month), longest seizure-free streak, type/severity breakdown.
@@ -182,10 +206,14 @@
       <dogs>
         - id (uuid, PK)
         - name (text)
-        - breed (text, nullable)
-        - birthdate (date, nullable)
+        - breed (text, nullable) — e.g. "Golden retriever"
+        - birthdate (date, nullable) — age derived for the profile ("6 anos")
+        - diagnosis (text, nullable) — e.g. "Epilepsia idiopática"
+        - vet_name (text, nullable) — e.g. "Dra. Helena"
+        - emergency_contact (text, nullable) — phone shown on the profile
         - created_at, updated_at
-        - (single row in practice, modeled as an entity to avoid hard-coding)
+        - (single row in practice, modeled as an entity to avoid hard-coding. Surfaced on the "Molly"
+          profile tab alongside latest weight.)
       </dogs>
 
       <weight_entries>
@@ -200,7 +228,8 @@
         - id (uuid, PK)
         - dog_id (uuid, FK dogs.id)
         - occurred_at (timestamptz)
-        - type (enum: generalized | focal)
+        - type (enum: tonic_clonic | focal | absence | other)
+          — pt-BR labels: Tônico-clônica | Focal | Ausência | Outra
         - duration_seconds (int, nullable)
         - severity (enum: mild | moderate | severe, nullable)
         - is_cluster (boolean, default false) — set automatically (another episode within prior 24h)
@@ -309,37 +338,44 @@
 
   <ui_layout>
     <global>
-      - Mobile-first. Bottom tab bar: Início · Crises · Medicamentos · Mais (large tap targets, thumb reach).
-      - Desktop: centered, max-width (~640px) single-column layout; bottom bar becomes a top/side nav.
+      - Mobile-first. Bottom tab bar (64px, safe-area aware): Início · Remédios · Tendências · Molly,
+        with an elevated center "Crise" paw FAB that opens the log sheet. Large tap targets (≥44px).
+      - Per-tab header: greeting + subtitle (e.g. "Olá" / "Está tudo bem com a Molly hoje").
+      - Desktop: centered, max-width ~640px single-column layout; the bottom bar can become a top/side nav.
       - Primary actions are full-width buttons within thumb reach; destructive actions behind confirmation.
     </global>
 
     <home_dashboard>
-      - Large "Registrar crise" primary button near the bottom (reachable), or a persistent FAB.
-      - "Tempo desde a última crise" counter card at the top.
-      - Medication attention strip (only amber/red); calm "Estoque em dia" empty state otherwise.
+      - Hero "tempo desde a última crise" counter card at the top + supportive subtitle.
+      - "Registrar crise" primary button + one-handed caption.
+      - "Próxima dose" highlighted card (next scheduled dose + countdown).
+      - "Crises por mês" mini chart with trend hint + medication-change annotations.
     </home_dashboard>
 
     <seizure_log>
-      - Quick-log sheet/modal: type toggle (Generalizada | Focal) + Salvar; optional fields collapsed below.
-      - Optional live timer control for duration.
+      - Bottom sheet (grip handle, scrim, reassuring lead copy): "Agora" time row (editable),
+        duration stepper (±5s), type chips (Tônico-clônica | Focal | Ausência | Outra), notes textarea,
+        Cancelar / Salvar registro. Save → toast.
       - Episode list with badges (cluster, emergência); tap-through to edit.
     </seizure_log>
 
     <seizure_trends>
-      - Frequency chart (bars) with week/month toggle and medication-change markers.
-      - Counter + streak; breakdown cards (type, severity, time-of-day).
-      - Range filter chips: 3m | 6m | 12m | Tudo.
+      - Frequency chart (bars) with week/month toggle and medication-change annotations.
+      - Headline stats (média/mês, maior intervalo, total no ano) + "tempo desde a última crise".
+      - "Registros recentes" list. Range filter chips: 3m | 6m | 12m | Tudo.
     </seizure_trends>
 
     <medications>
-      - Color-coded med cards (verde / âmbar / vermelho) with stock, days remaining, "repor até", schedule, mg/kg.
-      - Actions: Repor estoque · Corrigir estoque · Editar agendamento · Adicionar ao Google Agenda.
+      - Overview strip (em dia / reabastecer / acabando counts).
+      - Color-coded MedStatusCards (verde / âmbar / vermelho): stock, days remaining, status pill, mg/kg.
+      - "Adicionar remédio". Per-card actions: Repor estoque · Corrigir estoque · Editar agendamento ·
+        Adicionar ao Google Agenda.
     </medications>
 
-    <more>
-      - Weight log + sparkline; vet report export; dog profile; logout.
-    </more>
+    <profile>
+      - "Molly" tab: dog profile (breed, age, diagnosis, vet, emergency contact) + latest weight;
+        weight log + sparkline; vet report export; logout.
+    </profile>
 
     <modals>
       - Delete confirmation (episode, medication, weight entry).
@@ -350,26 +386,129 @@
 
   <design_system>
     <!--
-      TBD — to be defined in a dedicated Claude design session after this spec is approved.
-      This section will be filled with: color tokens (CSS variables), typography scale and fonts,
-      radii, shadows, motion, and component specs (buttons, cards, inputs, badges, charts), mirroring
-      the structure of Crema Arena's app_spec.txt design_system section.
-
-      Locked design constraints regardless of the visual direction chosen:
-        - Mobile-first, large tap targets, thumb-reachable primary actions, bottom tab navigation.
-        - pt-BR user-facing copy; English code/DB/identifiers.
-        - Sentence case for headings/buttons/labels; address the user as "você"; short imperative verbs.
-        - Number formatting in pt-BR: comma decimals ("28,5 comprimidos"), pt-BR dates.
-        - Calm, reassuring tone — this app is used in stressful moments. Color used meaningfully
-          (status: verde/âmbar/vermelho), not decoratively. No alarmist UI.
-        - Outline icons only (Lucide).
+      Source of truth: the Molly Design System handoff bundle committed at
+      .design-system/molly-design-system/ (from claude.ai/design). Implement against app/;
+      the bundle's project/ holds the canonical tokens (project/tokens/*.css), component specs
+      (project/components/**), guideline cards (project/guidelines/cards/*.html), and a working
+      click-through prototype (project/ui_kits/molly_app/) that this spec mirrors.
+      Implement tokens as CSS variables in app/globals.css and alias them in tailwind.config.ts.
     -->
+
+    <voice>
+      - Calm, warm, reassuring — used in stressful moments. Never clinical, never alarmist, never playful.
+        Reference copy: the log sheet opens with "Respire. Vou guardar tudo pra você — pode ajustar os
+        detalhes depois." Save confirmation: "Anotado. Você cuidou bem da Molly."
+      - pt-BR everywhere user-facing (incl. vet export); English for all code/DB/identifiers.
+      - Sentence case for headings, buttons, labels (no Title Case, no ALL CAPS for emphasis).
+        Address as "você". Short imperative verbs. Max one "!" per screen.
+      - Numbers in the mono face with tabular figures; pt-BR comma decimals ("29,4 kg", "97,5 mg").
+        Pluralize: "1 dia restante" / "N dias restantes", "1 crise" / "N crises".
+    </voice>
+
+    <color_tokens>
+      <!-- Full set in .design-system/.../project/tokens/colors.css (raw scales + semantic + dark mode).
+           Brand gold is deliberately DEEPER/bronzed than the brighter status amber so they never
+           read as the same thing. All status colors are paired with an icon + label, never hue alone. -->
+      :root {
+        /* Brand — golden-retriever "honey" */
+        --brand:       #B27A22;
+        --brand-hover: #97651D;
+        --brand-press: #7A5219;
+        --brand-soft:  #F5E6C6;
+        --brand-on:    #FFFFFF;
+
+        /* Surfaces / text / lines — warm cream + warm gray (never cold) */
+        --bg:             #F7F3EC;
+        --bg-2:           #F0EADF;
+        --surface:        #FFFFFF;
+        --surface-raised: #FFFFFF;
+        --fg:       #2A251D;
+        --fg-2:     #524A3D;
+        --fg-muted: #8C8273;
+        --border:        #E6E0D5;
+        --border-strong: #D5CDBE;
+
+        /* Status (each with a -soft tint); warning kept yellower/brighter than brand gold */
+        --success:       #257A48;  --success-soft: #D2EDDC;
+        --warning:       #8F6500;  --warning-accent: #E5A50A;  --warning-soft: #FDEEBF;
+        --danger:        #C9302F;  --danger-soft:  #FAD1D1;
+        --info:          #336185;  --info-soft:    #D5E5F0;
+
+        --focus-ring:        #B27A22;
+        --focus-ring-shadow: 0 0 0 3px rgba(178,122,34,.35);
+
+        /* Charts */
+        --chart-bar: #CE9833;  --chart-bar-strong: #B27A22;  --chart-grid: #E6E0D5;  --chart-track: #F0EADF;
+      }
+      /* Dark mode (nice-to-have) lives under [data-theme="dark"] in the bundle's colors.css. */
+    </color_tokens>
+
+    <typography>
+      - Display / headings: Bricolage Grotesque (warm, characterful), weights 500–700, letter-spacing -0.02em.
+      - Body / UI: Hanken Grotesk (humanist, friendly), 16px base (min for inputs — avoids iOS zoom).
+      - Numbers / tabular: IBM Plex Mono with tabular figures ("tnum","zero") — counts, days remaining,
+        mg/kg, durations, dates. All three are Google Fonts (free for commercial use); load via
+        next/font (google) exposing --font-display / --font-body / --font-mono.
+      - Scale (rem): 2xs .6875 / xs .75 / sm .875 / base 1 / lg 1.125 / xl 1.375 / 2xl 1.75 / 3xl 2.25
+        / 4xl 3 / 5xl 4 (hero "tempo desde a última crise" counter).
+    </typography>
+
+    <spacing_radii_shadows_motion>
+      - 4px base spacing grid; card padding 24px; default gutter 16px.
+      - Radii: xs 6 / sm 10 / md 14 (inputs, small cards) / lg 20 (cards, sheets) / xl 28 (hero) / pill 999.
+      - Shadows: warm, soft, low-contrast (tinted toward warm neutral). --shadow-brand under the brand FAB.
+      - Motion: dur fast 140ms / base 220ms / slow 360ms; ease-standard cubic-bezier(.2,0,0,1),
+        ease-spring cubic-bezier(.34,1.32,.64,1).
+      - Layout: --app-max 640px (desktop centered), --tabbar-h 64px, --tap-min 44px, honor safe-area-inset-bottom.
+    </spacing_radii_shadows_motion>
+
+    <components>
+      <!-- Specs + JSX reference in .design-system/.../project/components/**. Recreate visually in app/. -->
+      - Button: variants primary (brand fill, --brand-on) / secondary (border, no fill) / ghost / destructive;
+        sizes incl. lg (hero). Press translateY(1px) + tighter shadow; focus = --focus-ring-shadow;
+        disabled opacity ~.45. Min height 44px.
+      - Card: --surface, --radius-lg, --shadow-sm; variants raised (lifted) and highlighted (brand-soft, e.g.
+        the "Próxima dose" card). Padding sm/lg.
+      - Input / textarea: 1.5px --border-strong, --radius-md, 16px text; focus → --brand border + focus ring.
+      - StatusPill / badge: --radius-pill, soft status background + status text + icon (always icon+label).
+        Statuses: ok "Estoque OK", reorder "Reabastecer em breve", urgent "Acabando".
+      - MedStatusCard (pattern): leading med chip, name + dose ("97,5 mg · 2× ao dia"), big mono
+        days-remaining, a stock "track" bar, and the status pill. (The bundle's card includes a
+        "Pedir mais" text action — omit it; the reorder feature was dropped.)
+      - Counter (data): big mono "X dias" since last seizure + supportive subtitle.
+      - BarChart (data): calm gold bars (--chart-bar; highlighted period --chart-bar-strong), light grid,
+        and vertical annotations for medication/dose changes (e.g. "Dose ajustada").
+      - TabBar (navigation): 4 items + an elevated center action (the brand paw FAB). Height 64px,
+        safe-area aware, --z-tabbar.
+      - LogSeizure sheet: bottom sheet (radius 24px top), grip handle, scrim; duration stepper (±5s),
+        type chips, notes textarea, Cancelar / Salvar registro.
+    </components>
+
+    <iconography>
+      - Lucide React, outline only. Brand mark is a paw-print (used in the Logo, profile, and center FAB).
+      - Status icons paired with labels: check (ok), clock (reorder), alert-triangle (urgent).
+    </iconography>
+
+    <ui_copy_examples>
+      - Hero counter subtitle:   "Você está cuidando bem dela."
+      - Log action caption:      "Leva poucos segundos, com uma mão só."
+      - Log sheet lead:          "Respire. Vou guardar tudo pra você — pode ajustar os detalhes depois."
+      - Save toast:              "Anotado. Você cuidou bem da Molly."
+      - Next dose:               "Próxima dose — Fenobarbital · hoje, 20h" + "em 3h"
+      - Frequency headings:      "Crises por mês", "Frequência de crises", "Últimos 6 meses"
+      - Trend stats:             "média / mês", "maior intervalo", "total em [ano]"
+      - Recent list heading:     "Registros recentes"
+      - Stock overview chips:    "em dia", "reabastecer", "acabando"
+      - Button labels:           "Registrar crise", "Salvar registro", "Cancelar", "Adicionar remédio"
+      - Tab labels:              "Início", "Remédios", "Tendências", "Molly"; center action: "Crise"
+      - Seizure types:           "Tônico-clônica", "Focal", "Ausência", "Outra"
+    </ui_copy_examples>
   </design_system>
 
   <key_interactions>
     <logging_a_seizure>
       1. Tap "Registrar crise" on the home screen.
-      2. occurred_at defaults to now (editable). Choose type (Generalizada | Focal).
+      2. occurred_at defaults to now (editable). Choose type (Tônico-clônica | Focal | Ausência | Outra).
       3. Tap Salvar — episode is recorded immediately (everything else optional).
       4. On save, is_cluster is set if another episode is within the prior 24h; duration > 5 min is flagged.
       5. Optionally reopen the episode later to add duration, severity, rescue-given, notes.
@@ -460,7 +599,7 @@
     <step number="9">
       <title>Vet report export</title>
       <tasks>
-        - /mais/relatorio print-friendly pt-BR report (range) + episodes CSV export.
+        - /molly/relatorio print-friendly pt-BR report (range) + episodes CSV export.
       </tasks>
     </step>
     <step number="10">

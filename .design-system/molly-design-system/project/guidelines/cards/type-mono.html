@@ -1,0 +1,29 @@
+<!-- @dsCard group="Type" viewport="700x250" name="Numbers — IBM Plex Mono (tabular)" subtitle="Counts, days, mg/kg, dates, times. Tabular figures, comma decimals (pt-BR)." -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin:0; font-family: var(--font-body); background: var(--surface); color: var(--fg); padding: 20px 22px; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); margin-bottom: 14px; }
+  .num { font-family: var(--font-mono); font-feature-settings: var(--num-feat); }
+  .hero { font-size: 56px; font-weight: 600; letter-spacing:-0.03em; color: var(--fg); line-height:1; }
+  .hero .u { font-size: 18px; color: var(--fg-muted); font-weight:500; letter-spacing:0; }
+  .grid { display:flex; gap: 26px; margin-top: 18px; }
+  .stat .v { font-size: 24px; font-weight:600; }
+  .stat .k { font-size: 12px; color: var(--fg-muted); font-family: var(--font-body); margin-top:2px; }
+  .ok { color: var(--success); } .warn { color: var(--warning); } .bad { color: var(--danger); }
+</style>
+</head>
+<body>
+  <div class="meta">var(--font-mono) · IBM Plex Mono · font-feature-settings: "tnum","zero"</div>
+  <div class="num hero">14 <span class="u">dias</span> 06<span class="u">h</span></div>
+  <div class="grid">
+    <div class="stat"><div class="num v ok">23</div><div class="k">dias de estoque</div></div>
+    <div class="stat"><div class="num v warn">6</div><div class="k">dias de estoque</div></div>
+    <div class="stat"><div class="num v">28,5</div><div class="k">mg/kg</div></div>
+    <div class="stat"><div class="num v">07/06/2026</div><div class="k">última dose</div></div>
+  </div>
+</body>
+</html>
