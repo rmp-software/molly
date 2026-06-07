@@ -9,6 +9,7 @@
  * recipients. Today it reads ALERT_EMAIL_TO from the environment.
  */
 
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { enrichMed } from "@/app/api/medications/enrich";
@@ -30,13 +31,17 @@ function resolveRecipient(_dog: { id: string; name: string }): string | null {
 // ─── GET handler ──────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
-  // 1. Authenticate via CRON_SECRET
+  // 1. Authenticate via CRON_SECRET (fail-closed: missing secret → 500)
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-    }
+  if (!cronSecret) {
+    return NextResponse.json({ error: "misconfigured" }, { status: 500 });
+  }
+  const authHeader = request.headers.get("authorization") ?? "";
+  const expected = `Bearer ${cronSecret}`;
+  const a = Buffer.from(authHeader);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   try {
@@ -46,67 +51,76 @@ export async function GET(request: Request) {
     const dogs = await prisma.dog.findMany({ orderBy: { createdAt: "asc" } });
 
     if (dogs.length === 0) {
-      return NextResponse.json({ sent: false, reason: "no dogs found" });
+      return NextResponse.json({ processed: 0, sentCount: 0, results: [] });
     }
 
-    // Process the first dog (v1 scope)
-    const dog = dogs[0];
+    // 3–6. Process each dog independently; one failure must not abort others
+    const results: { dog: string; sent: boolean; count: number }[] = [];
+    let sentCount = 0;
 
-    // 3. Load active medications with relations + latest weight
-    const [meds, latestWeightEntry] = await Promise.all([
-      prisma.medication.findMany({
-        where: { dogId: dog.id, isActive: true },
-        include: {
-          schedules: { orderBy: { effectiveFrom: "asc" } },
-          stockTransactions: { orderBy: { occurredAt: "asc" } },
-        },
-        orderBy: { createdAt: "asc" },
-      }),
-      prisma.weightEntry.findFirst({
-        where: { dogId: dog.id },
-        orderBy: { measuredOn: "desc" },
-        select: { weightKg: true },
-      }),
-    ]);
+    for (const dog of dogs) {
+      try {
+        // Load active medications with relations + latest weight
+        const [meds, latestWeightEntry] = await Promise.all([
+          prisma.medication.findMany({
+            where: { dogId: dog.id, isActive: true },
+            include: {
+              schedules: { orderBy: { effectiveFrom: "asc" } },
+              stockTransactions: { orderBy: { occurredAt: "asc" } },
+            },
+            orderBy: { createdAt: "asc" },
+          }),
+          prisma.weightEntry.findFirst({
+            where: { dogId: dog.id },
+            orderBy: { measuredOn: "desc" },
+            select: { weightKg: true },
+          }),
+        ]);
 
-    const latestWeightKg = latestWeightEntry
-      ? latestWeightEntry.weightKg.toNumber()
-      : null;
+        const latestWeightKg = latestWeightEntry
+          ? latestWeightEntry.weightKg.toNumber()
+          : null;
 
-    // 4. Enrich each med (reuses the same engine as the dashboard — status/reorderByDate are consistent)
-    const enriched = meds.map((med) => enrichMed(med, now, latestWeightKg));
+        // Enrich each med (reuses the same engine as the dashboard)
+        const enriched = meds.map((med) => enrichMed(med, now, latestWeightKg));
 
-    // 5. Build digest
-    const digest = buildDigest(enriched);
-    if (!digest) {
-      return NextResponse.json({ sent: false, reason: "nothing to reorder" });
+        // Build digest
+        const digest = buildDigest(enriched);
+        if (!digest) {
+          results.push({ dog: dog.name, sent: false, count: 0 });
+          continue;
+        }
+
+        // Resolve recipient and send
+        const recipient = resolveRecipient(dog);
+        if (!recipient) {
+          results.push({ dog: dog.name, sent: false, count: 0 });
+          continue;
+        }
+
+        const emailResult = await sendDigestEmail(
+          recipient,
+          digest.subject,
+          digest.body,
+          digest.html
+        );
+
+        const alertCount = enriched.filter(
+          (m) => m.status === "reorder" || m.status === "urgent"
+        ).length;
+
+        if (emailResult.sent) sentCount++;
+        results.push({ dog: dog.name, sent: emailResult.sent, count: alertCount });
+      } catch (dogErr) {
+        console.error(`[restock-digest] error processing dog ${dog.id}:`, dogErr);
+        results.push({ dog: dog.name, sent: false, count: 0 });
+      }
     }
-
-    // 6. Resolve recipient and send
-    const recipient = resolveRecipient(dog);
-    if (!recipient) {
-      return NextResponse.json({
-        sent: false,
-        reason: "no recipient configured (set ALERT_EMAIL_TO)",
-      });
-    }
-
-    const result = await sendDigestEmail(
-      recipient,
-      digest.subject,
-      digest.body,
-      digest.html
-    );
-
-    const alertCount = enriched.filter(
-      (m) => m.status === "reorder" || m.status === "urgent"
-    ).length;
 
     return NextResponse.json({
-      sent: result.sent,
-      ...(result.skipped ? { skipped: result.skipped } : {}),
-      count: alertCount,
-      recipient,
+      processed: dogs.length,
+      sentCount,
+      results,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

@@ -132,5 +132,7 @@ describe("buildDigest — null reorderByDate", () => {
     ]);
     expect(result).not.toBeNull();
     expect(result!.body).toContain("Feno");
+    expect(result!.body).toContain("estoque desconhecido");
+    expect(result!.body).toContain("data desconhecida");
   });
 });

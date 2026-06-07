@@ -139,7 +139,7 @@ export async function sendDigestEmail(
     });
     return { sent: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return { sent: false, skipped: message };
+    console.error("[sendDigestEmail] send failed:", err);
+    return { sent: false, skipped: "email send failed" };
   }
 }
