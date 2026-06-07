@@ -18,6 +18,9 @@
     "react-dom": "19.2.4",
     "resend": "^4"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -29,6 +32,7 @@
     "jsdom": "^26",
     "prisma": "^6",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5",
     "vitest": "^3"
   }
