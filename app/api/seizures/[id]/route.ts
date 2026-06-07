@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
-import { markCluster } from "@/lib/stats";
+import { recomputeClusters } from "@/lib/cluster";
 
 const VALID_TYPES = ["tonic_clonic", "focal", "absence", "other"] as const;
 const VALID_SEVERITIES = ["mild", "moderate", "severe"] as const;
@@ -94,12 +94,9 @@ export async function PUT(
       return NextResponse.json({ error: "occurredAt must be a string" }, { status: 400 });
     }
     const d = new Date(updates.occurredAt as string);
-    if (isNaN(d.getTime())) {
-      return NextResponse.json({ error: "occurredAt is not a valid date" }, { status: 400 });
-    }
-    const roundTripped = new Date(d.toISOString());
-    if (Math.abs(roundTripped.getTime() - d.getTime()) > 1000) {
-      return NextResponse.json({ error: "occurredAt failed round-trip check" }, { status: 400 });
+    const year = d.getUTCFullYear();
+    if (isNaN(d.getTime()) || year < 2000 || year > 2100) {
+      return NextResponse.json({ error: "invalid date" }, { status: 400 });
     }
     newOccurredAt = d;
     data.occurredAt = d;
@@ -163,22 +160,19 @@ export async function PUT(
     }
   }
 
-  // Recompute isCluster if occurredAt changed
-  if (newOccurredAt !== null) {
-    const otherEpisodes = await prisma.seizureEpisode.findMany({
-      where: { dogId, NOT: { id } },
-      select: { occurredAt: true },
-    });
-    const otherDates = otherEpisodes.map((e) => e.occurredAt);
-    data.isCluster = markCluster(newOccurredAt, otherDates);
-  }
-
   try {
     const updated = await prisma.seizureEpisode.update({
       where: { id },
       data,
     });
-    return NextResponse.json(serializeEpisode(updated));
+
+    // Recompute cluster flags for ALL episodes of this dog (bilateral correctness).
+    const clusterMap = await recomputeClusters(dogId);
+
+    // Return the episode with the freshly-computed isCluster value.
+    return NextResponse.json(
+      serializeEpisode({ ...updated, isCluster: clusterMap.get(updated.id) ?? updated.isCluster })
+    );
   } catch {
     return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
@@ -207,6 +201,10 @@ export async function DELETE(
 
   try {
     await prisma.seizureEpisode.delete({ where: { id } });
+
+    // Recompute cluster flags for remaining episodes of this dog.
+    await recomputeClusters(dogId);
+
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "internal error" }, { status: 500 });

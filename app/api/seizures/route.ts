@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
-import { markCluster } from "@/lib/stats";
+import { recomputeClusters } from "@/lib/cluster";
 
 const VALID_TYPES = ["tonic_clonic", "focal", "absence", "other"] as const;
 const VALID_SEVERITIES = ["mild", "moderate", "severe"] as const;
@@ -101,13 +101,9 @@ export async function POST(request: Request) {
     );
   }
   const occurredAtDate = new Date(occurredAtRaw);
-  if (isNaN(occurredAtDate.getTime())) {
-    return NextResponse.json({ error: "occurredAt is not a valid date" }, { status: 400 });
-  }
-  // Round-trip check: re-stringify and parse to detect overflow dates
-  const roundTripped = new Date(occurredAtDate.toISOString());
-  if (Math.abs(roundTripped.getTime() - occurredAtDate.getTime()) > 1000) {
-    return NextResponse.json({ error: "occurredAt failed round-trip check" }, { status: 400 });
+  const year = occurredAtDate.getUTCFullYear();
+  if (isNaN(occurredAtDate.getTime()) || year < 2000 || year > 2100) {
+    return NextResponse.json({ error: "invalid date" }, { status: 400 });
   }
 
   // Validate type
@@ -143,14 +139,6 @@ export async function POST(request: Request) {
     severityVal = severity as Severity;
   }
 
-  // Compute isCluster: query other episodes for this dog
-  const otherEpisodes = await prisma.seizureEpisode.findMany({
-    where: { dogId },
-    select: { occurredAt: true },
-  });
-  const otherDates = otherEpisodes.map((e) => e.occurredAt);
-  const isCluster = markCluster(occurredAtDate, otherDates);
-
   try {
     const episode = await prisma.seizureEpisode.create({
       data: {
@@ -159,12 +147,20 @@ export async function POST(request: Request) {
         type: type as SeizureType,
         durationSeconds: durationSecondsVal,
         severity: severityVal,
-        isCluster,
+        isCluster: false, // placeholder; authoritative value set by recompute below
         rescueGiven: rescueGiven === true,
         notes: typeof notes === "string" && notes.trim() ? notes.trim() : null,
       },
     });
-    return NextResponse.json(serializeEpisode(episode), { status: 201 });
+
+    // Recompute cluster flags for ALL episodes of this dog (bilateral correctness).
+    const clusterMap = await recomputeClusters(dogId);
+
+    // Return the episode with the freshly-computed isCluster value.
+    return NextResponse.json(
+      serializeEpisode({ ...episode, isCluster: clusterMap.get(episode.id) ?? false }),
+      { status: 201 }
+    );
   } catch {
     return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
