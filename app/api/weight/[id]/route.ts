@@ -24,6 +24,10 @@ export async function DELETE(
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  await prisma.weightEntry.delete({ where: { id } });
-  return new NextResponse(null, { status: 204 });
+  try {
+    await prisma.weightEntry.delete({ where: { id } });
+    return new NextResponse(null, { status: 204 });
+  } catch {
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
 }

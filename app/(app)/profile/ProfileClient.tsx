@@ -53,6 +53,7 @@ interface InfoRowProps {
   editing: boolean;
   editValue: string;
   onChange: (v: string) => void;
+  inputType?: string;
 }
 
 function InfoRow({
@@ -61,6 +62,7 @@ function InfoRow({
   editing,
   editValue,
   onChange,
+  inputType = "text",
 }: InfoRowProps) {
   return (
     <div
@@ -72,17 +74,10 @@ function InfoRow({
         borderBottom: "1px solid var(--border)",
       }}
     >
-      <span
-        style={{
-          fontSize: "var(--text-xs)",
-          color: "var(--fg-muted)",
-          fontFamily: "var(--font-body)",
-        }}
-      >
-        {label}
-      </span>
       {editing ? (
         <Input
+          label={label}
+          type={inputType}
           value={editValue}
           onChange={(e) => onChange(e.target.value)}
           style={{
@@ -92,15 +87,26 @@ function InfoRow({
           }}
         />
       ) : (
-        <span
-          style={{
-            fontSize: "var(--text-base)",
-            color: value ? "var(--fg)" : "var(--fg-muted)",
-            fontFamily: "var(--font-body)",
-          }}
-        >
-          {value || "—"}
-        </span>
+        <>
+          <span
+            style={{
+              fontSize: "var(--text-xs)",
+              color: "var(--fg-muted)",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            {label}
+          </span>
+          <span
+            style={{
+              fontSize: "var(--text-base)",
+              color: value ? "var(--fg)" : "var(--fg-muted)",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            {value || "—"}
+          </span>
+        </>
       )}
     </div>
   );
@@ -113,6 +119,7 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
+    name: initialDog.name,
     vetName: initialDog.vetName ?? "",
     diagnosis: initialDog.diagnosis ?? "",
     emergencyContact: initialDog.emergencyContact ?? "",
@@ -126,6 +133,7 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
 
   function startEdit() {
     setForm({
+      name: dog.name,
       vetName: dog.vetName ?? "",
       diagnosis: dog.diagnosis ?? "",
       emergencyContact: dog.emergencyContact ?? "",
@@ -146,6 +154,7 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: form.name.trim() || undefined,
           breed: form.breed.trim() || null,
           birthdate: form.birthdate || null,
           diagnosis: form.diagnosis.trim() || null,
@@ -321,6 +330,28 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
             </span>
           </div>
 
+          <InfoRow
+            label="Nome"
+            value={dog.name}
+            editing={editing}
+            editValue={form.name}
+            onChange={(v) => setForm((f) => ({ ...f, name: v }))}
+          />
+          <InfoRow
+            label="Raça"
+            value={dog.breed ?? ""}
+            editing={editing}
+            editValue={form.breed}
+            onChange={(v) => setForm((f) => ({ ...f, breed: v }))}
+          />
+          <InfoRow
+            label="Nascimento"
+            value={dog.birthdate ?? ""}
+            editing={editing}
+            editValue={form.birthdate}
+            onChange={(v) => setForm((f) => ({ ...f, birthdate: v }))}
+            inputType="date"
+          />
           <InfoRow
             label="Veterinária"
             value={dog.vetName ?? ""}

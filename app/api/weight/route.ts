@@ -60,28 +60,31 @@ export async function POST(request: Request) {
     );
   }
   const dateVal = new Date(measuredOn + "T00:00:00Z");
-  if (isNaN(dateVal.getTime())) {
+  if (isNaN(dateVal.getTime()) || dateVal.toISOString().slice(0, 10) !== measuredOn) {
     return NextResponse.json(
-      { error: "invalid measuredOn date" },
+      { error: "invalid date" },
       { status: 400 }
     );
   }
 
   const kgNum = Number(weightKg);
-  if (!Number.isFinite(kgNum) || kgNum <= 0) {
+  if (!Number.isFinite(kgNum) || kgNum <= 0 || kgNum >= 1000) {
     return NextResponse.json(
-      { error: "weightKg must be a positive number" },
+      { error: "weightKg must be between 0 and 999.99" },
       { status: 400 }
     );
   }
 
-  const entry = await prisma.weightEntry.create({
-    data: {
-      dogId,
-      measuredOn: dateVal,
-      weightKg: kgNum,
-    },
-  });
-
-  return NextResponse.json(serializeEntry(entry), { status: 201 });
+  try {
+    const entry = await prisma.weightEntry.create({
+      data: {
+        dogId,
+        measuredOn: dateVal,
+        weightKg: kgNum,
+      },
+    });
+    return NextResponse.json(serializeEntry(entry), { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
 }

@@ -76,8 +76,8 @@ export async function PUT(request: Request) {
       /^\d{4}-\d{2}-\d{2}$/.test(birthdate)
     ) {
       const d = new Date(birthdate + "T00:00:00Z");
-      if (isNaN(d.getTime())) {
-        return NextResponse.json({ error: "invalid birthdate" }, { status: 400 });
+      if (isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== birthdate) {
+        return NextResponse.json({ error: "invalid date" }, { status: 400 });
       }
       parsedBirthdate = d;
     } else {
@@ -88,36 +88,39 @@ export async function PUT(request: Request) {
     }
   }
 
-  const updated = await prisma.dog.update({
-    where: { id: dog.id },
-    data: {
-      ...(name !== undefined ? { name: (name as string).trim() } : {}),
-      ...(breed !== undefined
-        ? { breed: breed === null ? null : String(breed).trim() || null }
-        : {}),
-      ...(parsedBirthdate !== undefined ? { birthdate: parsedBirthdate } : {}),
-      ...(diagnosis !== undefined
-        ? {
-            diagnosis:
-              diagnosis === null ? null : String(diagnosis).trim() || null,
-          }
-        : {}),
-      ...(vetName !== undefined
-        ? {
-            vetName:
-              vetName === null ? null : String(vetName).trim() || null,
-          }
-        : {}),
-      ...(emergencyContact !== undefined
-        ? {
-            emergencyContact:
-              emergencyContact === null
-                ? null
-                : String(emergencyContact).trim() || null,
-          }
-        : {}),
-    },
-  });
-
-  return NextResponse.json(serializeDog(updated));
+  try {
+    const updated = await prisma.dog.update({
+      where: { id: dog.id },
+      data: {
+        ...(name !== undefined ? { name: (name as string).trim() } : {}),
+        ...(breed !== undefined
+          ? { breed: breed === null ? null : String(breed).trim() || null }
+          : {}),
+        ...(parsedBirthdate !== undefined ? { birthdate: parsedBirthdate } : {}),
+        ...(diagnosis !== undefined
+          ? {
+              diagnosis:
+                diagnosis === null ? null : String(diagnosis).trim() || null,
+            }
+          : {}),
+        ...(vetName !== undefined
+          ? {
+              vetName:
+                vetName === null ? null : String(vetName).trim() || null,
+            }
+          : {}),
+        ...(emergencyContact !== undefined
+          ? {
+              emergencyContact:
+                emergencyContact === null
+                  ? null
+                  : String(emergencyContact).trim() || null,
+            }
+          : {}),
+      },
+    });
+    return NextResponse.json(serializeDog(updated));
+  } catch {
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
 }
