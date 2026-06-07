@@ -104,6 +104,9 @@ export function WeightLog({ initialEntries }: Props) {
     setDateVal(getTodayIso());
   }, []);
 
+  // Clear delete-confirm timer on unmount to avoid state updates on unmounted component
+  useEffect(() => () => { if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current); }, []);
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     const kg = parseFloat(kgVal.replace(",", "."));

@@ -109,7 +109,6 @@ export function TabBar({
         aria-label={item.label}
         prefetch
         style={tabStyle}
-        onClick={() => onChange(item.id)}
       >
         {inner}
       </Link>

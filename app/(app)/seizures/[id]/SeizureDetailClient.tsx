@@ -81,6 +81,9 @@ export function SeizureDetailClient({ episode }: Props) {
   const [deleting, setDeleting] = useState(false);
   const deleteConfirmTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Clear delete-confirm timer on unmount to avoid state updates on unmounted component
+  useEffect(() => () => { if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current); }, []);
+
   const occurredAtDate = new Date(episode.occurredAt);
   const isEmergency =
     episode.durationSeconds !== null && episode.durationSeconds > 300;

@@ -137,7 +137,7 @@ function Chip({
         borderColor: active ? "var(--brand)" : "var(--border-strong)",
         background: active ? "var(--brand-soft, #ede9fe)" : "var(--surface)",
         color: active ? "var(--brand-press, var(--brand))" : "var(--fg-2)",
-        minHeight: "36px",
+        minHeight: "44px",
         display: "inline-flex",
         alignItems: "center",
       }}
@@ -190,7 +190,7 @@ export function TrendsClient({ initial, now }: Props) {
         // Ignore aborted requests — keep previous data on other errors
         if (err instanceof Error && err.name === "AbortError") return;
       } finally {
-        setLoading(false);
+        if (abortRef.current === controller) setLoading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

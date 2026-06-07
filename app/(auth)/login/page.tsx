@@ -22,6 +22,9 @@ export default function LoginPage() {
     }
   }, [status, router]);
 
+  // Avoid form flash while session is loading or redirect is pending
+  if (status === "loading" || status === "authenticated") return null;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
