@@ -32,6 +32,11 @@ interface LogSeizureProps {
   onClose: () => void;
 }
 
+function getNowLocalDatetimeMax(): string {
+  // Called post-mount only, so Date.now() is safe (no hydration drift)
+  return getNowLocalDatetimeValue();
+}
+
 // --- LogSeizure -------------------------------------------------------------
 export function LogSeizure({ open, onClose }: LogSeizureProps) {
   const router = useRouter();
@@ -39,6 +44,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
 
   // Form state
   const [occurredAt, setOccurredAt] = useState("");
+  const [maxDatetime, setMaxDatetime] = useState("");
   const [durationSecs, setDurationSecs] = useState(0);
   const [type, setType] = useState<SeizureType | null>(null);
   const [severity, setSeverity] = useState<Severity | null>(null);
@@ -49,7 +55,9 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
   // Reset form whenever sheet opens
   useEffect(() => {
     if (open) {
-      setOccurredAt(getNowLocalDatetimeValue());
+      const nowVal = getNowLocalDatetimeValue();
+      setOccurredAt(nowVal);
+      setMaxDatetime(getNowLocalDatetimeMax());
       setDurationSecs(0);
       setType(null);
       setSeverity(null);
@@ -163,6 +171,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
             type="datetime-local"
             aria-label="Data e hora da crise"
             value={occurredAt}
+            max={maxDatetime || undefined}
             onChange={(e) => setOccurredAt(e.target.value)}
             style={{
               fontFamily: "var(--font-mono, monospace)",

@@ -60,6 +60,13 @@ export function Counter({
   const { days, hours, mins } = parts ?? { days: 0, hours: 0, mins: 0 };
   const numSize = size === "sm" ? "34px" : "56px";
 
+  const valueText =
+    parts !== null
+      ? days > 0
+        ? `${days} ${days === 1 ? "dia" : "dias"} ${pad(hours)}h ${pad(mins)}min`
+        : `${pad(hours)}h ${pad(mins)}min`
+      : "—";
+
   return (
     <div
       className={className}
@@ -87,6 +94,8 @@ export function Counter({
         </p>
       )}
       <div
+        role="timer"
+        aria-label={eyebrow ? `${eyebrow}: ${valueText}` : valueText}
         style={{
           fontFamily: "var(--font-mono)",
           fontFeatureSettings: '"tnum" 1, "zero" 1',

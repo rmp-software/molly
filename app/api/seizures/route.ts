@@ -84,6 +84,9 @@ export async function POST(request: Request) {
   if (isNaN(occurredAtDate.getTime()) || year < 2000 || year > 2100) {
     return NextResponse.json({ error: "invalid date" }, { status: 400 });
   }
+  if (occurredAtDate.getTime() > Date.now() + 60_000) {
+    return NextResponse.json({ error: "occurredAt cannot be in the future" }, { status: 400 });
+  }
 
   // Validate type
   if (!VALID_TYPES.includes(type as SeizureType)) {

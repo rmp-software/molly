@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Card } from "@/app/components/Card";
@@ -62,6 +62,19 @@ export function SeizureDetailClient({ episode }: Props) {
   const [rescueGiven, setRescueGiven] = useState(episode.rescueGiven);
   const [notes, setNotes] = useState(episode.notes ?? "");
   const [saving, setSaving] = useState(false);
+
+  // Max datetime for the picker — set post-mount to avoid hydration drift
+  const [maxDatetime, setMaxDatetime] = useState("");
+  useEffect(() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const y = now.getFullYear();
+    const mo = pad(now.getMonth() + 1);
+    const d = pad(now.getDate());
+    const h = pad(now.getHours());
+    const mi = pad(now.getMinutes());
+    setMaxDatetime(`${y}-${mo}-${d}T${h}:${mi}`);
+  }, []);
 
   // Delete confirm state (two-tap pattern)
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -254,6 +267,7 @@ export function SeizureDetailClient({ episode }: Props) {
               label="Data e hora"
               aria-label="Data e hora da crise"
               value={occurredAt}
+              max={maxDatetime || undefined}
               onChange={(e) => setOccurredAt(e.target.value)}
             />
 

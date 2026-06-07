@@ -2,7 +2,7 @@ import { requireSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
-import { timeSinceLast, perPeriod } from "@/lib/stats";
+import { perPeriod } from "@/lib/stats";
 import { nextDose as computeNextDose } from "@/lib/schedule";
 import { dbDateToLocalMidnight, dbDateToLocalMidnightNullable } from "@/lib/dates";
 import { HomeClient, type HomeProps } from "./HomeClient";
@@ -31,13 +31,9 @@ export default async function HomePage() {
     severity: e.severity as "mild" | "moderate" | "severe" | null | undefined,
   }));
 
-  // Last seizure
-  const sinceResult = timeSinceLast(episodes, now);
-  const lastSeizureAt = sinceResult !== null
-    ? episodes.reduce((best, e) =>
-        e.occurredAt.getTime() > best.occurredAt.getTime() ? e : best
-      ).occurredAt.toISOString()
-    : null;
+  // Last seizure — ignore future-dated episodes so the counter isn't 00h00
+  const pastEps = episodes.filter(e => e.occurredAt.getTime() <= now.getTime());
+  const lastSeizureAt = pastEps.length ? pastEps[pastEps.length - 1].occurredAt.toISOString() : null;
 
   // --- Next dose: find earliest next dose across all active meds ---
   const activeMeds = await prisma.medication.findMany({

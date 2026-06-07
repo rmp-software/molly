@@ -76,6 +76,9 @@ export async function PUT(
     if (isNaN(d.getTime()) || year < 2000 || year > 2100) {
       return NextResponse.json({ error: "invalid date" }, { status: 400 });
     }
+    if (d.getTime() > Date.now() + 60_000) {
+      return NextResponse.json({ error: "occurredAt cannot be in the future" }, { status: 400 });
+    }
     data.occurredAt = d;
   }
 
