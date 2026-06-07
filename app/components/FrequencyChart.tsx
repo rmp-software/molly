@@ -35,7 +35,7 @@ export function FrequencyChart({ series, medChanges = [], height = 180 }: Props)
     .filter((m) => m.bucketIndex >= 0 && m.bucketIndex < series.length)
     .map((m) => ({
       index: m.bucketIndex,
-      label: "Dose ajustada",
+      label: m.label || "Dose ajustada",
     }));
 
   return (

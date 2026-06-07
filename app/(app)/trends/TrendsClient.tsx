@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Card } from "@/app/components/Card";
 import { FrequencyChart, type FrequencyChartSeries, type FrequencyChartMedChange } from "@/app/components/FrequencyChart";
 import { RecentEpisodes, type RecentEpisodeData } from "@/app/components/RecentEpisodes";
@@ -82,16 +82,18 @@ function StatCard({
       >
         {value}
         {unit && (
-          <span
-            style={{
-              fontSize: "12px",
-              color: "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-              marginLeft: "2px",
-            }}
-          >
-            {unit}
-          </span>
+          <>
+            {" "}
+            <span
+              style={{
+                fontSize: "12px",
+                color: "var(--fg-muted)",
+                fontFamily: "var(--font-body)",
+              }}
+            >
+              {unit}
+            </span>
+          </>
         )}
       </div>
       <div
@@ -122,6 +124,7 @@ function Chip({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       style={{
         padding: "6px 14px",
@@ -157,11 +160,18 @@ export function TrendsClient({ initial, now }: Props) {
   const [rangeKey, setRangeKey] = useState<RangeKey>("6m");
   const [bucket, setBucket] = useState<"week" | "month">("month");
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const nowDate = new Date(now);
   const currentYear = nowDate.getFullYear();
 
   const fetchStats = useCallback(
     async (newRange: RangeKey, newBucket: "week" | "month") => {
+      // Abort any in-flight request before starting a new one
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setLoading(true);
       try {
         const range = computeRange(newRange, nowDate);
@@ -170,12 +180,15 @@ export function TrendsClient({ initial, now }: Props) {
           to: range.to,
           bucket: newBucket,
         });
-        const res = await fetch(`/api/seizures/stats?${params.toString()}`);
+        const res = await fetch(`/api/seizures/stats?${params.toString()}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error("Erro ao carregar estatísticas");
         const json: StatsResponse = await res.json();
         setData(json);
-      } catch {
-        // Keep previous data on error — silent fail
+      } catch (err) {
+        // Ignore aborted requests — keep previous data on other errors
+        if (err instanceof Error && err.name === "AbortError") return;
       } finally {
         setLoading(false);
       }
@@ -201,14 +214,13 @@ export function TrendsClient({ initial, now }: Props) {
 
   // Stat values
   const avgDisplay = fmtNum(stats.monthlyAverage);
-  const gapDisplay =
-    stats.longestGapDays !== null ? fmtNum(stats.longestGapDays) : "—";
-  const gapUnit =
-    stats.longestGapDays !== null
-      ? stats.longestGapDays === 1
-        ? "dia"
-        : "dias"
-      : undefined;
+  const hasGap = stats.longestGapDays !== null && stats.longestGapDays > 0;
+  const gapDisplay = hasGap ? fmtNum(stats.longestGapDays!) : "—";
+  const gapUnit = hasGap
+    ? stats.longestGapDays === 1
+      ? "dia"
+      : "dias"
+    : undefined;
   const totalDisplay = fmtNum(stats.totalInYear);
 
   return (

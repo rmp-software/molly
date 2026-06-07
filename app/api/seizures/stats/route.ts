@@ -67,8 +67,9 @@ export async function GET(request: Request) {
     (e) => e.occurredAt >= from && e.occurredAt < to
   );
 
-  // Build series
-  const series = perPeriod(rangeEpisodes, bucket, { from, to }).map((s) => ({
+  // Build series (seriesRaw reused below for annotation bucket indices)
+  const seriesRaw = perPeriod(rangeEpisodes, bucket, { from, to });
+  const series = seriesRaw.map((s) => ({
     label: s.label,
     start: s.start.toISOString(),
     count: s.count,
@@ -110,10 +111,7 @@ export async function GET(request: Request) {
     include: { medication: true },
   });
 
-  // Build series lookup for annotation bucket indices
-  // series[i].start is the ISO string of the bucket start; we need the Date
-  const seriesRaw = perPeriod(rangeEpisodes, bucket, { from, to });
-
+  // Use seriesRaw (computed above) for annotation bucket indices
   const medChanges = medSchedules.map((sched) => {
     const changeDate = sched.effectiveFrom instanceof Date
       ? sched.effectiveFrom
