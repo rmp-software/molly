@@ -289,6 +289,28 @@ describe("perPeriod — week", () => {
   });
 });
 
+describe("perPeriod — month lower-bound clamp (Fix 1)", () => {
+  /**
+   * Regression: when range.from is mid-month, the first bucket must NOT count
+   * episodes that fall before range.from (even though they are in the same
+   * calendar month).
+   *
+   * Reproducer: range={from: Jan 15, to: Feb 1}, episodes at Jan 10 and Jan 20.
+   * Jan bucket count must be 1 (Jan 10 is before range.from and must be excluded).
+   */
+  it("excludes episodes before range.from in the first month bucket", () => {
+    const range = { from: new Date(2026, 0, 15), to: new Date(2026, 1, 1) };
+    const episodes: Episode[] = [
+      ep(dt(2026, 1, 10, 10)), // Jan 10 — before range.from (Jan 15)
+      ep(dt(2026, 1, 20, 10)), // Jan 20 — within range
+    ];
+    const result = perPeriod(episodes, "month", range);
+    expect(result).toHaveLength(1);
+    expect(result[0].label).toBe("jan");
+    expect(result[0].count).toBe(1); // only Jan 20 should be counted
+  });
+});
+
 describe("monthlyAverage", () => {
   it("returns 0 for empty episodes", () => {
     const range = { from: d(2026, 1, 1), to: d(2026, 4, 1) };

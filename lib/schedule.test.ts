@@ -121,6 +121,37 @@ describe("activeScheduleOn", () => {
     // s1 effectiveFrom = 2026-01-01; query at 2026-01-01 23:59 should still match
     expect(activeScheduleOn([s1], dt(2026, 1, 1, 23, 59))).toBe(s1);
   });
+
+  describe("tiebreak determinism (Fix 2)", () => {
+    /**
+     * Regression: when two schedules share the same effectiveFrom, the result
+     * must not depend on array order. The open-ended schedule (effectiveTo=null)
+     * must always win over one with a set effectiveTo.
+     */
+    const sameFrom = d(2026, 3, 1);
+    const queryDate = d(2026, 5, 1);
+
+    const sClosed: Schedule = {
+      doseTimes: ["08:00"],
+      unitsPerDose: 1,
+      effectiveFrom: sameFrom,
+      effectiveTo: d(2027, 1, 1), // has an end date
+    };
+    const sOpen: Schedule = {
+      doseTimes: ["08:00", "20:00"],
+      unitsPerDose: 2,
+      effectiveFrom: sameFrom,
+      effectiveTo: null, // open-ended — should win
+    };
+
+    it("returns the open-ended schedule when [closed, open] order", () => {
+      expect(activeScheduleOn([sClosed, sOpen], queryDate)).toBe(sOpen);
+    });
+
+    it("returns the open-ended schedule when [open, closed] order", () => {
+      expect(activeScheduleOn([sOpen, sClosed], queryDate)).toBe(sOpen);
+    });
+  });
 });
 
 describe("nextDose", () => {
@@ -186,5 +217,53 @@ describe("nextDose", () => {
     const result = nextDose([s], now);
     expect(result).not.toBeNull();
     expect(result!.time).toBe("14:00");
+  });
+
+  describe("non-zero-padded dose times (Fix 3)", () => {
+    /**
+     * Regression: doseTimes like "8:00" must be sorted numerically (by parsed
+     * minutes), not lexicographically. Lexicographic sort puts "8:00" AFTER
+     * "14:00" and "20:00" (because '8' > '2' > '1'), which means when rolling
+     * over to tomorrow, sorted[0] would return "14:00" instead of the correct
+     * first dose "8:00".
+     *
+     * Reproducer for the tomorrow-rollover path:
+     *   doseTimes=["8:00","14:00","20:00"], now=21:00 (after all doses) →
+     *   must return "8:00" for tomorrow (not "14:00").
+     *
+     * Reproducer for the today path:
+     *   doseTimes=["8:00","14:00","20:00"], now=08:30 → must return "14:00"
+     *   today (not roll over to tomorrow due to "8:00" being sorted last).
+     */
+    const sUnpadded: Schedule = {
+      doseTimes: ["8:00", "14:00", "20:00"],
+      unitsPerDose: 1,
+      effectiveFrom: d(2026, 1, 1),
+      effectiveTo: null,
+    };
+
+    it('picks "14:00" today when now is 08:30 and doseTimes use "8:00" (unpadded)', () => {
+      const now = dt(2026, 6, 7, 8, 30); // 08:30 → next should be 14:00
+      const result = nextDose([sUnpadded], now);
+      expect(result).not.toBeNull();
+      expect(result!.time).toBe("14:00");
+      expect(result!.at > now).toBe(true);
+    });
+
+    it('rolls over to "8:00" tomorrow (not "14:00") when doseTimes are unpadded and all doses passed today', () => {
+      const now = dt(2026, 6, 7, 21, 0); // 21:00 → after all doses today
+      const result = nextDose([sUnpadded], now);
+      expect(result).not.toBeNull();
+      // lexicographic sort puts "14:00" first, so without the fix this would return "14:00"
+      expect(result!.time).toBe("8:00");
+      expect(result!.at.getDate()).toBe(8); // tomorrow
+    });
+
+    it("zero-padded times still work correctly after the fix", () => {
+      const now = dt(2026, 6, 7, 10, 0); // 10:00 → next is 14:00
+      const result = nextDose([s], now);
+      expect(result).not.toBeNull();
+      expect(result!.time).toBe("14:00");
+    });
   });
 });

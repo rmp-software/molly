@@ -38,8 +38,17 @@ export function activeScheduleOn(
 
   if (matching.length === 0) return null;
 
-  // Tiebreak: latest effectiveFrom
-  matching.sort((a, b) => dateOnly(b.effectiveFrom) - dateOnly(a.effectiveFrom));
+  // Primary sort: latest effectiveFrom wins.
+  // Secondary tiebreak (same effectiveFrom): open-ended schedule (effectiveTo=null)
+  // beats one with a set effectiveTo, and among set effectiveTo values the later wins.
+  // Treating null as +Infinity makes null always sort first (highest priority).
+  matching.sort((a, b) => {
+    const fromDiff = dateOnly(b.effectiveFrom) - dateOnly(a.effectiveFrom);
+    if (fromDiff !== 0) return fromDiff;
+    const aTo = a.effectiveTo !== null ? dateOnly(a.effectiveTo) : Infinity;
+    const bTo = b.effectiveTo !== null ? dateOnly(b.effectiveTo) : Infinity;
+    return bTo - aTo;
+  });
   return matching[0];
 }
 
@@ -61,7 +70,9 @@ export function nextDose(
 
   if (todaySchedule && todaySchedule.doseTimes.length > 0) {
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const todayTimes = [...todaySchedule.doseTimes].sort();
+    const todayTimes = [...todaySchedule.doseTimes].sort(
+      (a, b) => parseTimeMinutes(a) - parseTimeMinutes(b)
+    );
 
     for (const t of todayTimes) {
       const tMinutes = parseTimeMinutes(t);
@@ -81,7 +92,9 @@ export function nextDose(
   const tomorrowSchedule = activeScheduleOn(schedules, tomorrow);
 
   if (tomorrowSchedule && tomorrowSchedule.doseTimes.length > 0) {
-    const sorted = [...tomorrowSchedule.doseTimes].sort();
+    const sorted = [...tomorrowSchedule.doseTimes].sort(
+      (a, b) => parseTimeMinutes(a) - parseTimeMinutes(b)
+    );
     const t = sorted[0];
     const at = buildDate(
       tomorrow.getFullYear(),

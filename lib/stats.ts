@@ -231,9 +231,12 @@ function perPeriodMonth(
     const effectiveEnd =
       binEnd.getTime() < range.to.getTime() ? binEnd : range.to;
 
+    // Clamp the lower bound to range.from so that episodes before range.from
+    // are excluded even when they fall in the same calendar month as the first bucket.
+    const effectiveStart = Math.max(binStart.getTime(), range.from.getTime());
     const count = episodes.filter((e) => {
       const t = e.occurredAt.getTime();
-      return t >= binStart.getTime() && t < effectiveEnd.getTime();
+      return t >= effectiveStart && t < effectiveEnd.getTime();
     }).length;
 
     const label = PT_BR_MONTHS[month];
