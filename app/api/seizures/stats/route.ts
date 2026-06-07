@@ -1,27 +1,55 @@
+import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
-import { perPeriod, timeSinceLast, longestGapDays, breakdown, monthlyAverage, type Episode } from "@/lib/stats";
+import {
+  perPeriod,
+  timeSinceLast,
+  longestGapDays,
+  breakdown,
+  monthlyAverage,
+  type Episode,
+} from "@/lib/stats";
 import { serializeEpisode } from "@/lib/seizure-types";
-import { TrendsClient } from "./TrendsClient";
 
-export default async function TrendsPage() {
-  // Auth guard
+export async function GET(request: Request) {
   try {
     await requireSession();
   } catch {
-    redirect("/login");
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const now = new Date();
-  const to = now;
-  // Default: last 6 months
-  const from = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-
   const dogId = await getActiveDogId();
+  const url = new URL(request.url);
 
-  // Fetch all episodes for this dog
+  // Parse bucket param
+  const bucketParam = url.searchParams.get("bucket");
+  const bucket: "week" | "month" =
+    bucketParam === "week" ? "week" : "month";
+
+  // Parse or default range to last 6 months
+  const now = new Date();
+
+  let to: Date;
+  const toStr = url.searchParams.get("to");
+  if (toStr) {
+    const parsed = new Date(toStr);
+    to = isNaN(parsed.getTime()) ? now : parsed;
+  } else {
+    to = now;
+  }
+
+  let from: Date;
+  const fromStr = url.searchParams.get("from");
+  if (fromStr) {
+    const parsed = new Date(fromStr);
+    from = isNaN(parsed.getTime()) ? new Date(to.getFullYear(), to.getMonth() - 6, to.getDate()) : parsed;
+  } else {
+    // Default: 6 months back
+    from = new Date(to.getFullYear(), to.getMonth() - 6, to.getDate());
+  }
+
+  // Fetch all episodes for this dog (needed for longestGapDays / timeSinceLast / totalInYear)
   const allRows = await prisma.seizureEpisode.findMany({
     where: { dogId },
     orderBy: { occurredAt: "asc" },
@@ -34,14 +62,13 @@ export default async function TrendsPage() {
     durationSeconds: e.durationSeconds,
   }));
 
-  // Range episodes
+  // Episodes within the requested range
   const rangeEpisodes = allEpisodes.filter(
     (e) => e.occurredAt >= from && e.occurredAt < to
   );
 
-  // Series
-  const seriesRaw = perPeriod(rangeEpisodes, "month", { from, to });
-  const series = seriesRaw.map((s) => ({
+  // Build series
+  const series = perPeriod(rangeEpisodes, bucket, { from, to }).map((s) => ({
     label: s.label,
     start: s.start.toISOString(),
     count: s.count,
@@ -52,6 +79,7 @@ export default async function TrendsPage() {
   const gapDays = longestGapDays(allEpisodes);
   const tsl = timeSinceLast(allEpisodes, now);
 
+  // Total in current calendar year
   const yearStart = new Date(now.getFullYear(), 0, 1);
   const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
   const totalInYear = allEpisodes.filter(
@@ -66,27 +94,39 @@ export default async function TrendsPage() {
     timeSinceLast: tsl ? { days: tsl.days } : null,
   };
 
+  // Breakdown for the range
   const bdResult = breakdown(rangeEpisodes);
 
-  // Med changes (empty until Task 10)
+  // Med changes: MedicationSchedule rows for this dog within the range
+  // Will be empty until Task 10 creates medications
   const medSchedules = await prisma.medicationSchedule.findMany({
     where: {
       medication: { dogId },
-      effectiveFrom: { gte: from, lte: to },
+      effectiveFrom: {
+        gte: from,
+        lte: to,
+      },
     },
     include: { medication: true },
   });
 
+  // Build series lookup for annotation bucket indices
+  // series[i].start is the ISO string of the bucket start; we need the Date
+  const seriesRaw = perPeriod(rangeEpisodes, bucket, { from, to });
+
   const medChanges = medSchedules.map((sched) => {
     const changeDate = sched.effectiveFrom instanceof Date
       ? sched.effectiveFrom
-      : new Date(sched.effectiveFrom as string);
+      : new Date(sched.effectiveFrom);
 
+    // Find which bucket this date falls into
     let bucketIndex = -1;
     for (let i = 0; i < seriesRaw.length; i++) {
       const bucketStart = seriesRaw[i].start;
       const bucketEnd =
-        i + 1 < seriesRaw.length ? seriesRaw[i + 1].start : to;
+        i + 1 < seriesRaw.length
+          ? seriesRaw[i + 1].start
+          : to;
       if (changeDate >= bucketStart && changeDate < bucketEnd) {
         bucketIndex = i;
         break;
@@ -101,7 +141,7 @@ export default async function TrendsPage() {
     };
   });
 
-  // Recent: newest 8
+  // Recent episodes: last 8, newest first
   const recentRows = await prisma.seizureEpisode.findMany({
     where: { dogId },
     orderBy: { occurredAt: "desc" },
@@ -121,15 +161,13 @@ export default async function TrendsPage() {
     })
   );
 
-  const initial = {
+  return NextResponse.json({
     range: { from: from.toISOString(), to: to.toISOString() },
-    bucket: "month" as const,
+    bucket,
     series,
     stats,
     breakdown: bdResult,
     medChanges,
     recent,
-  };
-
-  return <TrendsClient initial={initial} now={now.toISOString()} />;
+  });
 }
