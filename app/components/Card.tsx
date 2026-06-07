@@ -64,6 +64,8 @@ export function Card({
   className = "",
   children,
   style,
+  onClick,
+  onKeyDown,
   ...rest
 }: CardProps) {
   const cardStyle: React.CSSProperties = {
@@ -83,11 +85,29 @@ export function Card({
     ...style,
   };
 
+  // Only add keyboard a11y props when the element is a non-native-button div
+  const isNativeButton = Tag === "button" || Tag === "a";
+  const a11yProps =
+    interactive && !isNativeButton
+      ? {
+          role: "button" as const,
+          tabIndex: 0,
+          onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => {
+            if (e.key === "Enter" || e.key === " ") {
+              if (e.key === " ") e.preventDefault();
+              (e.currentTarget as HTMLElement).click();
+            }
+            onKeyDown?.(e as React.KeyboardEvent<never>);
+          },
+        }
+      : { tabIndex: interactive ? 0 : undefined, onKeyDown };
+
   return (
     <Tag
       className={className}
       style={cardStyle}
-      tabIndex={interactive ? 0 : undefined}
+      onClick={onClick}
+      {...a11yProps}
       {...rest}
     >
       {children}

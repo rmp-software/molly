@@ -80,7 +80,7 @@ export function StatusPill({
     border: "1px solid transparent",
     whiteSpace: "nowrap",
     ...(solid && status === "urgent"
-      ? { background: "var(--danger)", color: "#fff", borderColor: "transparent" }
+      ? { background: "var(--danger)", color: "var(--neutral-0)", borderColor: "transparent" }
       : statusStyles[status]),
     ...style,
   };
@@ -97,7 +97,7 @@ export function StatusPill({
             height: "7px",
             borderRadius: "50%",
             flex: "none",
-            background: solid && status === "urgent" ? "#fff" : dotColors[status],
+            background: solid && status === "urgent" ? "var(--neutral-0)" : dotColors[status],
           }}
         />
       )}

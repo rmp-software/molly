@@ -44,15 +44,20 @@ export function Counter({
     () => (since instanceof Date ? since : new Date(since)),
     [since]
   );
-  const [now, setNow] = React.useState(() => Date.now());
+  const [now, setNow] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    if (!live) return;
+    setNow(Date.now());
+  }, []);
+
+  React.useEffect(() => {
+    if (!live || now === null) return;
     const id = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(id);
-  }, [live]);
+  }, [live, now]);
 
-  const { days, hours, mins } = diffParts(start.getTime(), now);
+  const parts = now !== null ? diffParts(start.getTime(), now) : null;
+  const { days, hours, mins } = parts ?? { days: 0, hours: 0, mins: 0 };
   const numSize = size === "sm" ? "34px" : "56px";
 
   return (
@@ -96,53 +101,59 @@ export function Counter({
           flexWrap: "wrap",
         }}
       >
-        {days > 0 && (
-          <span>
-            <span style={{ fontSize: numSize }}>{days}</span>
-            <span
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "0.34em",
-                fontWeight: 500,
-                color: "var(--fg-muted)",
-                letterSpacing: 0,
-                marginRight: "8px",
-              }}
-            >
-              {days === 1 ? "dia" : "dias"}
+        {now === null ? (
+          <span style={{ fontSize: numSize, color: "var(--fg-muted)" }}>—</span>
+        ) : (
+          <>
+            {days > 0 && (
+              <span>
+                <span style={{ fontSize: numSize }}>{days}</span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.34em",
+                    fontWeight: 500,
+                    color: "var(--fg-muted)",
+                    letterSpacing: 0,
+                    marginRight: "8px",
+                  }}
+                >
+                  {days === 1 ? "dia" : "dias"}
+                </span>
+              </span>
+            )}
+            <span>
+              <span style={{ fontSize: numSize }}>{pad(hours)}</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.34em",
+                  fontWeight: 500,
+                  color: "var(--fg-muted)",
+                  letterSpacing: 0,
+                  marginRight: "8px",
+                }}
+              >
+                h
+              </span>
             </span>
-          </span>
+            <span>
+              <span style={{ fontSize: numSize }}>{pad(mins)}</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.34em",
+                  fontWeight: 500,
+                  color: "var(--fg-muted)",
+                  letterSpacing: 0,
+                  marginRight: "8px",
+                }}
+              >
+                min
+              </span>
+            </span>
+          </>
         )}
-        <span>
-          <span style={{ fontSize: numSize }}>{pad(hours)}</span>
-          <span
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.34em",
-              fontWeight: 500,
-              color: "var(--fg-muted)",
-              letterSpacing: 0,
-              marginRight: "8px",
-            }}
-          >
-            h
-          </span>
-        </span>
-        <span>
-          <span style={{ fontSize: numSize }}>{pad(mins)}</span>
-          <span
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.34em",
-              fontWeight: 500,
-              color: "var(--fg-muted)",
-              letterSpacing: 0,
-              marginRight: "8px",
-            }}
-          >
-            min
-          </span>
-        </span>
       </div>
       {sub && (
         <p

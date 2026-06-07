@@ -69,6 +69,10 @@ export function Input({
   ...rest
 }: InputProps) {
   const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+  const errorId = inputId ? `${inputId}-error` : undefined;
+  const hintId = inputId ? `${inputId}-hint` : undefined;
+  const describedBy =
+    [error && errorId, !error && hint && hintId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -96,6 +100,8 @@ export function Input({
         <input
           id={inputId}
           className={className}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
           style={{
             ...inputBaseStyle,
             ...(leadingIcon ? { paddingLeft: "40px" } : {}),
@@ -133,8 +139,16 @@ export function Input({
           </span>
         )}
       </div>
-      {error && <span style={errorStyle}>{error}</span>}
-      {!error && hint && <span style={hintStyle}>{hint}</span>}
+      {error && (
+        <span id={errorId} role="alert" style={errorStyle}>
+          {error}
+        </span>
+      )}
+      {!error && hint && (
+        <span id={hintId} style={hintStyle}>
+          {hint}
+        </span>
+      )}
     </div>
   );
 }
@@ -150,6 +164,10 @@ export function Textarea({
   ...rest
 }: TextareaProps) {
   const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+  const errorId = inputId ? `${inputId}-error` : undefined;
+  const hintId = inputId ? `${inputId}-hint` : undefined;
+  const describedBy =
+    [error && errorId, !error && hint && hintId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -162,6 +180,8 @@ export function Textarea({
         id={inputId}
         rows={rows}
         className={className}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         style={{
           ...inputBaseStyle,
           minHeight: "unset",
@@ -184,8 +204,16 @@ export function Textarea({
         }}
         {...rest}
       />
-      {error && <span style={errorStyle}>{error}</span>}
-      {!error && hint && <span style={hintStyle}>{hint}</span>}
+      {error && (
+        <span id={errorId} role="alert" style={errorStyle}>
+          {error}
+        </span>
+      )}
+      {!error && hint && (
+        <span id={hintId} style={hintStyle}>
+          {hint}
+        </span>
+      )}
     </div>
   );
 }

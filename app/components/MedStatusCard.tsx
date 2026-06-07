@@ -83,10 +83,23 @@ export function MedStatusCard({
   const pct = Math.max(4, Math.min(100, (daysRemaining / capacityDays) * 100));
   const label = pillLabel ?? PILL_LABELS[st];
 
+  const interactiveProps = onClick
+    ? {
+        role: "button" as const,
+        tabIndex: 0,
+        onClick,
+        onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (e.key === " ") e.preventDefault();
+            onClick();
+          }
+        },
+      }
+    : {};
+
   return (
     <div
       className={className}
-      onClick={onClick}
       style={{
         fontFamily: "var(--font-body)",
         background: "var(--surface)",
@@ -100,6 +113,7 @@ export function MedStatusCard({
         cursor: onClick ? "pointer" : undefined,
         ...style,
       }}
+      {...interactiveProps}
     >
       {/* Top row */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

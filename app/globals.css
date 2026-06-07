@@ -200,6 +200,9 @@
   --z-tabbar:  200;
   --z-sheet:   300;
   --z-toast:   400;
+
+  /* ---------- Scrim ---------------------------------------- */
+  --scrim: rgba(42, 37, 29, 0.45);
 }
 
 /* ---------- SEMANTIC — DARK ------------------------------ */
@@ -239,6 +242,8 @@
   --chart-bar-strong: #DEB055;
   --chart-grid:       #3A3329;
   --chart-track:      #211D17;
+
+  --scrim: rgba(0, 0, 0, 0.6);
 }
 
 /* ---------- Tailwind v4 @theme mapping ------------------- */
@@ -289,6 +294,22 @@
   --radius-lg:   var(--radius-lg);
   --radius-xl:   var(--radius-xl);
   --radius-pill: var(--radius-pill);
+}
+
+/* ---------- Keyframe animations -------------------------- */
+@keyframes molly-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes molly-toast-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Focus ring ----------------------------------- */
+button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* ---------- Base styles ---------------------------------- */

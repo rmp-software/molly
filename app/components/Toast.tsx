@@ -104,7 +104,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
           opacity: 0.6,
           display: "grid",
           placeItems: "center",
-          padding: "2px",
+          padding: "12px",
           borderRadius: "4px",
           flexShrink: 0,
         }}
@@ -147,36 +147,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       {mounted &&
         createPortal(
-          <>
-            <style>{`
-              @keyframes molly-toast-in {
-                from { opacity: 0; transform: translateY(8px) scale(0.97); }
-                to   { opacity: 1; transform: translateY(0) scale(1); }
-              }
-              @keyframes molly-spin {
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
-            <div
-              aria-label="Notificações"
-              style={{
-                position: "fixed",
-                bottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 12px)",
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: "var(--z-toast)" as unknown as number,
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-                alignItems: "center",
-                pointerEvents: toasts.length > 0 ? "auto" : "none",
-              }}
-            >
-              {toasts.map((t) => (
-                <ToastItem key={t.id} toast={t} onDismiss={dismiss} />
-              ))}
-            </div>
-          </>,
+          <div
+            aria-label="Notificações"
+            style={{
+              position: "fixed",
+              bottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 12px)",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: "var(--z-toast)" as unknown as number,
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              alignItems: "center",
+              pointerEvents: toasts.length > 0 ? "auto" : "none",
+            }}
+          >
+            {toasts.map((t) => (
+              <ToastItem key={t.id} toast={t} onDismiss={dismiss} />
+            ))}
+          </div>,
           document.body
         )}
     </ToastContext.Provider>

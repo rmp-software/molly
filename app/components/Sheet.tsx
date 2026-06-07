@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -13,12 +13,20 @@ export interface SheetProps {
 
 export function Sheet({ open, onClose, title, children }: SheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   // Only mount the portal after the first open (avoids SSR mismatch and
   // prevents the sheet DOM from appearing in the initial render / screenshots).
   const [everOpened, setEverOpened] = useState(false);
 
   useEffect(() => {
     if (open) setEverOpened(true);
+  }, [open]);
+
+  // Move focus to sheet panel when opened
+  useEffect(() => {
+    if (open && sheetRef.current) {
+      sheetRef.current.focus();
+    }
   }, [open]);
 
   // Close on Escape
@@ -57,7 +65,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(42, 37, 29, 0.45)",
+          background: "var(--scrim)",
           opacity: open ? 1 : 0,
           transition: `opacity var(--dur-base) var(--ease-standard)`,
         }}
@@ -67,7 +75,8 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         ref={sheetRef}
         role="dialog"
         aria-modal
-        aria-label={title}
+        tabIndex={-1}
+        {...(title ? { "aria-labelledby": titleId } : { "aria-label": "Sheet" })}
         style={{
           position: "absolute",
           left: 0,
@@ -116,6 +125,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
             }}
           >
             <span
+              id={titleId}
               style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 600,
@@ -135,7 +145,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
                 color: "var(--fg-muted)",
                 display: "grid",
                 placeItems: "center",
-                padding: "8px",
+                padding: "12px",
                 borderRadius: "var(--radius-sm)",
                 WebkitTapHighlightColor: "transparent",
               }}

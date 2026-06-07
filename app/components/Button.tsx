@@ -39,7 +39,7 @@ const baseStyles: React.CSSProperties = {
 };
 
 const sizeMap: Record<ButtonSize, React.CSSProperties> = {
-  sm: { minHeight: "38px", padding: "9px 14px", fontSize: "14px", gap: "6px" },
+  sm: { minHeight: "40px", padding: "9px 14px", fontSize: "14px", gap: "6px" },
   md: { minHeight: "48px", padding: "12px 18px", fontSize: "16px", gap: "8px" },
   lg: { minHeight: "56px", padding: "16px 24px", fontSize: "18px", gap: "10px" },
 };
@@ -61,7 +61,7 @@ const variantMap: Record<ButtonVariant, React.CSSProperties> = {
   },
   destructive: {
     background: "var(--danger)",
-    color: "#fff",
+    color: "var(--neutral-0)",
     boxShadow: "var(--shadow-sm)",
   },
 };
