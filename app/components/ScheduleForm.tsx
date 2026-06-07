@@ -47,8 +47,9 @@ export function ScheduleForm({ open, onClose, onSaved, med }: Props) {
   const [effectiveFrom, setEffectiveFrom] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Pre-fill from current schedule when med changes
+  // Pre-fill from current schedule when med changes or sheet is (re)opened
   useEffect(() => {
+    if (!open) return;
     if (med?.activeSchedule) {
       setDoseTimes([...med.activeSchedule.doseTimes]);
       setUnitsPerDose(String(med.activeSchedule.unitsPerDose).replace(".", ","));
@@ -57,7 +58,7 @@ export function ScheduleForm({ open, onClose, onSaved, med }: Props) {
       setUnitsPerDose("1");
     }
     setEffectiveFrom(new Date().toISOString().slice(0, 10));
-  }, [med]);
+  }, [med, open]);
 
   function addTime() {
     setDoseTimes((prev) => [...prev, "08:00"]);

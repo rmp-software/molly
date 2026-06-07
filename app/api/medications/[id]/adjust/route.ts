@@ -3,8 +3,8 @@ import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
 import { currentStock } from "@/lib/stock";
-import { activeScheduleOn } from "@/lib/schedule";
 import type { Prisma } from "@prisma/client";
+import { dbDateToLocalMidnight, dbDateToLocalMidnightNullable } from "@/lib/dates";
 
 export async function POST(
   request: Request,
@@ -48,6 +48,12 @@ export async function POST(
       { status: 400 }
     );
   }
+  if (countedNum >= 1_000_000) {
+    return NextResponse.json(
+      { error: "countedQuantity must be < 1000000" },
+      { status: 400 }
+    );
+  }
 
   // Parse occurredAt
   let occurredAt = new Date();
@@ -58,16 +64,14 @@ export async function POST(
     }
   }
 
-  // Map to engine shapes
+  // Map to engine shapes.
+  // effectiveFrom / effectiveTo are @db.Date columns (UTC-midnight); convert to
+  // local-midnight so the stock engine's local-getter comparisons are correct.
   const scheduleShapes = med.schedules.map((s) => ({
     doseTimes: s.doseTimes,
     unitsPerDose: (s.unitsPerDose as Prisma.Decimal).toNumber(),
-    effectiveFrom: s.effectiveFrom instanceof Date ? s.effectiveFrom : new Date(s.effectiveFrom),
-    effectiveTo: s.effectiveTo
-      ? s.effectiveTo instanceof Date
-        ? s.effectiveTo
-        : new Date(s.effectiveTo)
-      : null,
+    effectiveFrom: dbDateToLocalMidnight(s.effectiveFrom),
+    effectiveTo: dbDateToLocalMidnightNullable(s.effectiveTo),
   }));
 
   const txShapes = med.stockTransactions.map((t) => ({
@@ -78,9 +82,6 @@ export async function POST(
 
   // Compute current stock at occurredAt
   const stockAtTime = currentStock(txShapes, scheduleShapes, occurredAt);
-
-  // Check active schedule exists (for context, not blocking)
-  const _active = activeScheduleOn(scheduleShapes, occurredAt);
 
   // Delta = counted - current
   const delta = countedNum - stockAtTime;

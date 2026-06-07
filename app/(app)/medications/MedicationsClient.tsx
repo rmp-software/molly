@@ -25,8 +25,8 @@ function buildDoseLabel(med: EnrichedMed): string {
   const timesStr = `${times}× ao dia`;
 
   if (med.strengthMg) {
-    const totalMg = units * med.strengthMg;
-    return `${fmtNum(totalMg)} mg · ${timesStr}`;
+    const doseMg = units * med.strengthMg;
+    return `${fmtNum(doseMg)} mg/dose · ${timesStr}`;
   }
   return `${unitsStr} un · ${timesStr}`;
 }
@@ -118,11 +118,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                   name={med.name}
                   dose={doseWithMgKg}
                   daysRemaining={med.daysRemaining ?? 0}
-                  capacityDays={
-                    med.reorderLeadTimeDays
-                      ? med.reorderLeadTimeDays + 14
-                      : 30
-                  }
+                  capacityDays={med.reorderLeadTimeDays + 14}
                   status={med.status}
                   chipIcon={<Pill size={18} />}
                 />

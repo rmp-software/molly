@@ -41,6 +41,12 @@ export async function POST(
       { status: 400 }
     );
   }
+  if (quantityNum >= 1_000_000) {
+    return NextResponse.json(
+      { error: "quantity must be < 1000000" },
+      { status: 400 }
+    );
+  }
 
   // Parse occurredAt
   let occurredAt = new Date();

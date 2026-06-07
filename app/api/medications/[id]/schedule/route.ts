@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
+import { dbDateToLocalMidnight } from "@/lib/dates";
 
 /** Validate and normalize "HH:MM" time string */
 function normalizeTime(t: unknown): string | null {
@@ -70,12 +71,26 @@ export async function POST(
     }
     normalizedTimes.push(norm);
   }
+  // Reject duplicate dose times
+  const uniqueTimes = [...new Set(normalizedTimes)];
+  if (uniqueTimes.length !== normalizedTimes.length) {
+    return NextResponse.json(
+      { error: "doseTimes must be unique" },
+      { status: 400 }
+    );
+  }
 
   // Validate unitsPerDose
   const unitsPerDoseNum = Number(unitsPerDoseRaw);
   if (!Number.isFinite(unitsPerDoseNum) || unitsPerDoseNum <= 0) {
     return NextResponse.json(
       { error: "unitsPerDose must be > 0" },
+      { status: 400 }
+    );
+  }
+  if (unitsPerDoseNum >= 1_000_000) {
+    return NextResponse.json(
+      { error: "unitsPerDose must be < 1000000" },
       { status: 400 }
     );
   }
@@ -106,11 +121,11 @@ export async function POST(
         });
       }
 
-      // Create new schedule
+      // Create new schedule (use deduplicated uniqueTimes)
       return tx.medicationSchedule.create({
         data: {
           medicationId: id,
-          doseTimes: normalizedTimes,
+          doseTimes: uniqueTimes,
           unitsPerDose: unitsPerDoseNum,
           effectiveFrom: effectiveFromDate,
           effectiveTo: null,
@@ -122,10 +137,7 @@ export async function POST(
       id: schedule.id,
       doseTimes: schedule.doseTimes,
       unitsPerDose: schedule.unitsPerDose.toNumber(),
-      effectiveFrom: (schedule.effectiveFrom instanceof Date
-        ? schedule.effectiveFrom
-        : new Date(schedule.effectiveFrom)
-      ).toISOString().slice(0, 10),
+      effectiveFrom: dbDateToLocalMidnight(schedule.effectiveFrom).toISOString().slice(0, 10),
       effectiveTo: null,
     }, { status: 201 });
   } catch {

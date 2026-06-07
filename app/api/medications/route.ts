@@ -163,12 +163,26 @@ export async function POST(request: Request) {
     }
     normalizedTimes.push(norm);
   }
+  // Reject duplicate dose times
+  const uniqueTimes = [...new Set(normalizedTimes)];
+  if (uniqueTimes.length !== normalizedTimes.length) {
+    return NextResponse.json(
+      { error: "doseTimes must be unique" },
+      { status: 400 }
+    );
+  }
 
   // Validate unitsPerDose
   const unitsPerDoseNum = Number(sched.unitsPerDose);
   if (!Number.isFinite(unitsPerDoseNum) || unitsPerDoseNum <= 0) {
     return NextResponse.json(
       { error: "schedule.unitsPerDose must be > 0" },
+      { status: 400 }
+    );
+  }
+  if (unitsPerDoseNum >= 1_000_000) {
+    return NextResponse.json(
+      { error: "schedule.unitsPerDose must be < 1000000" },
       { status: 400 }
     );
   }
@@ -199,6 +213,12 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (n >= 1_000_000) {
+      return NextResponse.json(
+        { error: "startingStock must be < 1000000" },
+        { status: 400 }
+      );
+    }
     startingStockNum = n;
   }
 
@@ -226,11 +246,11 @@ export async function POST(request: Request) {
         },
       });
 
-      // Create initial schedule
+      // Create initial schedule (use deduplicated uniqueTimes)
       await tx.medicationSchedule.create({
         data: {
           medicationId: created.id,
-          doseTimes: normalizedTimes,
+          doseTimes: uniqueTimes,
           unitsPerDose: unitsPerDoseNum,
           effectiveFrom: effectiveFromDate,
           effectiveTo: null,

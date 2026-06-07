@@ -12,6 +12,7 @@ import {
   stockStatus,
 } from "@/lib/stock";
 import { mgPerKg } from "@/lib/dosing";
+import { dbDateToLocalMidnight, dbDateToLocalMidnightNullable } from "@/lib/dates";
 
 // Prisma row types (narrow shapes we need)
 type PrismaMedRow = {
@@ -73,16 +74,15 @@ export function enrichMed(
   const strengthMgNum = med.strengthMg ? med.strengthMg.toNumber() : null;
   const leadTime = med.reorderLeadTimeDays;
 
-  // Map Prisma schedule rows to engine Schedule shape
+  // Map Prisma schedule rows to engine Schedule shape.
+  // effectiveFrom / effectiveTo are @db.Date columns that come back as UTC-midnight
+  // Date objects; dbDateToLocalMidnight() converts them to LOCAL-midnight so that
+  // the schedule engine's local-getter date-only comparisons land on the right day.
   const scheduleShapes = med.schedules.map((s) => ({
     doseTimes: s.doseTimes,
     unitsPerDose: s.unitsPerDose.toNumber(),
-    effectiveFrom: s.effectiveFrom instanceof Date ? s.effectiveFrom : new Date(s.effectiveFrom),
-    effectiveTo: s.effectiveTo
-      ? s.effectiveTo instanceof Date
-        ? s.effectiveTo
-        : new Date(s.effectiveTo as string)
-      : null,
+    effectiveFrom: dbDateToLocalMidnight(s.effectiveFrom),
+    effectiveTo: dbDateToLocalMidnightNullable(s.effectiveTo),
   }));
 
   // Map Prisma stock transaction rows to engine StockTx shape
@@ -102,14 +102,15 @@ export function enrichMed(
   const status = stockStatus(dr, leadTime);
   const mgPerKgVal = mgPerKg(daily, strengthMgNum, latestWeightKg);
 
-  // Find the active schedule row by matching effectiveFrom + effectiveTo
+  // Find the active schedule row by matching effectiveFrom + effectiveTo.
+  // Use dbDateToLocalMidnight so the comparison is against the same local-midnight
+  // Date that was used when building scheduleShapes above.
   const activeSchedRow = active
     ? med.schedules.find(
         (s) =>
           s.doseTimes.join(",") === active.doseTimes.join(",") &&
           s.unitsPerDose.toNumber() === active.unitsPerDose &&
-          (s.effectiveFrom instanceof Date ? s.effectiveFrom : new Date(s.effectiveFrom)).getTime() ===
-            active.effectiveFrom.getTime()
+          dbDateToLocalMidnight(s.effectiveFrom).getTime() === active.effectiveFrom.getTime()
       ) ?? null
     : null;
 
