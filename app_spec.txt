@@ -1,0 +1,500 @@
+<project_specification>
+  <project_name>Molly — Gestão de Epilepsia Canina (Canine Epilepsy Management)</project_name>
+
+  <overview>
+    Molly is a private, single-user, mobile-first web app (PWA) for managing one dog's epilepsy.
+    Named after the dog it was built for. It has two streams:
+
+      1. Seizure log & trends — fast logging of seizure episodes (in a stressful moment, one-handed
+         on a phone) plus a dashboard to spot whether frequency is changing, so the owner knows when
+         to discuss a medication change with the vet.
+
+      2. Medication & stock control — track continuous, OTC, and compounded medications, their dosing
+         schedules, and current stock; project "days remaining" and "reorder by" dates; warn early
+         enough to act (the compounded medication needs ~1 week lead time to reorder).
+
+    This is a personal tool, not a clinical/medical device. It never prescribes — it surfaces
+    information (counts, trends, mg/kg, soft hints) for the owner to discuss with their vet.
+
+    All code, database fields, API routes, and identifiers must be in English.
+    All user-facing UI text and the vet report export must be in Brazilian Portuguese (pt-BR).
+
+    Mobile-first is a hard constraint: the app is used on a phone ~99% of the time. Primary actions
+    must be thumb-reachable, tap targets large, and the critical "log a seizure" path must be fast
+    and one-handed. Desktop is supported but secondary (centered, max-width layout).
+  </overview>
+
+  <technology_stack>
+    <frontend_and_backend>
+      <framework>Next.js 14+ (App Router) — server components + client components as needed</framework>
+      <styling>Tailwind CSS with a Molly design system as CSS variables (see design_system section — TBD)</styling>
+      <icons>Lucide React</icons>
+      <fonts>TBD via the design session (loaded with next/font/local from /public/fonts/)</fonts>
+      <pwa>Installable PWA: web app manifest + app icons. Mobile-first, add-to-home-screen.</pwa>
+      <port>3000 in local development</port>
+    </frontend_and_backend>
+    <backend>
+      <runtime>Next.js API routes / Server Actions (no separate server)</runtime>
+      <orm>Prisma</orm>
+      <database>PostgreSQL via Neon (DATABASE_URL in .env)</database>
+      <auth>NextAuth.js with CredentialsProvider (email + password) — JWT cookie session, single user</auth>
+      <email>Resend (transactional email) for the daily restock digest</email>
+      <scheduling>Vercel Cron — one daily job that recomputes stock status and emails when thresholds cross</scheduling>
+    </backend>
+    <deployment>
+      <platform>Vercel</platform>
+      <env_vars>
+        DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL, ADMIN_EMAIL, ADMIN_PASSWORD,
+        RESEND_API_KEY, ALERT_EMAIL_TO (where the digest is sent), ALERT_EMAIL_FROM, CRON_SECRET
+      </env_vars>
+    </deployment>
+  </technology_stack>
+
+  <prerequisites>
+    <environment_setup>
+      - .env with DATABASE_URL (Neon PostgreSQL), NEXTAUTH_SECRET, NEXTAUTH_URL, ADMIN_EMAIL,
+        ADMIN_PASSWORD, RESEND_API_KEY, ALERT_EMAIL_TO, ALERT_EMAIL_FROM, CRON_SECRET
+      - Local Postgres via docker-compose (Postgres 16) matching DATABASE_URL for development
+      - Neon account with PostgreSQL database created and connection string available
+      - Resend account with a verified sending domain (or onboarding sandbox) and an API key
+      - Vercel account linked to the repository for continuous deployment + Cron
+      - init.sh to install dependencies, start local Postgres, run migrations, and seed the single user + Dog
+    </environment_setup>
+  </prerequisites>
+
+  <core_features>
+
+    <auth>
+      - Single-user app. Login via email + password (NextAuth CredentialsProvider), JWT cookie session.
+      - No public pages, no registration. The only user is seeded from ADMIN_EMAIL + ADMIN_PASSWORD.
+      - Middleware protects every route except the auth/login route.
+      - Login page at /login, redirect to / (home dashboard) after authentication.
+    </auth>
+
+    <home_dashboard>
+      - Route: / — the landing page, shared by both streams. Mobile-first.
+      - Leads with a large, thumb-reachable primary action: "Registrar crise" (log a seizure).
+      - "Tempo desde a última crise" — a prominent counter (e.g. "12 dias sem crises").
+      - Compact medication status strip: shows only meds that need attention (amber/red), each with
+        its "repor até" date. If everything is OK, a calm "Estoque em dia" state.
+      - Bottom tab navigation (mobile): Início · Crises · Medicamentos · Mais.
+    </home_dashboard>
+
+    <seizure_log>
+      - Route: /crises
+      - Fast logging path:
+          * "Registrar crise" opens a minimal form pre-filled with the current date/time.
+          * Minimum to save: occurred_at (defaults to now, editable) + type (Generalizada | Focal).
+          * Everything else is optional and below the fold: duration, severity, rescue-given, notes.
+          * Optional duration timer: "Iniciar cronômetro" to time the episode live; stop auto-fills
+            duration_seconds. Duration can also be typed manually after the fact.
+      - Auto-flags on save:
+          * is_cluster = true if another episode exists within the prior 24h of occurred_at.
+          * Episodes with duration > 5 minutes are visually flagged as emergency-level (status epilepticus
+            risk). This is a display flag, not a separate field beyond duration.
+      - Episode list: reverse-chronological, each row shows date/time, type, duration, severity,
+        cluster/emergency badges. Tap to view/edit; edit and delete supported (log fast, annotate later).
+    </seizure_log>
+
+    <seizure_trends>
+      - Route: /crises (dashboard section) — date-range filter: 3m | 6m | 12m | tudo.
+      - Frequency over time: bar chart of seizures per week and per month (toggle).
+      - Medication-change markers: vertical markers overlaid on the frequency chart, one per
+        MedicationSchedule.effective_from, labeled with the med + change (e.g. "Fenobarbital ½ → 1").
+        Lets the owner correlate a dose change with subsequent frequency.
+      - Time since last seizure: big counter + longest seizure-free streak.
+      - Breakdown: counts by type (generalized/focal), by severity, and by time-of-day; cluster events
+        called out separately.
+    </seizure_trends>
+
+    <medication_management>
+      - Route: /medicamentos
+      - Medication list/dashboard: one card per active medication, color-coded by urgency:
+          * OK (verde) — comfortably above the reorder window.
+          * Reabastecer em breve (âmbar) — within the reorder lead-time window.
+          * Urgente (vermelho) — at/below the lead-time window, or out of stock.
+      - Each card shows: name, category, current stock (e.g. "28,5 comprimidos"), days remaining,
+        "repor até" date, the active schedule (doses × units), and (if strength_mg set) computed mg/kg
+        using the latest weight.
+      - Create medication: name, category (continuous | otc | compounded), form (pill | capsule | tablet),
+        strength_mg (optional), starting stock, schedule (dose times + units_per_dose, allowing fractions
+        like 0.5), reorder_lead_time_days (defaulted by category: compounded 7, otc/continuous 3).
+      - Edit medication metadata (name, category, form, strength_mg, lead time, active flag).
+      - Per-medication actions:
+          * "Repor estoque" — add a restock transaction (+N, with date).
+          * "Corrigir estoque" — recount adjustment that snaps current stock to the actual counted number.
+          * "Editar agendamento" — change dose times/units; writes a NEW MedicationSchedule row and closes
+            the previous one (effective_to). This (a) adds a marker to the seizure timeline and
+            (b) regenerates the "Adicionar ao Google Agenda" (.ics) action.
+      - Days-remaining math:
+          * daily_consumption = Σ(units_per_dose) across the active schedule's dose times.
+          * days_remaining = floor(current_stock ÷ daily_consumption).
+          * run_out_date = today + days_remaining.
+          * reorder_by_date = run_out_date − reorder_lead_time_days.
+      - Stock is a ledger: current_stock = SUM(StockTransaction.quantity). Auto "consumption" rows are
+        generated from the active schedule; "restock" and "adjustment" rows are manual. Decimals
+        throughout (fractional doses mean stock can sit at e.g. 28.5).
+    </medication_management>
+
+    <weight_and_dosing>
+      - Route: /mais (or a sub-page) — simple weight log (WeightEntry: date, weight_kg) with a trend sparkline.
+      - On medication cards with strength_mg set, show mg/kg = (units_per_dose_per_day × strength_mg) / latest_weight_kg.
+      - Soft "possível subdosagem" hint when weight has risen enough that mg/kg dropped below a prior level.
+        Informational only — never prescriptive, never an instruction to change a dose.
+    </weight_and_dosing>
+
+    <vet_report_export>
+      - Route: /mais/relatorio — pick a date range, generate a pt-BR report containing:
+          * Dog info + latest weight.
+          * Seizure history table (date/time, type, duration, severity, cluster flag, notes) for the range.
+          * Summary stats: total episodes, frequency (per month), longest seizure-free streak, type/severity breakdown.
+          * Current medications + dose-change history within the range.
+      - Output: print-friendly HTML (browser "Salvar como PDF") + a CSV export of episodes. Dependency-light,
+        works on mobile.
+    </vet_report_export>
+
+    <google_calendar_integration>
+      - When a medication schedule is set or changed, the app offers "Adicionar ao Google Agenda".
+      - Generates an .ics file (and/or an "Add to Google Calendar" link) with one recurring VEVENT per dose
+        time (RRULE: daily), e.g. 08:00 / 14:00 / 20:00. One tap to add to any calendar app.
+      - No OAuth and no stored Google state. The app does not update/delete calendar events afterward;
+        if the schedule changes, the UI reminds the owner to remove the old event and add the new one.
+    </google_calendar_integration>
+
+    <restock_alerts>
+      - Dashboard: always-live color-coded status per medication (see medication_management).
+      - Email digest: a Vercel Cron job runs once daily, recomputes each active med's status, and sends a
+        single email (via Resend) to ALERT_EMAIL_TO listing only meds in amber/red, e.g.:
+          "Composto manipulado: repor até sex 13/06 (7 dias restantes)".
+        No email is sent on a day when nothing needs attention (no noise). The cron route is protected by CRON_SECRET.
+    </restock_alerts>
+
+  </core_features>
+
+  <database_schema>
+    <tables>
+      <dogs>
+        - id (uuid, PK)
+        - name (text)
+        - breed (text, nullable)
+        - birthdate (date, nullable)
+        - created_at, updated_at
+        - (single row in practice, modeled as an entity to avoid hard-coding)
+      </dogs>
+
+      <weight_entries>
+        - id (uuid, PK)
+        - dog_id (uuid, FK dogs.id)
+        - measured_on (date)
+        - weight_kg (decimal(5,2))
+        - created_at
+      </weight_entries>
+
+      <seizure_episodes>
+        - id (uuid, PK)
+        - dog_id (uuid, FK dogs.id)
+        - occurred_at (timestamptz)
+        - type (enum: generalized | focal)
+        - duration_seconds (int, nullable)
+        - severity (enum: mild | moderate | severe, nullable)
+        - is_cluster (boolean, default false) — set automatically (another episode within prior 24h)
+        - rescue_given (boolean, default false)
+        - notes (text, nullable)
+        - created_at, updated_at
+      </seizure_episodes>
+
+      <medications>
+        - id (uuid, PK)
+        - dog_id (uuid, FK dogs.id)
+        - name (text)
+        - category (enum: continuous | otc | compounded)
+        - form (enum: pill | capsule | tablet)
+        - strength_mg (decimal(8,2), nullable) — for mg/kg display
+        - reorder_lead_time_days (int) — default by category (compounded 7, otc/continuous 3)
+        - is_active (boolean, default true)
+        - notes (text, nullable)
+        - created_at, updated_at
+      </medications>
+
+      <medication_schedules>
+        - id (uuid, PK)
+        - medication_id (uuid, FK medications.id)
+        - dose_times (text[] or jsonb) — list of HH:MM strings, e.g. ["08:00","14:00","20:00"]
+        - units_per_dose (decimal(8,2)) — fractions allowed, e.g. 0.5
+        - effective_from (date)
+        - effective_to (date, nullable) — null = currently active; set when superseded
+        - created_at
+        - (history of schedule/dose changes — drives the timeline markers and the .ics)
+      </medication_schedules>
+
+      <stock_transactions>
+        - id (uuid, PK)
+        - medication_id (uuid, FK medications.id)
+        - type (enum: restock | adjustment | consumption)
+        - quantity (decimal(8,2)) — signed: restock +, consumption -, adjustment + or -
+        - occurred_at (timestamptz)
+        - note (text, nullable)
+        - created_at
+        - (current stock = SUM(quantity) per medication)
+      </stock_transactions>
+
+      <!-- DEFERRED to v2 (not built in v1) — see implementation_steps / Linear: -->
+      <dose_logs>
+        - id (uuid, PK)
+        - medication_id (uuid, FK medications.id)
+        - scheduled_for (timestamptz)
+        - taken_at (timestamptz, nullable)
+        - status (enum: taken | skipped)
+        - created_at
+        - (powers the optional daily dose checklist; when present, refines that day's consumption)
+      </dose_logs>
+    </tables>
+  </database_schema>
+
+  <api_endpoints_summary>
+    <auth>
+      - POST /api/auth/[...nextauth] — NextAuth handler (login, logout, session)
+    </auth>
+
+    <dog>
+      - GET    /api/dog                    — read the dog profile
+      - PUT    /api/dog                    — update the dog profile
+    </dog>
+
+    <weight>
+      - GET    /api/weight                 — list weight entries
+      - POST   /api/weight                 — add weight entry
+      - DELETE /api/weight/:id             — delete weight entry
+    </weight>
+
+    <seizures>
+      - GET    /api/seizures               — list episodes (filter by range ?from=&to=)
+      - POST   /api/seizures               — create episode (auto-sets is_cluster)
+      - PUT    /api/seizures/:id           — edit episode
+      - DELETE /api/seizures/:id           — delete episode
+      - GET    /api/seizures/stats         — trend aggregates (per week/month, breakdowns, streak)
+    </seizures>
+
+    <medications>
+      - GET    /api/medications            — list with computed status (stock, days remaining, reorder_by)
+      - POST   /api/medications            — create medication (+ initial schedule + starting stock)
+      - GET    /api/medications/:id        — detail (schedule history, stock ledger)
+      - PUT    /api/medications/:id        — edit metadata
+      - DELETE /api/medications/:id        — delete (or set is_active=false)
+
+      - POST   /api/medications/:id/schedule    — change schedule (closes prior, opens new)
+      - POST   /api/medications/:id/restock     — add restock transaction
+      - POST   /api/medications/:id/adjust      — add adjustment transaction (recount)
+      - GET    /api/medications/:id/calendar.ics — generate the recurring-dose .ics for the active schedule
+    </medications>
+
+    <report>
+      - GET    /api/report?from=&to=       — vet report data (JSON for the print view)
+      - GET    /api/report/episodes.csv?from=&to= — CSV export of episodes
+    </report>
+
+    <cron>
+      - GET    /api/cron/restock-digest    — daily Vercel Cron; recompute statuses, email amber/red via Resend.
+                                             Protected by CRON_SECRET (Authorization header).
+    </cron>
+  </api_endpoints_summary>
+
+  <ui_layout>
+    <global>
+      - Mobile-first. Bottom tab bar: Início · Crises · Medicamentos · Mais (large tap targets, thumb reach).
+      - Desktop: centered, max-width (~640px) single-column layout; bottom bar becomes a top/side nav.
+      - Primary actions are full-width buttons within thumb reach; destructive actions behind confirmation.
+    </global>
+
+    <home_dashboard>
+      - Large "Registrar crise" primary button near the bottom (reachable), or a persistent FAB.
+      - "Tempo desde a última crise" counter card at the top.
+      - Medication attention strip (only amber/red); calm "Estoque em dia" empty state otherwise.
+    </home_dashboard>
+
+    <seizure_log>
+      - Quick-log sheet/modal: type toggle (Generalizada | Focal) + Salvar; optional fields collapsed below.
+      - Optional live timer control for duration.
+      - Episode list with badges (cluster, emergência); tap-through to edit.
+    </seizure_log>
+
+    <seizure_trends>
+      - Frequency chart (bars) with week/month toggle and medication-change markers.
+      - Counter + streak; breakdown cards (type, severity, time-of-day).
+      - Range filter chips: 3m | 6m | 12m | Tudo.
+    </seizure_trends>
+
+    <medications>
+      - Color-coded med cards (verde / âmbar / vermelho) with stock, days remaining, "repor até", schedule, mg/kg.
+      - Actions: Repor estoque · Corrigir estoque · Editar agendamento · Adicionar ao Google Agenda.
+    </medications>
+
+    <more>
+      - Weight log + sparkline; vet report export; dog profile; logout.
+    </more>
+
+    <modals>
+      - Delete confirmation (episode, medication, weight entry).
+      - Restock / adjust stock entry.
+      - Schedule change (with the Google Calendar re-add reminder).
+    </modals>
+  </ui_layout>
+
+  <design_system>
+    <!--
+      TBD — to be defined in a dedicated Claude design session after this spec is approved.
+      This section will be filled with: color tokens (CSS variables), typography scale and fonts,
+      radii, shadows, motion, and component specs (buttons, cards, inputs, badges, charts), mirroring
+      the structure of Crema Arena's app_spec.txt design_system section.
+
+      Locked design constraints regardless of the visual direction chosen:
+        - Mobile-first, large tap targets, thumb-reachable primary actions, bottom tab navigation.
+        - pt-BR user-facing copy; English code/DB/identifiers.
+        - Sentence case for headings/buttons/labels; address the user as "você"; short imperative verbs.
+        - Number formatting in pt-BR: comma decimals ("28,5 comprimidos"), pt-BR dates.
+        - Calm, reassuring tone — this app is used in stressful moments. Color used meaningfully
+          (status: verde/âmbar/vermelho), not decoratively. No alarmist UI.
+        - Outline icons only (Lucide).
+    -->
+  </design_system>
+
+  <key_interactions>
+    <logging_a_seizure>
+      1. Tap "Registrar crise" on the home screen.
+      2. occurred_at defaults to now (editable). Choose type (Generalizada | Focal).
+      3. Tap Salvar — episode is recorded immediately (everything else optional).
+      4. On save, is_cluster is set if another episode is within the prior 24h; duration > 5 min is flagged.
+      5. Optionally reopen the episode later to add duration, severity, rescue-given, notes.
+    </logging_a_seizure>
+
+    <managing_stock>
+      1. current_stock = SUM(StockTransaction.quantity). Daily auto "consumption" derives from the active
+         schedule's Σ(units_per_dose).
+      2. days_remaining = floor(stock ÷ daily_consumption); reorder_by = (today + days_remaining) − lead_time_days.
+      3. Card color: red if at/below lead-time window or out; amber if within the window; green otherwise.
+      4. "Repor estoque" adds +N; "Corrigir estoque" snaps stock to a counted number via an adjustment row.
+    </managing_stock>
+
+    <changing_a_schedule>
+      1. "Editar agendamento" on a medication.
+      2. New dose times/units are saved as a new MedicationSchedule row; the previous row gets effective_to.
+      3. A medication-change marker appears on the seizure-frequency timeline at effective_from.
+      4. The "Adicionar ao Google Agenda" .ics regenerates; UI reminds the owner to remove the old calendar event.
+    </changing_a_schedule>
+
+    <daily_restock_digest>
+      1. Vercel Cron calls GET /api/cron/restock-digest once daily (CRON_SECRET-protected).
+      2. The route recomputes each active medication's status.
+      3. If any are amber/red, send ONE Resend email to ALERT_EMAIL_TO listing them with "repor até" dates.
+      4. If none need attention, send nothing.
+    </daily_restock_digest>
+  </key_interactions>
+
+  <implementation_steps>
+    <step number="1">
+      <title>Project foundation</title>
+      <tasks>
+        - Initialize Next.js 14 (App Router, TypeScript, Tailwind). Standalone repo "molly".
+        - Configure Prisma + Neon (DATABASE_URL). docker-compose for local Postgres 16.
+        - PWA manifest + icons; mobile-first base layout with bottom tab nav.
+        - NextAuth CredentialsProvider (single user), middleware protecting all non-auth routes.
+        - Seed script: single user (ADMIN_EMAIL/ADMIN_PASSWORD) + the Dog (Molly).
+        - init.sh (compose up, install, prisma generate/migrate/seed). globals.css placeholder tokens.
+      </tasks>
+    </step>
+    <step number="2">
+      <title>Dog profile + weight log</title>
+      <tasks>
+        - Dog profile read/edit; WeightEntry CRUD + sparkline. mg/kg helper using latest weight.
+      </tasks>
+    </step>
+    <step number="3">
+      <title>Seizure logging</title>
+      <tasks>
+        - Fast "Registrar crise" flow (now + type minimum; optional fields; live duration timer).
+        - is_cluster auto-flag; >5 min emergency flag. Episode list + edit/delete. API routes.
+      </tasks>
+    </step>
+    <step number="4">
+      <title>Seizure trends dashboard</title>
+      <tasks>
+        - /api/seizures/stats aggregates. Frequency chart (week/month), time-since-last + streak,
+          breakdowns by type/severity/time-of-day, range filter.
+      </tasks>
+    </step>
+    <step number="5">
+      <title>Medications + stock ledger</title>
+      <tasks>
+        - Medication CRUD, MedicationSchedule (with history), StockTransaction ledger.
+        - Status computation (days remaining, reorder_by, color). Restock / adjust actions. Med cards.
+      </tasks>
+    </step>
+    <step number="6">
+      <title>Medication-change markers on the seizure timeline</title>
+      <tasks>
+        - Overlay schedule effective_from markers on the frequency chart with change labels.
+      </tasks>
+    </step>
+    <step number="7">
+      <title>Google Calendar (.ics)</title>
+      <tasks>
+        - /api/medications/:id/calendar.ics — recurring VEVENT per dose time (RRULE daily).
+        - "Adicionar ao Google Agenda" action + schedule-change re-add reminder.
+      </tasks>
+    </step>
+    <step number="8">
+      <title>Restock alerts (cron + email)</title>
+      <tasks>
+        - /api/cron/restock-digest (CRON_SECRET). Resend integration. Vercel Cron config (daily).
+        - Email only amber/red; home-screen attention strip.
+      </tasks>
+    </step>
+    <step number="9">
+      <title>Vet report export</title>
+      <tasks>
+        - /mais/relatorio print-friendly pt-BR report (range) + episodes CSV export.
+      </tasks>
+    </step>
+    <step number="10">
+      <title>Design system pass</title>
+      <tasks>
+        - Apply the design tokens/components from the Claude design session. Mobile polish, empty/loading states.
+      </tasks>
+    </step>
+    <step number="DEFERRED">
+      <title>Dose checklist + adherence (v2 — tracked in Linear, NOT in v1)</title>
+      <tasks>
+        - DoseLog model + daily dose checklist ("did I already give the morning dose?").
+        - Ticking refines that day's consumption (supersedes auto-consumption for accuracy).
+        - Optional adherence view. (Cut from v1 by decision; data model leaves room for it.)
+      </tasks>
+    </step>
+  </implementation_steps>
+
+  <success_criteria>
+    <functionality>
+      - Owner can log a seizure in seconds (now + type), and annotate it later.
+      - Trends dashboard shows frequency over time with medication-change markers, time-since-last + streak,
+        and breakdowns; range filter works.
+      - Medication cards show accurate stock (decimal, fractional doses), days remaining, and "repor até",
+        with correct color status. Restock and recount adjustments update the ledger correctly.
+      - Schedule changes create history rows that both mark the timeline and regenerate the .ics.
+      - Daily cron emails only when something needs reordering; nothing otherwise.
+      - Vet report exports as a print-friendly pt-BR page + CSV.
+      - Weight log works; mg/kg shows where strength_mg is set.
+    </functionality>
+    <design>
+      - Mobile-first: every primary action thumb-reachable; usable one-handed; large tap targets.
+      - Works on desktop in a centered layout.
+      - All user-facing text in pt-BR; numbers/dates formatted pt-BR (comma decimals).
+      - Calm, non-alarmist tone; color used meaningfully for status.
+    </design>
+    <technical>
+      - Single-user auth; no public/unauthenticated pages except login.
+      - Stock-as-ledger is auditable; current stock = SUM(transactions).
+      - Clean, reproducible Prisma migrations via init.sh.
+      - Cron route protected by CRON_SECRET; Resend configured; zero console errors in production.
+    </technical>
+  </success_criteria>
+
+</project_specification>
