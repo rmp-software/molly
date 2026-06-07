@@ -31,3 +31,9 @@ yarn-error.log*
 
 # Playwright / validation artifacts
 .playwright-mcp/
+
+# Test coverage
+/coverage
+
+# TypeScript
+*.tsbuildinfo
