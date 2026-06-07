@@ -1,26 +1,37 @@
-"use client";
+import React from "react";
+import { getActiveDog } from "@/lib/scope";
+import { prisma } from "@/lib/db";
+import { ProfileClient } from "./ProfileClient";
 
-import { signOut } from "next-auth/react";
-import { Button } from "@/app/components/Button";
+export default async function ProfilePage() {
+  const dog = await getActiveDog();
 
-export default function ProfilePage() {
+  // Serialize dog for client (no raw Prisma objects or Decimals)
+  const dogData = {
+    id: dog.id,
+    name: dog.name,
+    breed: dog.breed ?? null,
+    birthdate: dog.birthdate
+      ? dog.birthdate.toISOString().slice(0, 10)
+      : null,
+    diagnosis: dog.diagnosis ?? null,
+    vetName: dog.vetName ?? null,
+    emergencyContact: dog.emergencyContact ?? null,
+  };
+
+  // Fetch weight entries for initial render
+  const weightEntries = await prisma.weightEntry.findMany({
+    where: { dogId: dog.id },
+    orderBy: { measuredOn: "desc" },
+  });
+
+  const serializedWeights = weightEntries.map((e) => ({
+    id: e.id,
+    measuredOn: e.measuredOn.toISOString().slice(0, 10),
+    weightKg: e.weightKg.toNumber(),
+  }));
+
   return (
-    <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: "24px" }}>
-      <p
-        style={{
-          color: "var(--fg-muted)",
-          fontFamily: "var(--font-body)",
-          fontSize: "var(--text-base)",
-        }}
-      >
-        Perfil em breve.
-      </p>
-      <Button
-        variant="destructive"
-        onClick={() => signOut({ callbackUrl: "/login" })}
-      >
-        Sair
-      </Button>
-    </div>
+    <ProfileClient dog={dogData} initialWeights={serializedWeights} />
   );
 }
