@@ -7,7 +7,7 @@ import { MedForm } from "@/app/components/MedForm";
 import { ScheduleForm } from "@/app/components/ScheduleForm";
 import { StockDialog } from "@/app/components/StockDialog";
 import { Button } from "@/app/components/Button";
-import { Pill, Plus, Package, RefreshCw, Edit, Calendar } from "lucide-react";
+import { Pill, Plus, Package, RefreshCw, Edit, Calendar, CalendarPlus } from "lucide-react";
 import { fmtNum } from "@/lib/format";
 import type { EnrichedMed } from "@/app/api/medications/enrich";
 
@@ -158,6 +158,35 @@ export function MedicationsClient({ initialMeds }: Props) {
                   >
                     Agendamento
                   </Button>
+                  {med.activeSchedule && (
+                    <a
+                      href={`/api/medications/${med.id}/calendar.ics`}
+                      download
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        flex: 1,
+                        minWidth: "140px",
+                        padding: "0 12px",
+                        minHeight: "36px",
+                        fontSize: "var(--text-sm)",
+                        fontFamily: "var(--font-body)",
+                        fontWeight: "var(--fw-medium)" as unknown as number,
+                        color: "var(--fg-2)",
+                        background: "var(--surface-raised)",
+                        border: "1.5px solid var(--border-strong)",
+                        borderRadius: "var(--radius-md)",
+                        textDecoration: "none",
+                        cursor: "pointer",
+                        justifyContent: "center",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <CalendarPlus size={14} />
+                      Adicionar ao Google Agenda
+                    </a>
+                  )}
                 </div>
               </div>
             );

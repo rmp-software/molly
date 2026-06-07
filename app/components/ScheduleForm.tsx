@@ -106,8 +106,8 @@ export function ScheduleForm({ open, onClose, onSaved, med }: Props) {
       }
 
       toast.show(
-        "Agendamento atualizado! A integração com Google Agenda chegará em breve.",
-        { variant: "success", duration: 5000 }
+        "Agendamento atualizado. Atualize o evento no Google Agenda (remova o antigo e adicione o novo).",
+        { variant: "success", duration: 6000 }
       );
       onSaved();
       onClose();
