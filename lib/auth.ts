@@ -1,4 +1,5 @@
 import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
@@ -37,3 +38,11 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+// Route handlers / server actions should call requireSession() and map the
+// thrown "UNAUTHORIZED" error to a 401 response.
+export async function requireSession() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) throw new Error("UNAUTHORIZED");
+  return session;
+}

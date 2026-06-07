@@ -42,7 +42,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [logOpen, setLogOpen] = useState(false);
 
-  const meta = routeMeta[pathname] ?? routeMeta["/"];
+  const meta =
+    routeMeta[pathname] ??
+    Object.entries(routeMeta).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
+    routeMeta["/"];
+
+  // Resolve the active tab: exact match for "/", prefix match for all others.
+  const activeTab =
+    tabItems.find((t) => t.id !== "/" && pathname.startsWith(t.id))?.id ??
+    (pathname === "/" ? "/" : tabItems[0].id);
 
   return (
     <div
@@ -99,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* TabBar */}
       <TabBar
         items={tabItems}
-        active={pathname}
+        active={activeTab}
         onChange={(id) => router.push(id)}
         fixed
         centerAction={{
