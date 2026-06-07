@@ -8,23 +8,13 @@ import { Button } from "@/app/components/Button";
 import { Input, Textarea } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
 import { fmtDuration, fmtDateTimePt } from "@/lib/format";
-
-// --- Types ------------------------------------------------------------------
-type SeizureType = "tonic_clonic" | "focal" | "absence" | "other";
-type Severity = "mild" | "moderate" | "severe";
-
-const TYPE_OPTIONS: { id: SeizureType; label: string }[] = [
-  { id: "tonic_clonic", label: "Tônico-clônica" },
-  { id: "focal", label: "Focal" },
-  { id: "absence", label: "Ausência" },
-  { id: "other", label: "Outra" },
-];
-
-const SEVERITY_OPTIONS: { id: Severity; label: string }[] = [
-  { id: "mild", label: "Leve" },
-  { id: "moderate", label: "Moderada" },
-  { id: "severe", label: "Grave" },
-];
+import {
+  TYPE_OPTIONS,
+  SEVERITY_OPTIONS,
+  typeLabelPt,
+  type SeizureType,
+  type Severity,
+} from "@/lib/seizure-types";
 
 export interface SeizureEpisodeData {
   id: string;
@@ -39,10 +29,6 @@ export interface SeizureEpisodeData {
 
 interface Props {
   episode: SeizureEpisodeData;
-}
-
-function typeLabelPt(type: SeizureType): string {
-  return TYPE_OPTIONS.find((t) => t.id === type)?.label ?? type;
 }
 
 function severityLabelPt(severity: Severity | null): string {
@@ -266,6 +252,7 @@ export function SeizureDetailClient({ episode }: Props) {
             <Input
               type="datetime-local"
               label="Data e hora"
+              aria-label="Data e hora da crise"
               value={occurredAt}
               onChange={(e) => setOccurredAt(e.target.value)}
             />
@@ -282,7 +269,7 @@ export function SeizureDetailClient({ episode }: Props) {
                   fontFamily: "var(--font-body)",
                 }}
               >
-                Duração (segundos)
+                Duração
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button
@@ -359,6 +346,7 @@ export function SeizureDetailClient({ episode }: Props) {
                   <button
                     key={t.id}
                     type="button"
+                    aria-pressed={type === t.id}
                     onClick={() => setType(t.id)}
                     style={{
                       padding: "8px 14px",
@@ -406,6 +394,7 @@ export function SeizureDetailClient({ episode }: Props) {
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                 <button
                   type="button"
+                  aria-pressed={severity === null}
                   onClick={() => setSeverity(null)}
                   style={{
                     padding: "6px 12px",
@@ -433,6 +422,7 @@ export function SeizureDetailClient({ episode }: Props) {
                   <button
                     key={s.id}
                     type="button"
+                    aria-pressed={severity === s.id}
                     onClick={() => setSeverity(s.id)}
                     style={{
                       padding: "6px 12px",

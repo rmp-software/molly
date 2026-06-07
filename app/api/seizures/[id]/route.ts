@@ -3,34 +3,13 @@ import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
 import { recomputeClusters } from "@/lib/cluster";
-
-const VALID_TYPES = ["tonic_clonic", "focal", "absence", "other"] as const;
-const VALID_SEVERITIES = ["mild", "moderate", "severe"] as const;
-
-type SeizureType = (typeof VALID_TYPES)[number];
-type Severity = (typeof VALID_SEVERITIES)[number];
-
-function serializeEpisode(e: {
-  id: string;
-  occurredAt: Date;
-  type: SeizureType;
-  durationSeconds: number | null;
-  severity: Severity | null;
-  isCluster: boolean;
-  rescueGiven: boolean;
-  notes: string | null;
-}) {
-  return {
-    id: e.id,
-    occurredAt: e.occurredAt.toISOString(),
-    type: e.type,
-    durationSeconds: e.durationSeconds,
-    severity: e.severity,
-    isCluster: e.isCluster,
-    rescueGiven: e.rescueGiven,
-    notes: e.notes,
-  };
-}
+import {
+  VALID_TYPES,
+  VALID_SEVERITIES,
+  serializeEpisode,
+  type SeizureType,
+  type Severity,
+} from "@/lib/seizure-types";
 
 export async function GET(
   _request: Request,
@@ -88,7 +67,6 @@ export async function PUT(
   const data: Record<string, unknown> = {};
 
   // occurredAt
-  let newOccurredAt: Date | null = null;
   if ("occurredAt" in updates) {
     if (typeof updates.occurredAt !== "string" || !updates.occurredAt) {
       return NextResponse.json({ error: "occurredAt must be a string" }, { status: 400 });
@@ -98,7 +76,6 @@ export async function PUT(
     if (isNaN(d.getTime()) || year < 2000 || year > 2100) {
       return NextResponse.json({ error: "invalid date" }, { status: 400 });
     }
-    newOccurredAt = d;
     data.occurredAt = d;
   }
 
@@ -119,9 +96,9 @@ export async function PUT(
       data.durationSeconds = null;
     } else {
       const dur = Number(updates.durationSeconds);
-      if (!Number.isInteger(dur) || dur < 0) {
+      if (!Number.isInteger(dur) || dur < 0 || dur > 86400) {
         return NextResponse.json(
-          { error: "durationSeconds must be a non-negative integer" },
+          { error: "invalid duration" },
           { status: 400 }
         );
       }

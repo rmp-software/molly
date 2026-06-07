@@ -7,23 +7,12 @@ import { Button } from "@/app/components/Button";
 import { Textarea } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
 import { fmtDuration } from "@/lib/format";
-
-// --- Types ------------------------------------------------------------------
-type SeizureType = "tonic_clonic" | "focal" | "absence" | "other";
-type Severity = "mild" | "moderate" | "severe";
-
-const TYPE_OPTIONS: { id: SeizureType; label: string }[] = [
-  { id: "tonic_clonic", label: "Tônico-clônica" },
-  { id: "focal", label: "Focal" },
-  { id: "absence", label: "Ausência" },
-  { id: "other", label: "Outra" },
-];
-
-const SEVERITY_OPTIONS: { id: Severity; label: string }[] = [
-  { id: "mild", label: "Leve" },
-  { id: "moderate", label: "Moderada" },
-  { id: "severe", label: "Grave" },
-];
+import {
+  TYPE_OPTIONS,
+  SEVERITY_OPTIONS,
+  type SeizureType,
+  type Severity,
+} from "@/lib/seizure-types";
 
 // --- Helper -----------------------------------------------------------------
 function getNowLocalDatetimeValue(): string {
@@ -172,6 +161,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
         <div style={{ marginLeft: "auto" }}>
           <input
             type="datetime-local"
+            aria-label="Data e hora da crise"
             value={occurredAt}
             onChange={(e) => setOccurredAt(e.target.value)}
             style={{
@@ -287,6 +277,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
           <button
             key={t.id}
             type="button"
+            aria-pressed={type === t.id}
             onClick={() => setType(t.id)}
             style={{
               padding: "10px 14px",
@@ -336,6 +327,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
         {/* None option */}
         <button
           type="button"
+          aria-pressed={severity === null}
           onClick={() => setSeverity(null)}
           style={{
             padding: "8px 12px",
@@ -363,6 +355,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
           <button
             key={s.id}
             type="button"
+            aria-pressed={severity === s.id}
             onClick={() => setSeverity(s.id)}
             style={{
               padding: "8px 12px",

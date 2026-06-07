@@ -3,34 +3,13 @@ import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
 import { recomputeClusters } from "@/lib/cluster";
-
-const VALID_TYPES = ["tonic_clonic", "focal", "absence", "other"] as const;
-const VALID_SEVERITIES = ["mild", "moderate", "severe"] as const;
-
-type SeizureType = (typeof VALID_TYPES)[number];
-type Severity = (typeof VALID_SEVERITIES)[number];
-
-function serializeEpisode(e: {
-  id: string;
-  occurredAt: Date;
-  type: SeizureType;
-  durationSeconds: number | null;
-  severity: Severity | null;
-  isCluster: boolean;
-  rescueGiven: boolean;
-  notes: string | null;
-}) {
-  return {
-    id: e.id,
-    occurredAt: e.occurredAt.toISOString(),
-    type: e.type,
-    durationSeconds: e.durationSeconds,
-    severity: e.severity,
-    isCluster: e.isCluster,
-    rescueGiven: e.rescueGiven,
-    notes: e.notes,
-  };
-}
+import {
+  VALID_TYPES,
+  VALID_SEVERITIES,
+  serializeEpisode,
+  type SeizureType,
+  type Severity,
+} from "@/lib/seizure-types";
 
 export async function GET(request: Request) {
   try {
@@ -118,9 +97,9 @@ export async function POST(request: Request) {
   let durationSecondsVal: number | null = null;
   if (durationSeconds !== undefined && durationSeconds !== null) {
     const dur = Number(durationSeconds);
-    if (!Number.isInteger(dur) || dur < 0) {
+    if (!Number.isInteger(dur) || dur < 0 || dur > 86400) {
       return NextResponse.json(
-        { error: "durationSeconds must be a non-negative integer" },
+        { error: "invalid duration" },
         { status: 400 }
       );
     }
