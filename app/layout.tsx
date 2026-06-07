@@ -6,6 +6,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "./components/Toast";
+import { Providers } from "./components/Providers";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-display",
@@ -42,7 +43,9 @@ export default function RootLayout({
       className={`${bricolageGrotesque.variable} ${hankenGrotesk.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ToastProvider>{children}</ToastProvider>
+        <Providers>
+          <ToastProvider>{children}</ToastProvider>
+        </Providers>
       </body>
     </html>
   );
