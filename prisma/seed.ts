@@ -11,18 +11,20 @@ async function main() {
     throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env");
   }
 
-  // Idempotent upsert of admin user
+  // Idempotent upsert of admin user. Update passwordHash too so re-running the
+  // seed with a new ADMIN_PASSWORD actually rotates the stored password
+  // (there is no in-app password change to clobber).
   const passwordHash = await hashPassword(password);
   await prisma.user.upsert({
     where: { email },
-    update: {},
+    update: { passwordHash },
     create: {
       email,
       passwordHash,
     },
   });
 
-  console.log(`User upserted: ${email}`);
+  console.log(`User upserted (password set): ${email}`);
 
   // Idempotent create of Dog "Molly" — create only if no dogs exist
   const dogCount = await prisma.dog.count();
