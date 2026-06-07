@@ -77,6 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     >
       {/* Header */}
       <header
+        className="no-print"
         style={{
           padding: "20px 20px 12px",
           fontFamily: "var(--font-display)",
@@ -121,6 +122,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* TabBar */}
       <TabBar
+        className="no-print"
         items={tabItems}
         active={activeTab}
         onChange={(id) => router.push(id)}

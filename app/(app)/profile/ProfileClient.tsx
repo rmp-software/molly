@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { PawPrint, Pencil, Check, X } from "lucide-react";
+import { PawPrint, Pencil, Check, X, FileText } from "lucide-react";
 import { Card } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
@@ -378,6 +378,16 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
 
       {/* Weight log */}
       <WeightLog initialEntries={initialWeights} />
+
+      {/* Report link */}
+      <Button
+        variant="secondary"
+        fullWidth
+        icon={<FileText size={16} />}
+        onClick={() => router.push("/profile/report")}
+      >
+        Relatório para a veterinária
+      </Button>
 
       {/* Logout */}
       <Button

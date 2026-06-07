@@ -320,3 +320,47 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ---------- Print styles --------------------------------- */
+@media print {
+  /* Hide app chrome and controls */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Remove page background for clean printing */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Remove padding from main content area */
+  main {
+    padding-bottom: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure report content is full width */
+  #report-content {
+    width: 100%;
+  }
+
+  /* Keep cards visible but simplify */
+  [class*="card"],
+  [data-card] {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  /* Table page break avoidance */
+  table {
+    break-inside: auto;
+  }
+  tr {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
+  }
+}
