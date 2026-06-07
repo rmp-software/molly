@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { TabBar } from "@/app/components/TabBar";
 import { Sheet } from "@/app/components/Sheet";
-import { Button } from "@/app/components/Button";
 import { Home, Pill, TrendingUp, PawPrint } from "lucide-react";
+import { LogSeizure } from "@/app/components/LogSeizure";
 
 const routeMeta: Record<string, { greet: string; sub: string }> = {
   "/": { greet: "Olá", sub: "Está tudo bem com a Molly hoje" },
@@ -117,36 +117,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }}
       />
 
-      {/* Log seizure sheet — placeholder until Task 8 */}
+      {/* Log seizure sheet */}
       <Sheet
         open={logOpen}
         onClose={() => setLogOpen(false)}
         title="Registrar crise"
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            alignItems: "center",
-            padding: "8px 0",
-          }}
-        >
-          <p
-            style={{
-              color: "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-base)",
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            Em breve — o formulário de registro de crise estará disponível aqui.
-          </p>
-          <Button variant="secondary" onClick={() => setLogOpen(false)}>
-            Fechar
-          </Button>
-        </div>
+        <LogSeizure open={logOpen} onClose={() => setLogOpen(false)} />
       </Sheet>
     </div>
   );
