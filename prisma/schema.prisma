@@ -52,6 +52,8 @@ model User {
   @@map("users")
 }
 
+/// v1 is single-user/single-dog. Multi-user later adds Dog.ownerId + a membership join
+/// (additive — see app_spec.txt <extensibility>). Intentionally no userId FK yet.
 model Dog {
   id               String    @id @default(uuid())
   name             String

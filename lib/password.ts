@@ -1,5 +1,5 @@
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
-import { promisify } from "util";
+import { promisify } from "node:util";
 
 const scryptAsync = promisify<
   Buffer | string,
@@ -36,5 +36,6 @@ export async function verifyPassword(
   const salt = Buffer.from(saltHex, "hex");
   const storedHash = Buffer.from(hashHex, "hex");
   const hash = await scryptAsync(plain, salt, KEYLEN);
+  if (storedHash.length !== hash.length) return false;
   return timingSafeEqual(hash, storedHash);
 }
