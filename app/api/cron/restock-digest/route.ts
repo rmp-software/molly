@@ -123,7 +123,7 @@ export async function GET(request: Request) {
       results,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[restock-digest] unexpected error:", err);
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
 }
