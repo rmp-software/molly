@@ -46,8 +46,8 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String   @map("password_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt    DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   @@map("users")
 }
@@ -60,8 +60,8 @@ model Dog {
   diagnosis        String?
   vetName          String?   @map("vet_name")
   emergencyContact String?   @map("emergency_contact")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   weights     WeightEntry[]
   seizures    SeizureEpisode[]
@@ -75,7 +75,7 @@ model WeightEntry {
   dogId      String   @map("dog_id")
   measuredOn DateTime @db.Date @map("measured_on")
   weightKg   Decimal  @db.Decimal(5, 2) @map("weight_kg")
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt  DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
   dog Dog @relation(fields: [dogId], references: [id])
 
@@ -86,15 +86,15 @@ model WeightEntry {
 model SeizureEpisode {
   id              String      @id @default(uuid())
   dogId           String      @map("dog_id")
-  occurredAt      DateTime    @map("occurred_at")
+  occurredAt      DateTime    @db.Timestamptz(6) @map("occurred_at")
   type            SeizureType
   durationSeconds Int?        @map("duration_seconds")
   severity        Severity?
   isCluster       Boolean     @default(false) @map("is_cluster")
   rescueGiven     Boolean     @default(false) @map("rescue_given")
   notes           String?
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  createdAt       DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   dog Dog @relation(fields: [dogId], references: [id])
 
@@ -112,8 +112,8 @@ model Medication {
   reorderLeadTimeDays Int        @map("reorder_lead_time_days")
   isActive           Boolean     @default(true) @map("is_active")
   notes              String?
-  createdAt          DateTime    @default(now()) @map("created_at")
-  updatedAt          DateTime    @updatedAt @map("updated_at")
+  createdAt          DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt          DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   dog               Dog                  @relation(fields: [dogId], references: [id])
   schedules         MedicationSchedule[]
@@ -130,7 +130,7 @@ model MedicationSchedule {
   unitsPerDose  Decimal   @db.Decimal(8, 2) @map("units_per_dose")
   effectiveFrom DateTime  @db.Date @map("effective_from")
   effectiveTo   DateTime? @db.Date @map("effective_to")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
 
   medication Medication @relation(fields: [medicationId], references: [id])
 
@@ -143,9 +143,9 @@ model StockTransaction {
   medicationId String      @map("medication_id")
   type         StockTxType
   quantity     Decimal     @db.Decimal(8, 2)
-  occurredAt   DateTime    @map("occurred_at")
+  occurredAt   DateTime    @db.Timestamptz(6) @map("occurred_at")
   note         String?
-  createdAt    DateTime    @default(now()) @map("created_at")
+  createdAt    DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
 
   medication Medication @relation(fields: [medicationId], references: [id])
 

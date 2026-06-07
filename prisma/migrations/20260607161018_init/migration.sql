@@ -18,8 +18,8 @@ CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password_hash" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -33,8 +33,8 @@ CREATE TABLE "dogs" (
     "diagnosis" TEXT,
     "vet_name" TEXT,
     "emergency_contact" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "dogs_pkey" PRIMARY KEY ("id")
 );
@@ -45,7 +45,7 @@ CREATE TABLE "weight_entries" (
     "dog_id" TEXT NOT NULL,
     "measured_on" DATE NOT NULL,
     "weight_kg" DECIMAL(5,2) NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "weight_entries_pkey" PRIMARY KEY ("id")
 );
@@ -54,15 +54,15 @@ CREATE TABLE "weight_entries" (
 CREATE TABLE "seizure_episodes" (
     "id" TEXT NOT NULL,
     "dog_id" TEXT NOT NULL,
-    "occurred_at" TIMESTAMP(3) NOT NULL,
+    "occurred_at" TIMESTAMPTZ(6) NOT NULL,
     "type" "SeizureType" NOT NULL,
     "duration_seconds" INTEGER,
     "severity" "Severity",
     "is_cluster" BOOLEAN NOT NULL DEFAULT false,
     "rescue_given" BOOLEAN NOT NULL DEFAULT false,
     "notes" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "seizure_episodes_pkey" PRIMARY KEY ("id")
 );
@@ -78,8 +78,8 @@ CREATE TABLE "medications" (
     "reorder_lead_time_days" INTEGER NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "notes" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "medications_pkey" PRIMARY KEY ("id")
 );
@@ -92,7 +92,7 @@ CREATE TABLE "medication_schedules" (
     "units_per_dose" DECIMAL(8,2) NOT NULL,
     "effective_from" DATE NOT NULL,
     "effective_to" DATE,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "medication_schedules_pkey" PRIMARY KEY ("id")
 );
@@ -103,9 +103,9 @@ CREATE TABLE "stock_transactions" (
     "medication_id" TEXT NOT NULL,
     "type" "StockTxType" NOT NULL,
     "quantity" DECIMAL(8,2) NOT NULL,
-    "occurred_at" TIMESTAMP(3) NOT NULL,
+    "occurred_at" TIMESTAMPTZ(6) NOT NULL,
     "note" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "stock_transactions_pkey" PRIMARY KEY ("id")
 );
