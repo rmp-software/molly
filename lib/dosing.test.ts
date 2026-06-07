@@ -41,6 +41,14 @@ describe("mgPerKg", () => {
     expect(mgPerKg(-1, 97.5, 29.4)).toBeNull();
   });
 
+  it("returns null when unitsPerDay is NaN", () => {
+    expect(mgPerKg(NaN, 97.5, 29.4)).toBeNull();
+  });
+
+  it("returns null when unitsPerDay is Infinity", () => {
+    expect(mgPerKg(Infinity, 97.5, 29.4)).toBeNull();
+  });
+
   it("returns null when strengthMg is NaN", () => {
     expect(mgPerKg(2, NaN, 29.4)).toBeNull();
   });

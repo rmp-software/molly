@@ -10,8 +10,12 @@ describe("fmtNum", () => {
     expect(fmtNum(30)).toBe("30");
   });
 
-  it("trailing zero is stripped", () => {
-    expect(fmtNum(28.5)).toBe("28,5"); // 28.50 === 28.5
+  it("decimal comma separator", () => {
+    expect(fmtNum(1.1)).toBe("1,1");
+  });
+
+  it("whole float shows no decimals", () => {
+    expect(fmtNum(2.0)).toBe("2");
   });
 
   it("zero is formatted as 0", () => {
@@ -33,6 +37,14 @@ describe("fmtNum", () => {
   it("negative number", () => {
     expect(fmtNum(-5.5)).toBe("-5,5");
   });
+
+  it("NaN returns 0", () => {
+    expect(fmtNum(NaN)).toBe("0");
+  });
+
+  it("Infinity returns 0", () => {
+    expect(fmtNum(Infinity)).toBe("0");
+  });
 });
 
 describe("fmtKg", () => {
@@ -46,6 +58,10 @@ describe("fmtKg", () => {
 
   it("zero kg", () => {
     expect(fmtKg(0)).toBe("0 kg");
+  });
+
+  it("NaN kg returns 0 kg", () => {
+    expect(fmtKg(NaN)).toBe("0 kg");
   });
 });
 
@@ -84,15 +100,8 @@ describe("fmtDateTimePt", () => {
   // 2024-03-15T12:00:00Z = 09:00 in Sao Paulo (UTC-3)
   const d = new Date("2024-03-15T12:00:00Z");
 
-  it("contains day/month/year in pt-BR format", () => {
-    const result = fmtDateTimePt(d);
-    // pt-BR date format: 15/03/2024
-    expect(result).toContain("15/03/2024");
-  });
-
-  it("contains time 09:00 (Sao Paulo UTC-3)", () => {
-    const result = fmtDateTimePt(d);
-    expect(result).toContain("09:00");
+  it("formats date and time in pt-BR with Sao Paulo timezone", () => {
+    expect(fmtDateTimePt(d)).toBe("15/03/2024, 09:00");
   });
 });
 

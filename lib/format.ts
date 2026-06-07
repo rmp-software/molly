@@ -19,6 +19,7 @@ const TZ = "America/Sao_Paulo";
  *   1234.5 → "1.234,5"
  */
 export function fmtNum(n: number): string {
+  if (!Number.isFinite(n)) return "0";
   const isWhole = Number.isInteger(n);
   return new Intl.NumberFormat(PT_BR, {
     minimumFractionDigits: 0,
@@ -57,7 +58,7 @@ export function fmtDuration(totalSeconds: number): string {
  * Uses timeZone "America/Sao_Paulo" for deterministic output.
  *
  * Example (UTC 2024-03-15T12:00:00Z → Sao Paulo 09:00):
- *   "15/03/2024 09:00"
+ *   "15/03/2024, 09:00"
  */
 export function fmtDateTimePt(d: Date): string {
   return new Intl.DateTimeFormat(PT_BR, {

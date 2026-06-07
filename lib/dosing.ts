@@ -20,7 +20,7 @@ export function mgPerKg(
   strengthMg: number | null | undefined,
   weightKg: number | null | undefined
 ): number | null {
-  if (unitsPerDay <= 0) return null;
+  if (!Number.isFinite(unitsPerDay) || unitsPerDay <= 0) return null;
   if (strengthMg == null || !Number.isFinite(strengthMg) || strengthMg === 0)
     return null;
   if (weightKg == null || !Number.isFinite(weightKg) || weightKg === 0)
