@@ -12,6 +12,32 @@
 
 ---
 
+## Linear tracking
+
+Project: **Molly — Epilepsy App** (`rmp-tech`). Parent: **RMP-151 — Build Molly v1**.
+Each task below = one sub-issue; move it through Backlog → In Progress → Done as you execute.
+
+| Task | Linear |
+|---|---|
+| 1 Project foundation & tooling | RMP-152 |
+| 2 Data model & migrations | RMP-153 |
+| 3 Design tokens, fonts & base components | RMP-154 |
+| 4 Auth, app shell & nav (+ scope layer) | RMP-155 |
+| 5 pt-BR formatting + dosing helpers | RMP-156 |
+| 6 Schedule, stock & stats engines | RMP-157 |
+| 7 Dog profile + weight log + mg/kg | RMP-158 |
+| 8 Seizure logging + episode detail | RMP-159 |
+| 9 Trends dashboard | RMP-160 |
+| 10 Medications + stock ledger | RMP-161 |
+| 11 Google Calendar (.ics) | RMP-162 |
+| 12 Home dashboard | RMP-163 |
+| 13 Restock alerts (cron + Resend) | RMP-164 |
+| 14 Vet report export | RMP-165 |
+| 15 PWA, polish & a11y | RMP-166 |
+| (deferred) Dose checklist + adherence | RMP-150 |
+
+---
+
 ## File Structure
 
 ```
