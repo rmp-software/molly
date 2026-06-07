@@ -131,9 +131,15 @@
           * days_remaining = floor(current_stock ÷ daily_consumption).
           * run_out_date = today + days_remaining.
           * reorder_by_date = run_out_date − reorder_lead_time_days.
-      - Stock is a ledger: current_stock = SUM(StockTransaction.quantity). Auto "consumption" rows are
-        generated from the active schedule; "restock" and "adjustment" rows are manual. Decimals
-        throughout (fractional doses mean stock can sit at e.g. 28.5).
+      - Stock model (v1): the ledger stores only MANUAL rows — "restock" (+N) and "adjustment" (recount,
+        sets stock to a counted number). Consumption is NOT stored as rows in v1; it is COMPUTED on read.
+          * baseline = SUM(quantity of restock/adjustment rows with occurred_at ≤ now); the most recent
+            "adjustment" acts as a recount checkpoint.
+          * consumed_since = Σ over days from the last restock/adjustment to today of that day's
+            daily_consumption (from whichever MedicationSchedule was active on each day).
+          * current_stock = baseline − consumed_since (Decimal; fractional doses mean stock can sit at 28.5).
+        This avoids a second cron and keeps recounts trivial. (v2's dose checklist may add literal
+        "consumption" rows; the schema reserves the type for that.)
     </medication_management>
 
     <weight_and_dosing>
@@ -235,7 +241,9 @@
         - occurred_at (timestamptz)
         - note (text, nullable)
         - created_at
-        - (current stock = SUM(quantity) per medication)
+        - (v1 writes only restock/adjustment rows; current stock = baseline from these − consumption
+          computed from the active schedule since the last row. The "consumption" type is reserved for
+          v2's dose checklist, which may write literal consumption rows.)
       </stock_transactions>
 
       <!-- DEFERRED to v2 (not built in v1) — see implementation_steps / Linear: -->
@@ -368,8 +376,8 @@
     </logging_a_seizure>
 
     <managing_stock>
-      1. current_stock = SUM(StockTransaction.quantity). Daily auto "consumption" derives from the active
-         schedule's Σ(units_per_dose).
+      1. current_stock = baseline (SUM of manual restock/adjustment rows) − consumption computed from the
+         active schedule since the last row. daily_consumption = Σ(units_per_dose) across the day's doses.
       2. days_remaining = floor(stock ÷ daily_consumption); reorder_by = (today + days_remaining) − lead_time_days.
       3. Card color: red if at/below lead-time window or out; amber if within the window; green otherwise.
       4. "Repor estoque" adds +N; "Corrigir estoque" snaps stock to a counted number via an adjustment row.
