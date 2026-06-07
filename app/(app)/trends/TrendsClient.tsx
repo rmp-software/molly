@@ -230,21 +230,41 @@ export function TrendsClient({ initial, now }: Props) {
         flexDirection: "column",
         gap: "14px",
         padding: "4px 18px 8px",
-        opacity: loading ? 0.6 : 1,
+        opacity: loading ? 0.55 : 1,
         transition: "opacity 200ms ease",
+        pointerEvents: loading ? "none" : "auto",
+        position: "relative",
       }}
+      aria-busy={loading}
     >
       {/* Frequency chart card */}
       <Card padding="lg">
-        <h3
-          style={{
-            margin: "0 0 2px",
-            font: "600 17px var(--font-display)",
-            color: "var(--fg)",
-          }}
-        >
-          Frequência de crises
-        </h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2px" }}>
+          <h3
+            style={{
+              margin: 0,
+              font: "600 17px var(--font-display)",
+              color: "var(--fg)",
+            }}
+          >
+            Frequência de crises
+          </h3>
+          {loading && (
+            <span
+              aria-label="Carregando"
+              style={{
+                width: "16px",
+                height: "16px",
+                borderRadius: "50%",
+                border: "2px solid var(--brand)",
+                borderTopColor: "transparent",
+                display: "inline-block",
+                animation: "molly-spin 0.7s linear infinite",
+                flexShrink: 0,
+              }}
+            />
+          )}
+        </div>
         <p
           style={{
             margin: "0 0 10px",

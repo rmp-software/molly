@@ -79,6 +79,7 @@ export function SeizureDetailClient({ episode }: Props) {
   // Delete confirm state (two-tap pattern)
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const deleteConfirmTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const occurredAtDate = new Date(episode.occurredAt);
   const isEmergency =
@@ -127,8 +128,12 @@ export function SeizureDetailClient({ episode }: Props) {
   async function handleDelete() {
     if (!deleteConfirm) {
       setDeleteConfirm(true);
+      // Auto-reset confirm after 4 s if user doesn't confirm
+      if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
+      deleteConfirmTimerRef.current = setTimeout(() => setDeleteConfirm(false), 4000);
       return;
     }
+    if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
     setDeleteConfirm(false);
     setDeleting(true);
     try {

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Bricolage_Grotesque,
   Hanken_Grotesk,
@@ -29,7 +29,24 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Molly",
-  description: "Gerenciamento de epilepsia para seu cão",
+  description: "Gestão da epilepsia da Molly",
+  applicationName: "Molly",
+  appleWebApp: {
+    capable: true,
+    title: "Molly",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#B27A22",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

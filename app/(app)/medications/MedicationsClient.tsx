@@ -43,8 +43,10 @@ export function MedicationsClient({ initialMeds }: Props) {
   const [stockOpen, setStockOpen] = useState(false);
   const [selectedMed, setSelectedMed] = useState<EnrichedMed | null>(null);
   const [stockMode, setStockMode] = useState<StockMode>("restock");
+  const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
+    setRefreshing(true);
     try {
       const res = await fetch("/api/medications");
       if (res.ok) {
@@ -53,6 +55,8 @@ export function MedicationsClient({ initialMeds }: Props) {
       }
     } catch {
       // silent
+    } finally {
+      setRefreshing(false);
     }
   }, []);
 
@@ -129,6 +133,9 @@ export function MedicationsClient({ initialMeds }: Props) {
                     display: "flex",
                     gap: "8px",
                     flexWrap: "wrap",
+                    opacity: refreshing ? 0.5 : 1,
+                    pointerEvents: refreshing ? "none" : "auto",
+                    transition: "opacity 200ms ease",
                   }}
                 >
                   <Button
@@ -136,7 +143,8 @@ export function MedicationsClient({ initialMeds }: Props) {
                     size="sm"
                     icon={<Package size={14} />}
                     onClick={() => openRestock(med)}
-                    style={{ flex: 1, minWidth: "100px" }}
+                    disabled={refreshing}
+                    style={{ flex: 1, minWidth: "100px", minHeight: "44px" }}
                   >
                     Repor
                   </Button>
@@ -145,7 +153,8 @@ export function MedicationsClient({ initialMeds }: Props) {
                     size="sm"
                     icon={<RefreshCw size={14} />}
                     onClick={() => openAdjust(med)}
-                    style={{ flex: 1, minWidth: "100px" }}
+                    disabled={refreshing}
+                    style={{ flex: 1, minWidth: "100px", minHeight: "44px" }}
                   >
                     Corrigir
                   </Button>
@@ -154,7 +163,8 @@ export function MedicationsClient({ initialMeds }: Props) {
                     size="sm"
                     icon={<Calendar size={14} />}
                     onClick={() => openSchedule(med)}
-                    style={{ flex: 1, minWidth: "140px" }}
+                    disabled={refreshing}
+                    style={{ flex: 1, minWidth: "140px", minHeight: "44px" }}
                   >
                     Agendamento
                   </Button>
@@ -162,6 +172,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                     <a
                       href={`/api/medications/${med.id}/calendar.ics`}
                       download
+                      aria-label={`Adicionar ${med.name} ao Google Agenda (baixar .ics)`}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -169,7 +180,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                         flex: 1,
                         minWidth: "140px",
                         padding: "0 12px",
-                        minHeight: "36px",
+                        minHeight: "44px",
                         fontSize: "var(--text-sm)",
                         fontFamily: "var(--font-body)",
                         fontWeight: "var(--fw-medium)" as unknown as number,

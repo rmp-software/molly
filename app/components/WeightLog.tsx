@@ -97,6 +97,7 @@ export function WeightLog({ initialEntries }: Props) {
   const [kgVal, setKgVal] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const deleteConfirmTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Only set today's date on the client (avoid SSR mismatch)
   useEffect(() => {
@@ -140,8 +141,12 @@ export function WeightLog({ initialEntries }: Props) {
   async function handleDelete(id: string) {
     if (deleteConfirm !== id) {
       setDeleteConfirm(id);
+      // Auto-reset confirm after 4 s if user doesn't confirm
+      if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
+      deleteConfirmTimerRef.current = setTimeout(() => setDeleteConfirm(null), 4000);
       return;
     }
+    if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
     setDeleteConfirm(null);
     try {
       const res = await fetch(`/api/weight/${id}`, { method: "DELETE" });

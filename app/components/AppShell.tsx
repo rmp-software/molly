@@ -81,6 +81,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         style={{
           padding: "20px 20px 12px",
           fontFamily: "var(--font-display)",
+          maxWidth: "var(--app-max)",
+          width: "100%",
+          margin: "0 auto",
+          boxSizing: "border-box",
         }}
       >
         <h1
@@ -109,10 +113,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main scrollable area */}
       <main
+        aria-label="Conteúdo principal"
         style={{
           flex: 1,
           overflowY: "auto",
           paddingBottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 24px)",
+          maxWidth: "var(--app-max)",
+          width: "100%",
+          margin: "0 auto",
+          boxSizing: "border-box",
         }}
       >
         <LogSheetContext.Provider value={{ openLog: () => setLogOpen(true) }}>

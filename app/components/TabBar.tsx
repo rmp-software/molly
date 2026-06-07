@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 
 export interface TabItem {
   id: string;
@@ -60,28 +61,26 @@ export function TabBar({
 
   const renderTab = (item: TabItem) => {
     const isActive = item.id === active;
-    return (
-      <button
-        key={item.id}
-        aria-current={isActive ? "page" : undefined}
-        onClick={() => onChange(item.id)}
-        style={{
-          flex: 1,
-          background: "none",
-          border: 0,
-          cursor: "pointer",
-          minWidth: "var(--tap-min)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "3px",
-          color: isActive ? "var(--brand)" : "var(--fg-muted)",
-          padding: "6px 4px",
-          WebkitTapHighlightColor: "transparent",
-          transition: `color var(--dur-fast) var(--ease-standard)`,
-        }}
-      >
+    const tabStyle: React.CSSProperties = {
+      flex: 1,
+      background: "none",
+      border: 0,
+      cursor: "pointer",
+      minWidth: "var(--tap-min)",
+      minHeight: "var(--tap-min)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "3px",
+      color: isActive ? "var(--brand)" : "var(--fg-muted)",
+      padding: "6px 4px",
+      WebkitTapHighlightColor: "transparent",
+      transition: `color var(--dur-fast) var(--ease-standard)`,
+      textDecoration: "none",
+    };
+    const inner = (
+      <>
         <span
           style={{
             display: "inline-flex",
@@ -100,7 +99,20 @@ export function TabBar({
         >
           {item.label}
         </span>
-      </button>
+      </>
+    );
+    return (
+      <Link
+        key={item.id}
+        href={item.id}
+        aria-current={isActive ? "page" : undefined}
+        aria-label={item.label}
+        prefetch
+        style={tabStyle}
+        onClick={() => onChange(item.id)}
+      >
+        {inner}
+      </Link>
     );
   };
 
