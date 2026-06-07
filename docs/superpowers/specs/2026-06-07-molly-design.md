@@ -61,8 +61,23 @@ Refinements the prototype introduced (now in the spec):
 
 ## Out of scope / non-goals
 
-- Not a medical device; never prescribes. Multi-dog / multi-user not needed (modeled as a
-  Dog entity so it's not painted into a corner, but single dog/user in practice).
+- Not a medical device; never prescribes.
+
+## Extensibility (multi-dog / multi-user)
+
+v1 is single-user / single-dog, but must stay an *additive* migration away from multi-tenancy
+(spec `<extensibility>` section). Enablers baked into v1:
+- Every health record carries `dog_id` (all data already scoped to a Dog); Dog is a real entity.
+- All data access goes through a dog-scoped layer (`lib/scope.ts` `getActiveDogId()` + scoped
+  helpers) — never assume "the only dog". Adding a `userId` filter later is one place.
+- Alert recipient modeled so it can move from `ALERT_EMAIL_TO` (env) to per-user/per-dog settings.
+- Future multi-user: add `users` + `Dog.owner_user_id` + `dog_memberships` (role) join; cron
+  iterates recipients. No reshaping of health data.
+
+## Routing
+
+All route PATHS are English (`/seizures/[id]`, `/medications`, `/trends`, `/profile`,
+`/profile/report`); UI labels stay pt-BR. Seizure logging is a bottom-sheet overlay (no page).
 
 ## Next
 

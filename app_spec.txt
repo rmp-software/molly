@@ -16,6 +16,10 @@
     This is a personal tool, not a clinical/medical device. It never prescribes — it surfaces
     information (counts, trends, mg/kg, soft hints) for the owner to discuss with their vet.
 
+    v1 is single-user / single-dog, but is built so multi-dog and multi-user are additive migrations,
+    not rewrites (every health record carries dog_id; data access goes through a dog-scoped layer).
+    See the extensibility section.
+
     All code, database fields, API routes, and identifiers must be in English.
     All user-facing UI text and the vet report export must be in Brazilian Portuguese (pt-BR).
 
@@ -27,9 +31,10 @@
   <technology_stack>
     <frontend_and_backend>
       <framework>Next.js 14+ (App Router) — server components + client components as needed</framework>
-      <styling>Tailwind CSS with a Molly design system as CSS variables (see design_system section — TBD)</styling>
-      <icons>Lucide React</icons>
-      <fonts>TBD via the design session (loaded with next/font/local from /public/fonts/)</fonts>
+      <styling>Tailwind CSS with the Molly design system as CSS variables (see design_system section)</styling>
+      <icons>Lucide React (outline)</icons>
+      <fonts>Bricolage Grotesque (display), Hanken Grotesk (body), IBM Plex Mono (numbers) — Google Fonts,
+        loaded via next/font/google as --font-display / --font-body / --font-mono</fonts>
       <pwa>Installable PWA: web app manifest + app icons. Mobile-first, add-to-home-screen.</pwa>
       <port>3000 in local development</port>
     </frontend_and_backend>
@@ -87,7 +92,9 @@
     </home_dashboard>
 
     <seizure_log>
-      - Route: /crises
+      - Routes: logging is a bottom sheet overlay (no dedicated page), reachable anywhere via the
+        "Registrar crise" action / center "Crise" FAB. Episode history lives on /trends; an individual
+        episode opens at /seizures/[id] for view/edit. (All route PATHS are English; UI labels are pt-BR.)
       - Fast logging path (a bottom sheet, one-handed; lead copy "Respire. Vou guardar tudo pra você —
         pode ajustar os detalhes depois."):
           * "Registrar crise" / center "Crise" FAB opens the sheet pre-filled with the current date/time
@@ -108,7 +115,7 @@
     </seizure_log>
 
     <seizure_trends>
-      - Route: /crises (dashboard section) — date-range filter: 3m | 6m | 12m | tudo.
+      - Route: /trends (the "Tendências" tab) — date-range filter: 3m | 6m | 12m | tudo.
       - Frequency over time: bar chart of seizures per week and per month (toggle).
       - Medication-change markers: vertical markers overlaid on the frequency chart, one per
         MedicationSchedule.effective_from, labeled with the med + change (e.g. "Fenobarbital ½ → 1").
@@ -121,7 +128,7 @@
     </seizure_trends>
 
     <medication_management>
-      - Route: /remedios — header "Remédios" / "Estoque e doses".
+      - Route: /medications (the "Remédios" tab) — header "Remédios" / "Estoque e doses".
       - Overview strip at top: three counts — "em dia" (success), "reabastecer" (warning),
         "acabando" (danger).
       - Medication list: one MedStatusCard per active medication, color-coded by status (with icon+label,
@@ -166,7 +173,7 @@
     </medication_management>
 
     <weight_and_dosing>
-      - Route: /molly (the profile tab, or a sub-page) — simple weight log (WeightEntry: date, weight_kg)
+      - Route: /profile (the "Molly" tab, or a sub-page) — simple weight log (WeightEntry: date, weight_kg)
         with a trend sparkline.
       - On medication cards with strength_mg set, show mg/kg = (units_per_dose_per_day × strength_mg) / latest_weight_kg.
       - Soft "possível subdosagem" hint when weight has risen enough that mg/kg dropped below a prior level.
@@ -174,7 +181,7 @@
     </weight_and_dosing>
 
     <vet_report_export>
-      - Route: /molly/relatorio — pick a date range, generate a pt-BR report containing:
+      - Route: /profile/report — pick a date range, generate a pt-BR report containing:
           * Dog info + latest weight.
           * Seizure history table (date/time, type, duration, severity, cluster flag, notes) for the range.
           * Summary stats: total episodes, frequency (per month), longest seizure-free streak, type/severity breakdown.
@@ -537,6 +544,49 @@
     </daily_restock_digest>
   </key_interactions>
 
+  <extensibility>
+    <!--
+      v1 is single-user / single-dog, but the data model and code must NOT bake in that assumption so
+      multi-dog and multi-user become additive migrations (not rewrites). The goal is "possible without
+      a rewrite", not "easy in v1".
+    -->
+
+    <already_in_place>
+      - Every health record (weight_entries, seizure_episodes, medications → schedules/stock) carries a
+        dog_id FK. All health data is therefore already scoped to a Dog; nothing is a loose global.
+      - The Dog is a real entity (not hard-coded constants), and auth already runs through NextAuth (a
+        real user/session concept), so adding more dogs/users is adding rows + filters, not reshaping data.
+    </already_in_place>
+
+    <v1_rules_that_keep_the_door_open>
+      - Never assume "the only dog". Resolve the working dog through a single helper, e.g.
+        lib/scope.ts getActiveDogId() — in v1 it returns the sole Dog; later it returns the dog selected
+        in the session. UI/components take a dogId, never a singleton.
+      - Route ALL data access through a thin scoped layer (functions that require a dogId and, later, a
+        userId) instead of calling Prisma ad hoc per route. Adding the user filter later is then one place.
+      - Keep alerting config as data, not just env: ALERT_EMAIL_TO works for v1, but model the digest
+        recipient so it can move to per-user/per-dog settings without touching the cron logic.
+      - Don't encode "Molly" anywhere except seed data and copy that is explicitly about this dog.
+    </v1_rules_that_keep_the_door_open>
+
+    <future_multi_dog>
+      <!-- Single user, multiple dogs -->
+      - Remove the single-row assumption; add a dog switcher; persist the active dog in the session/cookie.
+      - getActiveDogId() returns the selection. No schema change required (dog_id already everywhere).
+    </future_multi_dog>
+
+    <future_multi_user>
+      <!-- Multiple owners, shared dogs (family, vet) -->
+      - Add a users table (NextAuth) + enable registration / invites; replace the seeded single user.
+      - Ownership/sharing: add Dog.owner_user_id, plus a dog_memberships join (user_id, dog_id,
+        role: owner | caregiver | viewer) for shared access.
+      - Access scoping: every scoped query filters dog_id ∈ {dogs the current user may access}. Because
+        access already goes through the scoped layer, this is a localized change.
+      - Per-user alerting: the daily cron iterates users/dogs and emails each recipient, instead of one
+        global ALERT_EMAIL_TO.
+    </future_multi_user>
+  </extensibility>
+
   <implementation_steps>
     <step number="1">
       <title>Project foundation</title>
@@ -546,7 +596,11 @@
         - PWA manifest + icons; mobile-first base layout with bottom tab nav.
         - NextAuth CredentialsProvider (single user), middleware protecting all non-auth routes.
         - Seed script: single user (ADMIN_EMAIL/ADMIN_PASSWORD) + the Dog (Molly).
-        - init.sh (compose up, install, prisma generate/migrate/seed). globals.css placeholder tokens.
+        - Scoped data layer (lib/scope.ts): getActiveDogId() (returns the sole Dog in v1) + dog-scoped
+          data-access helpers that all routes use, so multi-dog/multi-user stay additive (see extensibility).
+        - globals.css with the design-system tokens (from .design-system/.../project/tokens/*.css);
+          load fonts via next/font/google; tailwind.config.ts aliases the CSS variables.
+        - init.sh (compose up, install, prisma generate/migrate/seed).
       </tasks>
     </step>
     <step number="2">
@@ -599,7 +653,7 @@
     <step number="9">
       <title>Vet report export</title>
       <tasks>
-        - /molly/relatorio print-friendly pt-BR report (range) + episodes CSV export.
+        - /profile/report print-friendly pt-BR report (range) + episodes CSV export.
       </tasks>
     </step>
     <step number="10">
