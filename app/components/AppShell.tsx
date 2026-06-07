@@ -1,0 +1,156 @@
+"use client";
+
+import React, { createContext, useContext, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { TabBar } from "@/app/components/TabBar";
+import { Sheet } from "@/app/components/Sheet";
+import { Home, Pill, TrendingUp, PawPrint } from "lucide-react";
+import { LogSeizure } from "@/app/components/LogSeizure";
+
+// Context so child pages (e.g. Home) can open the log sheet without prop-drilling
+export interface LogSheetContextValue {
+  openLog: () => void;
+}
+
+export const LogSheetContext = createContext<LogSheetContextValue>({
+  openLog: () => {}, // safe no-op default
+});
+
+export function useLogSheet() {
+  return useContext(LogSheetContext);
+}
+
+const routeMeta: Record<string, { greet: string; sub: string }> = {
+  "/": { greet: "Olá", sub: "Está tudo bem com a Molly hoje" },
+  "/medications": { greet: "Remédios", sub: "Estoque e doses" },
+  "/trends": { greet: "Tendências", sub: "Histórico e padrões" },
+  "/profile": { greet: "Molly", sub: "Perfil e saúde" },
+};
+
+const tabItems = [
+  {
+    id: "/",
+    label: "Início",
+    icon: <Home size={22} />,
+  },
+  {
+    id: "/medications",
+    label: "Remédios",
+    icon: <Pill size={22} />,
+  },
+  {
+    id: "/trends",
+    label: "Tendências",
+    icon: <TrendingUp size={22} />,
+  },
+  {
+    id: "/profile",
+    label: "Molly",
+    icon: <PawPrint size={22} />,
+  },
+];
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [logOpen, setLogOpen] = useState(false);
+
+  const meta =
+    routeMeta[pathname] ??
+    Object.entries(routeMeta).find(([k]) => k !== "/" && pathname.startsWith(k))?.[1] ??
+    routeMeta["/"];
+
+  // Resolve the active tab: exact match for "/", prefix match for all others.
+  const activeTab =
+    tabItems.find((t) => t.id !== "/" && pathname.startsWith(t.id))?.id ??
+    (pathname === "/" ? "/" : tabItems[0].id);
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        minHeight: "100dvh",
+        background: "var(--bg)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Header */}
+      <header
+        className="no-print"
+        style={{
+          padding: "20px 20px 12px",
+          fontFamily: "var(--font-display)",
+          maxWidth: "var(--app-max)",
+          width: "100%",
+          margin: "0 auto",
+          boxSizing: "border-box",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "var(--text-2xl)",
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
+            color: "var(--fg)",
+            lineHeight: 1.1,
+          }}
+        >
+          {meta.greet}
+        </h1>
+        <p
+          style={{
+            margin: "4px 0 0",
+            fontSize: "var(--text-sm)",
+            color: "var(--fg-muted)",
+            fontFamily: "var(--font-body)",
+          }}
+        >
+          {meta.sub}
+        </p>
+      </header>
+
+      {/* Main scrollable area */}
+      <main
+        aria-label="Conteúdo principal"
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          paddingBottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 24px)",
+          maxWidth: "var(--app-max)",
+          width: "100%",
+          margin: "0 auto",
+          boxSizing: "border-box",
+        }}
+      >
+        <LogSheetContext.Provider value={{ openLog: () => setLogOpen(true) }}>
+          {children}
+        </LogSheetContext.Provider>
+      </main>
+
+      {/* TabBar */}
+      <TabBar
+        className="no-print"
+        items={tabItems}
+        active={activeTab}
+        onChange={(id) => router.push(id)}
+        fixed
+        centerAction={{
+          label: "Crise",
+          icon: <PawPrint size={24} />,
+          onClick: () => setLogOpen(true),
+        }}
+      />
+
+      {/* Log seizure sheet */}
+      <Sheet
+        open={logOpen}
+        onClose={() => setLogOpen(false)}
+        title="Registrar crise"
+      >
+        <LogSeizure open={logOpen} onClose={() => setLogOpen(false)} />
+      </Sheet>
+    </div>
+  );
+}

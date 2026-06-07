@@ -1,0 +1,156 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum SeizureType {
+  tonic_clonic
+  focal
+  absence
+  other
+}
+
+enum Severity {
+  mild
+  moderate
+  severe
+}
+
+enum MedCategory {
+  continuous
+  otc
+  compounded
+}
+
+enum MedForm {
+  pill
+  capsule
+  tablet
+}
+
+enum StockTxType {
+  restock
+  adjustment
+  consumption
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  @@map("users")
+}
+
+/// v1 is single-user/single-dog. Multi-user later adds Dog.ownerId + a membership join
+/// (additive — see app_spec.txt <extensibility>). Intentionally no userId FK yet.
+model Dog {
+  id               String    @id @default(uuid())
+  name             String
+  breed            String?
+  birthdate        DateTime? @db.Date
+  diagnosis        String?
+  vetName          String?   @map("vet_name")
+  emergencyContact String?   @map("emergency_contact")
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  weights     WeightEntry[]
+  seizures    SeizureEpisode[]
+  medications Medication[]
+
+  @@map("dogs")
+}
+
+model WeightEntry {
+  id         String   @id @default(uuid())
+  dogId      String   @map("dog_id")
+  measuredOn DateTime @db.Date @map("measured_on")
+  weightKg   Decimal  @db.Decimal(5, 2) @map("weight_kg")
+  createdAt  DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  dog Dog @relation(fields: [dogId], references: [id])
+
+  @@index([dogId])
+  @@map("weight_entries")
+}
+
+model SeizureEpisode {
+  id              String      @id @default(uuid())
+  dogId           String      @map("dog_id")
+  occurredAt      DateTime    @db.Timestamptz(6) @map("occurred_at")
+  type            SeizureType
+  durationSeconds Int?        @map("duration_seconds")
+  severity        Severity?
+  isCluster       Boolean     @default(false) @map("is_cluster")
+  rescueGiven     Boolean     @default(false) @map("rescue_given")
+  notes           String?
+  createdAt       DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  dog Dog @relation(fields: [dogId], references: [id])
+
+  @@index([dogId])
+  @@map("seizure_episodes")
+}
+
+model Medication {
+  id                 String      @id @default(uuid())
+  dogId              String      @map("dog_id")
+  name               String
+  category           MedCategory
+  form               MedForm
+  strengthMg         Decimal?    @db.Decimal(8, 2) @map("strength_mg")
+  reorderLeadTimeDays Int        @map("reorder_lead_time_days")
+  isActive           Boolean     @default(true) @map("is_active")
+  notes              String?
+  createdAt          DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt          DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  dog               Dog                  @relation(fields: [dogId], references: [id])
+  schedules         MedicationSchedule[]
+  stockTransactions StockTransaction[]
+
+  @@index([dogId])
+  @@map("medications")
+}
+
+model MedicationSchedule {
+  id            String    @id @default(uuid())
+  medicationId  String    @map("medication_id")
+  doseTimes     String[]  @map("dose_times")
+  unitsPerDose  Decimal   @db.Decimal(8, 2) @map("units_per_dose")
+  effectiveFrom DateTime  @db.Date @map("effective_from")
+  effectiveTo   DateTime? @db.Date @map("effective_to")
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  medication Medication @relation(fields: [medicationId], references: [id])
+
+  @@index([medicationId])
+  @@map("medication_schedules")
+}
+
+model StockTransaction {
+  id           String      @id @default(uuid())
+  medicationId String      @map("medication_id")
+  type         StockTxType
+  quantity     Decimal     @db.Decimal(8, 2)
+  occurredAt   DateTime    @db.Timestamptz(6) @map("occurred_at")
+  note         String?
+  createdAt    DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  medication Medication @relation(fields: [medicationId], references: [id])
+
+  @@index([medicationId])
+  @@map("stock_transactions")
+}
