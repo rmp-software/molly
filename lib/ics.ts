@@ -41,23 +41,36 @@ function formatDtstart(from: Date, doseTime: string): string {
 }
 
 /**
- * Fold long lines per RFC5545 §3.1: lines > 75 octets should be folded
- * with CRLF + single space. We fold at 75 chars (ASCII-only content here).
+ * Fold long lines per RFC5545 §3.1: lines > 75 octets must be folded
+ * with CRLF + single leading space. Measures length in UTF-8 bytes so
+ * multi-byte characters are never split across a fold boundary.
+ * First line: max 75 bytes; continuation lines: max 74 bytes of content
+ * (the leading space consumes 1 byte of the 75-octet limit).
  */
 function foldLine(line: string): string {
-  const maxLen = 75;
-  if (line.length <= maxLen) return line;
+  const enc = new TextEncoder();
+  if (enc.encode(line).length <= 75) return line;
+
+  const chars = [...line]; // iterate Unicode code points, not UTF-16 code units
   let result = "";
-  let pos = 0;
-  while (pos < line.length) {
-    if (pos === 0) {
-      result += line.slice(0, maxLen);
-      pos = maxLen;
+  let currentBytes = 0;
+  let currentChunk = "";
+  let firstSegment = true;
+  const limit = () => (firstSegment ? 75 : 74);
+
+  for (const ch of chars) {
+    const chBytes = enc.encode(ch).length;
+    if (currentBytes + chBytes > limit()) {
+      result += currentChunk;
+      currentChunk = "\r\n " + ch;
+      currentBytes = 1 + chBytes; // 1 byte for the leading space
+      firstSegment = false;
     } else {
-      result += "\r\n " + line.slice(pos, pos + maxLen - 1);
-      pos += maxLen - 1;
+      currentChunk += ch;
+      currentBytes += chBytes;
     }
   }
+  result += currentChunk;
   return result;
 }
 

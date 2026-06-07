@@ -63,6 +63,13 @@ export async function GET(
     );
   }
 
+  if (!active.doseTimes || active.doseTimes.length === 0) {
+    return new Response(JSON.stringify({ error: "no dose times" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const ics = buildDoseIcs({
     medName: med.name,
     doseTimes: active.doseTimes,

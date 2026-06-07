@@ -169,4 +169,56 @@ describe("buildDoseIcs", () => {
     });
     expect(ics).toContain("DURATION:PT15M");
   });
+
+  it("SUMMARY escapes backslashes in med name", () => {
+    const ics = buildDoseIcs({
+      medName: "Med\\name",
+      doseTimes: ["08:00"],
+      from: FROM,
+      uidSeed: "med-abc",
+    });
+    // Input backslash → escaped as \\, so SUMMARY value has \\name
+    expect(ics).toContain("SUMMARY:Med\\\\name");
+  });
+
+  it("folds a long med name at ≤75 bytes per physical line, continuation starts with space", () => {
+    // Name with em dash (—, 3 UTF-8 bytes each) + accented chars to push SUMMARY line past 75 bytes
+    // "SUMMARY:<longName> — dose" encodes to 83 bytes, so folding must occur
+    const longName = "Fenobarbital 100mg/5ml — Solução Oral Pediátrica Veterinária";
+    const ics = buildDoseIcs({
+      medName: longName,
+      doseTimes: ["08:00"],
+      from: FROM,
+      uidSeed: "med-abc",
+    });
+
+    const enc = new TextEncoder();
+    // Extract the physical lines that contain the SUMMARY (may be folded across multiple lines)
+    const physicalLines = ics.split("\r\n");
+    const summaryLineIdx = physicalLines.findIndex((l) => l.startsWith("SUMMARY:"));
+    expect(summaryLineIdx).toBeGreaterThanOrEqual(0);
+
+    // Collect all physical lines that belong to the folded SUMMARY block
+    const summaryLines: string[] = [physicalLines[summaryLineIdx]];
+    for (let i = summaryLineIdx + 1; i < physicalLines.length; i++) {
+      if (physicalLines[i].startsWith(" ")) {
+        summaryLines.push(physicalLines[i]);
+      } else {
+        break;
+      }
+    }
+
+    // Must have been folded (more than one physical line)
+    expect(summaryLines.length).toBeGreaterThan(1);
+
+    // Every physical line must be ≤75 bytes
+    for (const pl of summaryLines) {
+      expect(enc.encode(pl).length).toBeLessThanOrEqual(75);
+    }
+
+    // Every continuation line must start with a single space
+    for (const pl of summaryLines.slice(1)) {
+      expect(pl.startsWith(" ")).toBe(true);
+    }
+  });
 });
