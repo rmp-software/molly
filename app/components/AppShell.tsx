@@ -1,11 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { TabBar } from "@/app/components/TabBar";
 import { Sheet } from "@/app/components/Sheet";
 import { Home, Pill, TrendingUp, PawPrint } from "lucide-react";
 import { LogSeizure } from "@/app/components/LogSeizure";
+
+// Context so child pages (e.g. Home) can open the log sheet without prop-drilling
+export interface LogSheetContextValue {
+  openLog: () => void;
+}
+
+export const LogSheetContext = createContext<LogSheetContextValue>({
+  openLog: () => {}, // safe no-op default
+});
+
+export function useLogSheet() {
+  return useContext(LogSheetContext);
+}
 
 const routeMeta: Record<string, { greet: string; sub: string }> = {
   "/": { greet: "Olá", sub: "Está tudo bem com a Molly hoje" },
@@ -101,7 +114,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           paddingBottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 24px)",
         }}
       >
-        {children}
+        <LogSheetContext.Provider value={{ openLog: () => setLogOpen(true) }}>
+          {children}
+        </LogSheetContext.Provider>
       </main>
 
       {/* TabBar */}
