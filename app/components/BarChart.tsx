@@ -1,6 +1,22 @@
 "use client";
 
 import React from "react";
+import {
+  Bar,
+  BarChart as RBarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  ReferenceLine,
+  Cell,
+  LabelList,
+} from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/app/components/ui/chart";
 import { cn } from "@/lib/cn";
 
 export interface BarChartDataPoint {
@@ -25,138 +41,67 @@ export interface BarChartProps {
   style?: React.CSSProperties;
 }
 
+const config: ChartConfig = {
+  value: { label: "Crises", color: "var(--chart-bar)" },
+};
+
 export function BarChart({
   data = [],
   height = 160,
   showValues = true,
-  gridLines = 2,
   annotations = [],
   ariaLabel = "Frequência de crises ao longo do tempo",
-  className = "",
+  className,
   style,
 }: BarChartProps) {
-  const W = 320;
-  const H = height;
-  const padT = 16,
-    padB = 26,
-    padL = 4,
-    padR = 4;
-  const plotH = H - padT - padB;
-  const plotW = W - padL - padR;
-  const n = Math.max(data.length, 1);
-  const max = Math.max(1, ...data.map((d) => d.value));
-  const slot = plotW / n;
-  const barW = Math.min(slot * 0.56, 34);
-
-  const y = (v: number) => padT + plotH - (v / max) * plotH;
-  const cx = (i: number) => padL + slot * i + slot / 2;
-
-  const grid = Array.from({ length: gridLines }, (_, g) => {
-    const gv = Math.round((max / gridLines) * (g + 1));
-    return { gy: y(gv), gv };
-  });
-
   return (
-    <div className={cn("font-body w-full", className)} style={style}>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        role="img"
-        aria-label={ariaLabel}
-        className="block w-full h-auto overflow-visible"
-      >
-        {grid.map((g, i) => (
-          <g key={i}>
-            <line
-              x1={padL}
-              x2={W - padR}
-              y1={g.gy}
-              y2={g.gy}
-              stroke="var(--chart-grid)"
-              strokeWidth={1}
-            />
-            <text
-              x={W - padR}
-              y={g.gy - 3}
-              textAnchor="end"
-              fontSize={10}
-              fill="var(--fg-muted)"
-              fontFamily="var(--font-mono)"
-            >
-              {g.gv}
-            </text>
-          </g>
+    <ChartContainer
+      config={config}
+      className={cn("aspect-auto w-full", className)}
+      style={{ height, ...style }}
+      aria-label={ariaLabel}
+    >
+      <RBarChart data={data} margin={{ top: 18, right: 6, bottom: 4, left: 6 }}>
+        <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tick={{ fill: "var(--fg-muted)", fontSize: 11 }}
+        />
+        <YAxis hide domain={[0, "dataMax"]} />
+        {annotations.map((a, i) => (
+          <ReferenceLine
+            key={`ann-${i}-${a.index}`}
+            x={data[a.index]?.label}
+            stroke="var(--info)"
+            strokeDasharray="3 3"
+            strokeWidth={1.5}
+            label={{ value: a.label, fill: "var(--info)", fontSize: 10, position: "insideTopLeft" }}
+          />
         ))}
-        {annotations.map((a, i) => {
-          const ax = padL + slot * a.index;
-          return (
-            <g key={`ann-${i}`}>
-              <line
-                x1={ax}
-                x2={ax}
-                y1={padT - 8}
-                y2={padT + plotH}
-                stroke="var(--info)"
-                strokeWidth={1.5}
-                strokeDasharray="3 3"
-                opacity={0.7}
-              />
-              <text
-                x={ax + 4}
-                y={padT - 2}
-                fontSize={10}
-                fill="var(--info)"
-                fontWeight={600}
-              >
-                {a.label}
-              </text>
-            </g>
-          );
-        })}
-        {data.map((d, i) => {
-          const bx = cx(i) - barW / 2;
-          const by = y(d.value);
-          const bh = padT + plotH - by;
-          return (
-            <g key={i}>
-              <rect
-                x={bx}
-                y={by}
-                width={barW}
-                height={Math.max(bh, d.value > 0 ? 3 : 0)}
-                rx={5}
-                fill={d.highlight ? "var(--chart-bar-strong)" : "var(--chart-bar)"}
-                style={{
-                  transition: `height var(--dur-slow) var(--ease-out), y var(--dur-slow) var(--ease-out)`,
-                }}
-              />
-              {showValues && d.value > 0 && (
-                <text
-                  x={cx(i)}
-                  y={by - 6}
-                  textAnchor="middle"
-                  fontSize={11}
-                  fontWeight={600}
-                  fill="var(--fg-2)"
-                  fontFamily="var(--font-mono)"
-                  style={{ fontFeatureSettings: '"tnum" 1' }}
-                >
-                  {d.value}
-                </text>
-              )}
-              <text
-                x={cx(i)}
-                y={H - 8}
-                textAnchor="middle"
-                fontSize={11}
-                fill="var(--fg-muted)"
-                fontFamily="var(--font-body)"
-              >
-                {d.label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-    </div>
+        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+        <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+          {showValues && (
+            <LabelList
+              dataKey="value"
+              position="top"
+              offset={6}
+              fontSize={11}
+              fontWeight={600}
+              fill="var(--fg-2)"
+              formatter={(v: unknown) => (typeof v === "number" && v > 0 ? String(v) : "")}
+            />
+          )}
+          {data.map((d, i) => (
+            <Cell
+              key={i}
+              fill={d.highlight ? "var(--chart-bar-strong)" : "var(--chart-bar)"}
+            />
+          ))}
+        </Bar>
+      </RBarChart>
+    </ChartContainer>
   );
 }
