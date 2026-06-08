@@ -196,7 +196,7 @@ Prisma rows ──► (server page OR /api/seizures/stats)
 
 ## Testing
 
-Vitest (`lib/stats.test.ts`, new `lib/trends.test.ts`):
+### Unit — Vitest (`lib/stats.test.ts`, new `lib/trends.test.ts`)
 
 - `perPeriodByType`: counts split correctly per type per bucket; total = sum;
   out-of-range excluded; week vs month parity with `perPeriod` totals.
@@ -210,6 +210,32 @@ Vitest (`lib/stats.test.ts`, new `lib/trends.test.ts`):
   durationSeries length == series length).
 - Edges: single episode, all-null durations, empty input, 1-bucket range.
 
-Gates: `npm test` green, `npx tsc --noEmit` clean, no new lint warnings, manual
-check on `/trends` and `/profile/report` (stacked bars, 1-min line, delta card,
-"All" floored).
+### E2E + visual — Playwright (required for every UI change, not optional)
+
+Unit/JS tests on pure functions are necessary but **not sufficient** — they never
+prove the chart actually rendered, the legend laid out, or the layout didn't break.
+Drive the running app and verify visually:
+
+- Seed a deterministic fixture dataset covering the cases the charts must show:
+  multiple types in one period (stacked bars), tônico-clônica durations both under
+  and **≥ 60s** (threshold line + danger dots + emergency count), at least one empty
+  bucket (line gap), and an episode near `EPISODE_HISTORY_START` (to exercise "All").
+- On `/trends`, for each range chip (3m / 6m / 12m / **Tudo**) and bucket toggle
+  (Mês / Semana):
+  - assert the stacked frequency chart renders with one legend entry **per present
+    type only** (zero types absent);
+  - assert the by-type summary lists the same present types;
+  - assert the duration chart shows the 1-min reference line and that points ≥ 60s
+    are styled as emergencies; assert the delta stat card text
+    ("… vs anterior") and the "N acima de 1 min" line when applicable;
+  - assert **"Tudo"** does not render pre-2024 empty buckets.
+- On `/profile/report`, assert the "Duração das crises tônico-clônicas" block shows
+  avg / max / emergency count and the trend line.
+- **Capture screenshots** of `/trends` (each range) and `/profile/report` and review
+  them for layout/overflow/contrast — a passing assertion is not a passing render.
+- Run on the **WebKit (iPhone-emulated)** project as well as desktop, per the
+  CLAUDE.md iOS-rendering rule (native date inputs, etc.).
+
+Gates: `npm test` green · `npx tsc --noEmit` clean · no new lint warnings ·
+Playwright e2e green · screenshots captured and visually reviewed for `/trends`
+(all ranges) and `/profile/report`.
