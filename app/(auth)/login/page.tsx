@@ -46,34 +46,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        background: "var(--bg)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "380px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "32px",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "center" }}>
+    <main className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-[380px] flex flex-col gap-8">
+        <div className="flex justify-center">
           <Logo size="lg" badge />
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             label="Email"
             type="email"
@@ -92,15 +71,7 @@ export default function LoginPage() {
           />
 
           {error && (
-            <p
-              role="alert"
-              style={{
-                color: "var(--danger)",
-                fontSize: "var(--text-sm)",
-                fontFamily: "var(--font-body)",
-                margin: 0,
-              }}
-            >
+            <p role="alert" className="text-danger text-sm font-body m-0">
               {error}
             </p>
           )}

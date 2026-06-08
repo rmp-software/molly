@@ -8,6 +8,7 @@ import { ScheduleForm } from "@/app/components/ScheduleForm";
 import { StockDialog } from "@/app/components/StockDialog";
 import { Button } from "@/app/components/Button";
 import { Pill, Plus, Package, RefreshCw, Edit, Calendar, CalendarPlus } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { fmtNum } from "@/lib/format";
 import type { EnrichedMed } from "@/app/api/medications/enrich";
 
@@ -78,39 +79,17 @@ export function MedicationsClient({ initialMeds }: Props) {
   }
 
   return (
-    <div style={{ padding: "4px 0 8px" }}>
+    <div className="pt-1 pb-2">
       {/* Overview strip */}
       {meds.length > 0 && <MedOverviewStrip meds={meds} />}
 
       {/* Cards */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          padding: "0 18px",
-        }}
-      >
+      <div className="flex flex-col gap-3 px-[18px]">
         {meds.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "48px 20px",
-              color: "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-base)",
-            }}
-          >
-            <Pill
-              size={40}
-              style={{
-                color: "var(--border-strong)",
-                display: "block",
-                margin: "0 auto 12px",
-              }}
-            />
-            <p style={{ margin: "0 0 4px" }}>Nenhum remédio ainda.</p>
-            <p style={{ margin: 0, fontSize: "var(--text-sm)" }}>
+          <div className="text-center py-12 px-5 text-fg-muted font-body text-base">
+            <Pill size={40} className="text-border-strong block mx-auto mb-3" />
+            <p className="mt-0 mb-1">Nenhum remédio ainda.</p>
+            <p className="m-0 text-sm">
               Adicione o primeiro usando o botão abaixo.
             </p>
           </div>
@@ -121,7 +100,7 @@ export function MedicationsClient({ initialMeds }: Props) {
             const doseWithMgKg = mgKgLabel ? `${dose} · ${mgKgLabel}` : dose;
 
             return (
-              <div key={med.id} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div key={med.id} className="flex flex-col gap-2">
                 <MedStatusCard
                   name={med.name}
                   dose={doseWithMgKg}
@@ -133,14 +112,10 @@ export function MedicationsClient({ initialMeds }: Props) {
 
                 {/* Action buttons */}
                 <div
-                  style={{
-                    display: "flex",
-                    gap: "8px",
-                    flexWrap: "wrap",
-                    opacity: refreshing ? 0.5 : 1,
-                    pointerEvents: refreshing ? "none" : "auto",
-                    transition: "opacity 200ms ease",
-                  }}
+                  className={cn(
+                    "flex gap-2 flex-wrap transition-opacity duration-200",
+                    refreshing ? "opacity-50 pointer-events-none" : "opacity-100"
+                  )}
                 >
                   <Button
                     variant="secondary"
@@ -148,7 +123,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                     icon={<Package size={14} />}
                     onClick={() => openRestock(med)}
                     disabled={refreshing}
-                    style={{ flex: 1, minWidth: "100px", minHeight: "44px" }}
+                    className="flex-1 min-w-[100px] min-h-11"
                   >
                     Repor
                   </Button>
@@ -158,7 +133,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                     icon={<RefreshCw size={14} />}
                     onClick={() => openAdjust(med)}
                     disabled={refreshing}
-                    style={{ flex: 1, minWidth: "100px", minHeight: "44px" }}
+                    className="flex-1 min-w-[100px] min-h-11"
                   >
                     Corrigir
                   </Button>
@@ -168,7 +143,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                     icon={<Calendar size={14} />}
                     onClick={() => openSchedule(med)}
                     disabled={refreshing}
-                    style={{ flex: "1 1 100%", minHeight: "44px" }}
+                    className="flex-[1_1_100%] min-h-11"
                   >
                     Agendamento
                   </Button>
@@ -177,25 +152,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                       href={`/api/medications/${med.id}/calendar.ics`}
                       download
                       aria-label={`Adicionar ${med.name} ao Google Agenda (baixar .ics)`}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px",
-                        flex: "1 1 100%",
-                        minHeight: "44px",
-                        padding: "9px 14px",
-                        fontSize: "14px",
-                        fontFamily: "var(--font-body)",
-                        fontWeight: "var(--fw-bold)" as unknown as number,
-                        color: "var(--brand)",
-                        background: "var(--surface)",
-                        border: "1.5px solid var(--border-strong)",
-                        borderRadius: "var(--radius-pill)",
-                        textDecoration: "none",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
+                      className="flex items-center justify-center gap-1.5 flex-[1_1_100%] min-h-11 py-[9px] px-3.5 text-sm font-body font-bold text-brand bg-surface border-[1.5px] border-border-strong rounded-pill no-underline cursor-pointer whitespace-nowrap"
                     >
                       <CalendarPlus size={14} />
                       Adicionar ao Google Agenda
@@ -213,7 +170,7 @@ export function MedicationsClient({ initialMeds }: Props) {
           fullWidth
           icon={<Plus size={18} />}
           onClick={() => setAddOpen(true)}
-          style={{ marginTop: meds.length > 0 ? "4px" : "0" }}
+          className={meds.length > 0 ? "mt-1" : "mt-0"}
         >
           Adicionar remédio
         </Button>

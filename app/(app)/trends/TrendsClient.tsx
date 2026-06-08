@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Card } from "@/app/components/Card";
 import { FrequencyChart, type FrequencyChartSeries, type FrequencyChartMedChange } from "@/app/components/FrequencyChart";
 import { RecentEpisodes, type RecentEpisodeData } from "@/app/components/RecentEpisodes";
+import { cn } from "@/lib/cn";
 import { fmtNum } from "@/lib/format";
 import { Activity, Award, Calendar } from "lucide-react";
 
@@ -68,44 +69,18 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <Card padding="sm" style={{ textAlign: "center" }}>
-      <span style={{ color: "var(--brand)", display: "inline-flex" }}>{icon}</span>
-      <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontWeight: 600,
-          fontSize: "22px",
-          color: "var(--fg)",
-          marginTop: "6px",
-          lineHeight: 1,
-        }}
-      >
+    <Card padding="sm" className="text-center">
+      <span className="text-brand inline-flex">{icon}</span>
+      <div className="font-mono font-semibold text-xl text-fg mt-1.5 leading-none">
         {value}
         {unit && (
           <>
             {" "}
-            <span
-              style={{
-                fontSize: "12px",
-                color: "var(--fg-muted)",
-                fontFamily: "var(--font-body)",
-              }}
-            >
-              {unit}
-            </span>
+            <span className="text-xs text-fg-muted font-body">{unit}</span>
           </>
         )}
       </div>
-      <div
-        style={{
-          fontSize: "11px",
-          color: "var(--fg-muted)",
-          marginTop: "4px",
-          fontFamily: "var(--font-body)",
-        }}
-      >
-        {label}
-      </div>
+      <div className="text-2xs text-fg-muted mt-1 font-body">{label}</div>
     </Card>
   );
 }
@@ -126,21 +101,12 @@ function Chip({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      style={{
-        padding: "6px 14px",
-        borderRadius: "999px",
-        fontSize: "13px",
-        fontWeight: 600,
-        cursor: "pointer",
-        fontFamily: "var(--font-body)",
-        border: "1.5px solid",
-        borderColor: active ? "var(--brand)" : "var(--border-strong)",
-        background: active ? "var(--brand-soft, #ede9fe)" : "var(--surface)",
-        color: active ? "var(--brand-press, var(--brand))" : "var(--fg-2)",
-        minHeight: "44px",
-        display: "inline-flex",
-        alignItems: "center",
-      }}
+      className={cn(
+        "py-1.5 px-3.5 rounded-pill text-[13px] font-semibold cursor-pointer font-body border-[1.5px] min-h-11 inline-flex items-center",
+        active
+          ? "border-brand bg-brand-soft text-brand-press"
+          : "border-border-strong bg-surface text-fg-2"
+      )}
     >
       {children}
     </button>
@@ -225,78 +191,38 @@ export function TrendsClient({ initial, now }: Props) {
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "14px",
-        padding: "4px 18px 8px",
-        opacity: loading ? 0.55 : 1,
-        transition: "opacity 200ms ease",
-        pointerEvents: loading ? "none" : "auto",
-        position: "relative",
-      }}
+      className={cn(
+        "flex flex-col gap-3.5 pt-1 px-[18px] pb-2 relative transition-opacity duration-200",
+        loading ? "opacity-[0.55] pointer-events-none" : "opacity-100"
+      )}
       aria-busy={loading}
     >
       {/* Frequency chart card */}
       <Card padding="lg">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2px" }}>
-          <h3
-            style={{
-              margin: 0,
-              font: "600 17px var(--font-display)",
-              color: "var(--fg)",
-            }}
-          >
+        <div className="flex items-center justify-between mb-0.5">
+          <h3 className="m-0 font-display font-semibold text-[17px] text-fg">
             Frequência de crises
           </h3>
           {loading && (
             <span
               aria-label="Carregando"
-              style={{
-                width: "16px",
-                height: "16px",
-                borderRadius: "50%",
-                border: "2px solid var(--brand)",
-                borderTopColor: "transparent",
-                display: "inline-block",
-                animation: "molly-spin 0.7s linear infinite",
-                flexShrink: 0,
-              }}
+              className="w-4 h-4 rounded-full border-2 border-brand border-t-transparent inline-block shrink-0"
+              style={{ animation: "molly-spin 0.7s linear infinite" }}
             />
           )}
         </div>
-        <p
-          style={{
-            margin: "0 0 10px",
-            fontSize: "13px",
-            color: "var(--fg-muted)",
-            fontFamily: "var(--font-body)",
-          }}
-        >
+        <p className="mt-0 mb-2.5 text-[13px] text-fg-muted font-body">
           {rangeLabel}
         </p>
 
         {/* Range chips */}
-        <div
-          style={{
-            display: "flex",
-            gap: "6px",
-            flexWrap: "wrap",
-            marginBottom: "10px",
-          }}
-        >
+        <div className="flex gap-1.5 flex-wrap mb-2.5">
           {(["3m", "6m", "12m", "all"] as const).map((k) => (
             <Chip key={k} active={rangeKey === k} onClick={() => handleRangeChange(k)}>
               {k === "all" ? "Tudo" : k === "3m" ? "3m" : k === "6m" ? "6m" : "12m"}
             </Chip>
           ))}
-          <span
-            style={{
-              flex: 1,
-              borderLeft: "1px solid var(--border)",
-              margin: "0 4px",
-            }}
-          />
+          <span className="flex-1 border-l border-border mx-1" />
           <Chip active={bucket === "month"} onClick={() => handleBucketChange("month")}>
             Mês
           </Chip>
@@ -308,18 +234,10 @@ export function TrendsClient({ initial, now }: Props) {
         {hasAnyData ? (
           <FrequencyChart series={series} medChanges={medChanges} height={180} />
         ) : (
-          <div
-            style={{
-              padding: "32px 0",
-              textAlign: "center",
-              color: "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-sm)",
-            }}
-          >
+          <div className="py-8 text-center text-fg-muted font-body text-sm">
             Nenhuma crise registrada ainda.
             <br />
-            <span style={{ fontSize: "12px" }}>
+            <span className="text-xs">
               Use o botão + para registrar a primeira crise.
             </span>
           </div>
@@ -327,40 +245,28 @@ export function TrendsClient({ initial, now }: Props) {
       </Card>
 
       {/* Stat cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "10px",
-        }}
-      >
+      <div className="grid grid-cols-3 gap-2.5">
         <StatCard
           value={avgDisplay}
           label="média / mês"
-          icon={<Activity size={18} color="var(--brand)" />}
+          icon={<Activity size={18} className="text-brand" />}
         />
         <StatCard
           value={gapDisplay}
           unit={gapUnit}
           label="maior intervalo"
-          icon={<Award size={18} color="var(--brand)" />}
+          icon={<Award size={18} className="text-brand" />}
         />
         <StatCard
           value={totalDisplay}
           label={`total em ${currentYear}`}
-          icon={<Calendar size={18} color="var(--brand)" />}
+          icon={<Calendar size={18} className="text-brand" />}
         />
       </div>
 
       {/* Recent episodes card */}
       <Card padding="lg">
-        <h3
-          style={{
-            margin: "0 0 12px",
-            font: "600 17px var(--font-display)",
-            color: "var(--fg)",
-          }}
-        >
+        <h3 className="m-0 mb-3 font-display font-semibold text-[17px] text-fg">
           Registros recentes
         </h3>
         <RecentEpisodes episodes={recent} />
