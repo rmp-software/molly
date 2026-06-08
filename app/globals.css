@@ -294,6 +294,45 @@
   --radius-lg:   var(--radius-lg);
   --radius-xl:   var(--radius-xl);
   --radius-pill: var(--radius-pill);
+
+  /* Typography scale (custom — overrides Tailwind defaults where they differ) */
+  --text-2xs: 0.6875rem;
+  --text-xs:  0.75rem;
+  --text-sm:  0.875rem;
+  --text-base: 1rem;
+  --text-lg:  1.125rem;
+  --text-xl:  1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 4rem;
+
+  /* Line height */
+  --leading-tight:   1.08;
+  --leading-snug:    1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+
+  /* Letter spacing */
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-wider:  0.08em;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(53, 48, 39, 0.06);
+  --shadow-sm: 0 1px 3px rgba(53, 48, 39, 0.08), 0 1px 2px rgba(53, 48, 39, 0.05);
+  --shadow-md: 0 4px 12px rgba(53, 48, 39, 0.08), 0 2px 4px rgba(53, 48, 39, 0.05);
+  --shadow-lg: 0 12px 28px rgba(53, 48, 39, 0.12), 0 4px 10px rgba(53, 48, 39, 0.06);
+  --shadow-brand: 0 8px 20px rgba(178, 122, 34, 0.30);
+  --shadow-focus: var(--focus-ring-shadow);
+
+  /* Easing */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.32, 0.64, 1);
 }
 
 /* ---------- Keyframe animations -------------------------- */
@@ -315,6 +354,20 @@ select:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* ---------- Form controls -------------------------------- */
+/* Native date/time inputs report a large intrinsic min-width on iOS Safari
+   that ignores width:100% and overflows their container (cards, flex rows).
+   This shows up on real devices but not in desktop responsive mode. Cap the
+   width and allow them to shrink so they always stay inside their parent. */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"] {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ---------- Base styles ---------------------------------- */
