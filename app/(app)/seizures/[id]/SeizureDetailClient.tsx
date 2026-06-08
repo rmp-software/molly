@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, Minus, Plus } from "lucide-react";
 import { Card } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { Input, Textarea } from "@/app/components/Input";
@@ -309,10 +309,9 @@ export function SeizureDetailClient({ episode }: Props) {
                     display: "grid",
                     placeItems: "center",
                     flexShrink: 0,
-                    fontSize: "20px",
                   }}
                 >
-                  −
+                  <Minus size={18} />
                 </button>
                 <span
                   style={{
@@ -341,10 +340,9 @@ export function SeizureDetailClient({ episode }: Props) {
                     display: "grid",
                     placeItems: "center",
                     flexShrink: 0,
-                    fontSize: "20px",
                   }}
                 >
-                  +
+                  <Plus size={18} />
                 </button>
               </div>
             </div>

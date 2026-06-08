@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -18,44 +19,27 @@ export interface TextareaProps
   error?: string;
 }
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "var(--text-sm)",
-  fontWeight: "var(--fw-semibold)" as unknown as number,
-  color: "var(--fg-2)",
-  marginBottom: "6px",
-  fontFamily: "var(--font-body)",
-};
+const labelCls = "block text-sm font-semibold text-fg-2 mb-1.5 font-body";
 
-const inputBaseStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  minHeight: "48px",
-  padding: "12px 14px",
-  fontSize: "var(--text-base)",
-  fontFamily: "var(--font-body)",
-  color: "var(--fg)",
-  background: "var(--surface)",
-  border: "1.5px solid var(--border-strong)",
-  borderRadius: "var(--radius-md)",
-  outline: "none",
-  transition: `border-color var(--dur-fast) var(--ease-standard),
-    box-shadow var(--dur-fast) var(--ease-standard)`,
-  WebkitTapHighlightColor: "transparent",
-  boxSizing: "border-box",
-};
+// max-w-full + min-w-0 keep native date/time inputs from overflowing on iOS Safari.
+const inputBase =
+  "block w-full max-w-full min-w-0 min-h-12 px-3.5 py-3 text-base font-body text-fg " +
+  "bg-surface border-[1.5px] border-border-strong rounded-md outline-none " +
+  "transition-[border-color,box-shadow] duration-[140ms] ease-standard " +
+  "[-webkit-tap-highlight-color:transparent] " +
+  "focus:border-brand focus:shadow-focus";
 
-const hintStyle: React.CSSProperties = {
-  fontSize: "var(--text-xs)",
-  color: "var(--fg-muted)",
-  marginTop: "5px",
-  fontFamily: "var(--font-body)",
-};
+const errorCls = "border-danger focus:border-danger";
+const hintCls = "text-xs text-fg-muted mt-[5px] font-body";
+const errorTextCls = "text-xs text-danger mt-[5px] font-body";
 
-const errorStyle: React.CSSProperties = {
-  ...hintStyle,
-  color: "var(--danger)",
-};
+function useFieldIds(id: string | undefined, label: string | undefined) {
+  const inputId =
+    id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+  const errorId = inputId ? `${inputId}-error` : undefined;
+  const hintId = inputId ? `${inputId}-hint` : undefined;
+  return { inputId, errorId, hintId };
+}
 
 export function Input({
   label,
@@ -63,89 +47,54 @@ export function Input({
   error,
   leadingIcon,
   trailingIcon,
-  className = "",
-  style,
+  className,
   id,
   ...rest
 }: InputProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
-  const errorId = inputId ? `${inputId}-error` : undefined;
-  const hintId = inputId ? `${inputId}-hint` : undefined;
+  const { inputId, errorId, hintId } = useFieldIds(id, label);
   const describedBy =
-    [error && errorId, !error && hint && hintId].filter(Boolean).join(" ") || undefined;
+    [error && errorId, !error && hint && hintId].filter(Boolean).join(" ") ||
+    undefined;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className="flex flex-col">
       {label && (
-        <label htmlFor={inputId} style={labelStyle}>
+        <label htmlFor={inputId} className={labelCls}>
           {label}
         </label>
       )}
-      <div style={{ position: "relative" }}>
+      <div className="relative">
         {leadingIcon && (
-          <span
-            style={{
-              position: "absolute",
-              left: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "var(--fg-muted)",
-              display: "inline-flex",
-              pointerEvents: "none",
-            }}
-          >
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted inline-flex pointer-events-none">
             {leadingIcon}
           </span>
         )}
         <input
           id={inputId}
-          className={className}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          style={{
-            ...inputBaseStyle,
-            ...(leadingIcon ? { paddingLeft: "40px" } : {}),
-            ...(trailingIcon ? { paddingRight: "40px" } : {}),
-            ...(error ? { borderColor: "var(--danger)" } : {}),
-            ...style,
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = "var(--brand)";
-            e.currentTarget.style.boxShadow = "var(--focus-ring-shadow)";
-            rest.onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = error
-              ? "var(--danger)"
-              : "var(--border-strong)";
-            e.currentTarget.style.boxShadow = "none";
-            rest.onBlur?.(e);
-          }}
+          className={cn(
+            inputBase,
+            leadingIcon && "pl-10",
+            trailingIcon && "pr-10",
+            error && errorCls,
+            className
+          )}
           {...rest}
         />
         {trailingIcon && (
-          <span
-            style={{
-              position: "absolute",
-              right: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "var(--fg-muted)",
-              display: "inline-flex",
-              pointerEvents: "none",
-            }}
-          >
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted inline-flex pointer-events-none">
             {trailingIcon}
           </span>
         )}
       </div>
       {error && (
-        <span id={errorId} role="alert" style={errorStyle}>
+        <span id={errorId} role="alert" className={errorTextCls}>
           {error}
         </span>
       )}
       {!error && hint && (
-        <span id={hintId} style={hintStyle}>
+        <span id={hintId} className={hintCls}>
           {hint}
         </span>
       )}
@@ -157,60 +106,43 @@ export function Textarea({
   label,
   hint,
   error,
-  className = "",
-  style,
+  className,
   id,
   rows = 4,
   ...rest
 }: TextareaProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
-  const errorId = inputId ? `${inputId}-error` : undefined;
-  const hintId = inputId ? `${inputId}-hint` : undefined;
+  const { inputId, errorId, hintId } = useFieldIds(id, label);
   const describedBy =
-    [error && errorId, !error && hint && hintId].filter(Boolean).join(" ") || undefined;
+    [error && errorId, !error && hint && hintId].filter(Boolean).join(" ") ||
+    undefined;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className="flex flex-col">
       {label && (
-        <label htmlFor={inputId} style={labelStyle}>
+        <label htmlFor={inputId} className={labelCls}>
           {label}
         </label>
       )}
       <textarea
         id={inputId}
         rows={rows}
-        className={className}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        style={{
-          ...inputBaseStyle,
-          minHeight: "unset",
-          resize: "vertical",
-          lineHeight: "var(--lh-normal)",
-          ...(error ? { borderColor: "var(--danger)" } : {}),
-          ...style,
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "var(--brand)";
-          e.currentTarget.style.boxShadow = "var(--focus-ring-shadow)";
-          rest.onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = error
-            ? "var(--danger)"
-            : "var(--border-strong)";
-          e.currentTarget.style.boxShadow = "none";
-          rest.onBlur?.(e);
-        }}
+        className={cn(
+          inputBase,
+          "min-h-0 resize-y leading-normal",
+          error && errorCls,
+          className
+        )}
         {...rest}
       />
       {error && (
-        <span id={errorId} role="alert" style={errorStyle}>
+        <span id={errorId} role="alert" className={errorTextCls}>
           {error}
         </span>
       )}
       {!error && hint && (
-        <span id={hintId} style={hintStyle}>
+        <span id={hintId} className={hintCls}>
           {hint}
         </span>
       )}

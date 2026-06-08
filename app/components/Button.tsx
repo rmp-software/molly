@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -16,54 +17,30 @@ export interface ButtonProps
   iconOnly?: boolean;
 }
 
-const baseStyles: React.CSSProperties = {
-  fontFamily: "var(--font-body)",
-  fontWeight: "var(--fw-bold)" as unknown as number,
-  lineHeight: 1,
-  letterSpacing: "-0.005em",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: "var(--radius-pill)",
-  border: "1.5px solid transparent",
-  cursor: "pointer",
-  userSelect: "none",
-  whiteSpace: "nowrap",
-  transition: `background var(--dur-fast) var(--ease-standard),
-    border-color var(--dur-fast) var(--ease-standard),
-    color var(--dur-fast) var(--ease-standard),
-    transform var(--dur-fast) var(--ease-standard),
-    box-shadow var(--dur-fast) var(--ease-standard)`,
-  WebkitTapHighlightColor: "transparent",
-  textDecoration: "none",
+const base =
+  "inline-flex items-center justify-center font-body font-bold leading-none " +
+  "tracking-[-0.005em] rounded-pill border-[1.5px] border-transparent cursor-pointer " +
+  "select-none whitespace-nowrap no-underline " +
+  "transition-[background,border-color,color,transform,box-shadow] duration-[140ms] ease-standard " +
+  "[-webkit-tap-highlight-color:transparent]";
+
+const sizeMap: Record<ButtonSize, string> = {
+  sm: "min-h-10 px-3.5 py-[9px] text-sm gap-1.5",
+  md: "min-h-12 px-[18px] py-3 text-base gap-2",
+  lg: "min-h-14 px-6 py-4 text-lg gap-2.5",
 };
 
-const sizeMap: Record<ButtonSize, React.CSSProperties> = {
-  sm: { minHeight: "40px", padding: "9px 14px", fontSize: "14px", gap: "6px" },
-  md: { minHeight: "48px", padding: "12px 18px", fontSize: "16px", gap: "8px" },
-  lg: { minHeight: "56px", padding: "16px 24px", fontSize: "18px", gap: "10px" },
+const variantMap: Record<ButtonVariant, string> = {
+  primary: "bg-brand text-brand-on shadow-sm",
+  secondary: "bg-surface text-brand border-border-strong",
+  ghost: "bg-transparent text-fg",
+  destructive: "bg-danger text-[var(--neutral-0)] shadow-sm",
 };
 
-const variantMap: Record<ButtonVariant, React.CSSProperties> = {
-  primary: {
-    background: "var(--brand)",
-    color: "var(--brand-on)",
-    boxShadow: "var(--shadow-sm)",
-  },
-  secondary: {
-    background: "var(--surface)",
-    color: "var(--brand)",
-    borderColor: "var(--border-strong)",
-  },
-  ghost: {
-    background: "transparent",
-    color: "var(--fg)",
-  },
-  destructive: {
-    background: "var(--danger)",
-    color: "var(--neutral-0)",
-    boxShadow: "var(--shadow-sm)",
-  },
+const iconOnlyMap: Record<ButtonSize, string> = {
+  sm: "w-10 p-0 aspect-square",
+  md: "w-12 p-0 aspect-square",
+  lg: "w-14 p-0 aspect-square",
 };
 
 export function Button({
@@ -75,44 +52,32 @@ export function Button({
   icon,
   trailingIcon,
   iconOnly = false,
-  className = "",
+  className,
   children,
-  style,
   ...rest
 }: ButtonProps) {
-  const combinedStyle: React.CSSProperties = {
-    ...baseStyles,
-    ...sizeMap[size],
-    ...variantMap[variant],
-    ...(fullWidth ? { width: "100%" } : {}),
-    ...(iconOnly
-      ? {
-          padding: 0,
-          width: sizeMap[size].minHeight,
-          aspectRatio: "1",
-        }
-      : {}),
-    ...(disabled || loading ? { cursor: "not-allowed", opacity: 0.45 } : {}),
-    ...style,
-  };
-
   return (
     <button
-      className={className}
-      style={combinedStyle}
+      className={cn(
+        base,
+        sizeMap[size],
+        variantMap[variant],
+        fullWidth && "w-full",
+        iconOnly && iconOnlyMap[size],
+        (disabled || loading) && "cursor-not-allowed opacity-45",
+        className
+      )}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...rest}
     >
       {loading && <Spinner />}
       {!loading && icon && (
-        <span style={{ display: "inline-flex", flex: "none" }}>{icon}</span>
+        <span className="inline-flex flex-none">{icon}</span>
       )}
       {!iconOnly && children}
       {!loading && trailingIcon && (
-        <span style={{ display: "inline-flex", flex: "none" }}>
-          {trailingIcon}
-        </span>
+        <span className="inline-flex flex-none">{trailingIcon}</span>
       )}
     </button>
   );
@@ -122,16 +87,8 @@ function Spinner() {
   return (
     <span
       aria-hidden="true"
-      style={{
-        width: "1.15em",
-        height: "1.15em",
-        borderRadius: "50%",
-        border: "2.5px solid currentColor",
-        borderTopColor: "transparent",
-        display: "inline-block",
-        animation: "molly-spin 0.7s linear infinite",
-        opacity: 0.9,
-      }}
+      className="inline-block w-[1.15em] h-[1.15em] rounded-full border-[2.5px] border-current border-t-transparent opacity-90"
+      style={{ animation: "molly-spin 0.7s linear infinite" }}
     />
   );
 }

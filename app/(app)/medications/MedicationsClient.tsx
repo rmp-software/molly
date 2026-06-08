@@ -103,7 +103,11 @@ export function MedicationsClient({ initialMeds }: Props) {
           >
             <Pill
               size={40}
-              style={{ color: "var(--border-strong)", marginBottom: "12px" }}
+              style={{
+                color: "var(--border-strong)",
+                display: "block",
+                margin: "0 auto 12px",
+              }}
             />
             <p style={{ margin: "0 0 4px" }}>Nenhum remédio ainda.</p>
             <p style={{ margin: 0, fontSize: "var(--text-sm)" }}>
@@ -164,7 +168,7 @@ export function MedicationsClient({ initialMeds }: Props) {
                     icon={<Calendar size={14} />}
                     onClick={() => openSchedule(med)}
                     disabled={refreshing}
-                    style={{ flex: 1, minWidth: "140px", minHeight: "44px" }}
+                    style={{ flex: "1 1 100%", minHeight: "44px" }}
                   >
                     Agendamento
                   </Button>
@@ -176,21 +180,20 @@ export function MedicationsClient({ initialMeds }: Props) {
                       style={{
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                         gap: "6px",
-                        flex: 1,
-                        minWidth: "140px",
-                        padding: "0 12px",
+                        flex: "1 1 100%",
                         minHeight: "44px",
-                        fontSize: "var(--text-sm)",
+                        padding: "9px 14px",
+                        fontSize: "14px",
                         fontFamily: "var(--font-body)",
-                        fontWeight: "var(--fw-medium)" as unknown as number,
-                        color: "var(--fg-2)",
-                        background: "var(--surface-raised)",
+                        fontWeight: "var(--fw-bold)" as unknown as number,
+                        color: "var(--brand)",
+                        background: "var(--surface)",
                         border: "1.5px solid var(--border-strong)",
-                        borderRadius: "var(--radius-md)",
+                        borderRadius: "var(--radius-pill)",
                         textDecoration: "none",
                         cursor: "pointer",
-                        justifyContent: "center",
                         whiteSpace: "nowrap",
                       }}
                     >

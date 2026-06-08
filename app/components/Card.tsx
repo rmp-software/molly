@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export type CardVariant = "default" | "flat" | "raised" | "highlighted";
 export type CardPadding = "sm" | "md" | "lg";
@@ -19,41 +20,29 @@ export interface CardChipProps extends React.HTMLAttributes<HTMLSpanElement> {
   icon?: React.ReactNode;
 }
 
+const base =
+  "block border rounded-lg text-fg font-body " +
+  "transition-[box-shadow,transform,border-color] duration-[220ms] ease-standard";
+
 const paddingMap: Record<CardPadding, string> = {
-  sm: "14px",
-  md: "20px",
-  lg: "24px",
+  sm: "p-3.5",
+  md: "p-5",
+  lg: "p-6",
 };
 
-const variantStyles: Record<CardVariant, React.CSSProperties> = {
-  default: {
-    boxShadow: "var(--shadow-sm)",
-    borderColor: "var(--border)",
-    background: "var(--surface)",
-  },
-  flat: {
-    boxShadow: "none",
-    borderColor: "var(--border)",
-    background: "var(--surface)",
-  },
-  raised: {
-    boxShadow: "var(--shadow-md)",
-    borderColor: "transparent",
-    background: "var(--surface)",
-  },
-  highlighted: {
-    boxShadow: "none",
-    borderColor: "var(--gold-300)",
-    background: "var(--brand-soft)",
-  },
+const variantMap: Record<CardVariant, string> = {
+  default: "bg-surface border-border shadow-sm",
+  flat: "bg-surface border-border shadow-none",
+  raised: "bg-surface border-transparent shadow-md",
+  highlighted: "bg-brand-soft border-[var(--gold-300)] shadow-none",
 };
 
-const chipToneStyles: Record<CardTone, React.CSSProperties> = {
-  brand: { background: "var(--brand-soft)", color: "var(--brand)" },
-  ok: { background: "var(--success-soft)", color: "var(--success)" },
-  reorder: { background: "var(--warning-soft)", color: "var(--warning)" },
-  urgent: { background: "var(--danger-soft)", color: "var(--danger)" },
-  info: { background: "var(--info-soft)", color: "var(--info)" },
+const chipToneMap: Record<CardTone, string> = {
+  brand: "bg-brand-soft text-brand",
+  ok: "bg-success-soft text-success",
+  reorder: "bg-warning-soft text-warning",
+  urgent: "bg-danger-soft text-danger",
+  info: "bg-info-soft text-info",
 };
 
 export function Card({
@@ -61,30 +50,12 @@ export function Card({
   padding = "md",
   interactive = false,
   as: Tag = "div",
-  className = "",
+  className,
   children,
-  style,
   onClick,
   onKeyDown,
   ...rest
 }: CardProps) {
-  const cardStyle: React.CSSProperties = {
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius-lg)",
-    padding: paddingMap[padding],
-    color: "var(--fg)",
-    fontFamily: "var(--font-body)",
-    transition: `box-shadow var(--dur-base) var(--ease-standard),
-      transform var(--dur-fast) var(--ease-standard),
-      border-color var(--dur-base) var(--ease-standard)`,
-    ...(interactive
-      ? { cursor: "pointer", WebkitTapHighlightColor: "transparent" }
-      : {}),
-    ...variantStyles[variant],
-    ...style,
-  };
-
   // Only add keyboard a11y props when the element is a non-native-button div
   const isNativeButton = Tag === "button" || Tag === "a";
   const a11yProps =
@@ -104,9 +75,14 @@ export function Card({
 
   return (
     <Tag
-      className={className}
+      className={cn(
+        base,
+        paddingMap[padding],
+        variantMap[variant],
+        interactive && "cursor-pointer [-webkit-tap-highlight-color:transparent]",
+        className
+      )}
       data-card=""
-      style={cardStyle}
       onClick={onClick}
       {...a11yProps}
       {...rest}
@@ -119,23 +95,18 @@ export function Card({
 export function CardChip({
   tone = "brand",
   icon,
-  className = "",
-  style,
+  className,
   ...rest
 }: CardChipProps) {
-  const chipStyle: React.CSSProperties = {
-    width: "40px",
-    height: "40px",
-    borderRadius: "12px",
-    flex: "none",
-    display: "grid",
-    placeItems: "center",
-    ...chipToneStyles[tone],
-    ...style,
-  };
-
   return (
-    <span className={className} style={chipStyle} {...rest}>
+    <span
+      className={cn(
+        "w-10 h-10 rounded-xl flex-none grid place-items-center",
+        chipToneMap[tone],
+        className
+      )}
+      {...rest}
+    >
       {icon}
     </span>
   );
