@@ -357,10 +357,12 @@ select:focus-visible,
 }
 
 /* ---------- Form controls -------------------------------- */
-/* Native date/time inputs report a large intrinsic min-width on iOS Safari
-   that ignores width:100% and overflows their container (cards, flex rows).
-   This shows up on real devices but not in desktop responsive mode. Cap the
-   width and allow them to shrink so they always stay inside their parent. */
+/* Native date/time inputs overflow their container on iOS Safari: the platform
+   sizes them by the intrinsic width of their native control (the
+   ::-webkit-date-and-time-value pseudo-element), and width/max-width on the
+   element do NOT constrain that. This breaks layouts on real iPhones but is
+   invisible in desktop responsive mode (Chromium/desktop WebKit render a
+   different, well-behaved widget). */
 input[type="date"],
 input[type="datetime-local"],
 input[type="time"],
@@ -368,6 +370,31 @@ input[type="month"] {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* On touch devices (iOS Safari et al.) drop the native appearance so the
+   element's box constraints actually apply. Scoped to coarse pointers so
+   desktop keeps its native calendar-picker button. The native wheel picker
+   still opens on tap regardless of appearance. */
+@media (hover: none) and (pointer: coarse) {
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value,
+  input[type="month"]::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+    min-width: 0;
+  }
+  input::-webkit-datetime-edit {
+    padding: 0;
+  }
 }
 
 /* ---------- Base styles ---------------------------------- */
