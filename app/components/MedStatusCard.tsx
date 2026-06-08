@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export type MedStatus = "ok" | "reorder" | "urgent";
 
@@ -30,40 +31,28 @@ const PILL_LABELS: Record<MedStatus, string> = {
   urgent: "Acabando",
 };
 
-const chipToneStyle: Record<MedStatus, React.CSSProperties> = {
-  ok: { background: "var(--success-soft)", color: "var(--success)" },
-  reorder: { background: "var(--warning-soft)", color: "var(--warning)" },
-  urgent: { background: "var(--danger-soft)", color: "var(--danger)" },
+const chipToneClass: Record<MedStatus, string> = {
+  ok: "bg-success-soft text-success",
+  reorder: "bg-warning-soft text-warning",
+  urgent: "bg-danger-soft text-danger",
 };
 
-const daysNumColor: Record<MedStatus, string> = {
-  ok: "var(--success)",
-  reorder: "var(--warning)",
-  urgent: "var(--danger)",
+const daysNumClass: Record<MedStatus, string> = {
+  ok: "text-success",
+  reorder: "text-warning",
+  urgent: "text-danger",
 };
 
-const fillColor: Record<MedStatus, string> = {
-  ok: "var(--success)",
-  reorder: "var(--warning-accent)",
-  urgent: "var(--danger)",
+const fillClass: Record<MedStatus, string> = {
+  ok: "bg-success",
+  reorder: "bg-[var(--warning-accent)]",
+  urgent: "bg-danger",
 };
 
-const pillStyle: Record<MedStatus, React.CSSProperties> = {
-  ok: {
-    background: "var(--success-soft)",
-    color: "var(--success)",
-    borderColor: "var(--green-200)",
-  },
-  reorder: {
-    background: "var(--warning-soft)",
-    color: "var(--warning)",
-    borderColor: "var(--amber-300)",
-  },
-  urgent: {
-    background: "var(--danger-soft)",
-    color: "var(--danger)",
-    borderColor: "var(--red-200)",
-  },
+const pillClass: Record<MedStatus, string> = {
+  ok: "bg-success-soft text-success border-[var(--green-200)]",
+  reorder: "bg-warning-soft text-warning border-[var(--amber-300)]",
+  urgent: "bg-danger-soft text-danger border-[var(--red-200)]",
 };
 
 export function MedStatusCard({
@@ -76,7 +65,7 @@ export function MedStatusCard({
   chipIcon,
   pillLabel,
   onClick,
-  className = "",
+  className,
   style,
 }: MedStatusCardProps) {
   const st = status ?? deriveStatus(daysRemaining);
@@ -99,126 +88,61 @@ export function MedStatusCard({
 
   return (
     <div
-      className={className}
-      style={{
-        fontFamily: "var(--font-body)",
-        background: "var(--surface)",
-        border: `1px solid ${st === "urgent" ? "var(--red-200)" : "var(--border)"}`,
-        borderRadius: "var(--radius-lg)",
-        padding: "16px 18px",
-        boxShadow: "var(--shadow-sm)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        cursor: onClick ? "pointer" : undefined,
-        ...style,
-      }}
+      className={cn(
+        "font-body bg-surface rounded-lg py-4 px-[18px] shadow-sm flex flex-col gap-3 border",
+        st === "urgent" ? "border-[var(--red-200)]" : "border-border",
+        onClick && "cursor-pointer",
+        className
+      )}
+      style={style}
       {...interactiveProps}
     >
       {/* Top row */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+      <div className="flex items-center gap-3">
         {chipIcon && (
           <span
-            style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "12px",
-              flex: "none",
-              display: "grid",
-              placeItems: "center",
-              ...chipToneStyle[st],
-            }}
+            className={cn(
+              "w-[42px] h-[42px] rounded-[12px] flex-none grid place-items-center",
+              chipToneClass[st]
+            )}
           >
             {chipIcon}
           </span>
         )}
         <div>
-          <p
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 600,
-              fontSize: "18px",
-              color: "var(--fg)",
-              margin: 0,
-            }}
-          >
-            {name}
-          </p>
-          {dose && (
-            <p
-              style={{
-                fontSize: "13px",
-                color: "var(--fg-muted)",
-                margin: "1px 0 0",
-              }}
-            >
-              {dose}
-            </p>
-          )}
+          <p className="font-display font-semibold text-lg text-fg m-0">{name}</p>
+          {dose && <p className="text-[13px] text-fg-muted mt-px mb-0">{dose}</p>}
         </div>
-        <div
-          style={{ marginLeft: "auto", textAlign: "right", flex: "none" }}
-        >
+        <div className="ml-auto text-right flex-none">
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontFeatureSettings: '"tnum" 1, "zero" 1',
-              fontWeight: 600,
-              fontSize: "24px",
-              lineHeight: 1,
-              color: daysNumColor[st],
-            }}
+            className={cn(
+              "font-mono font-semibold text-[24px] leading-none [font-feature-settings:'tnum'_1,'zero'_1]",
+              daysNumClass[st]
+            )}
           >
             {daysRemaining}
           </div>
-          <div
-            style={{ fontSize: "11px", color: "var(--fg-muted)", marginTop: "2px" }}
-          >
+          <div className="text-2xs text-fg-muted mt-0.5">
             {daysRemaining === 1 ? "dia restante" : "dias restantes"}
           </div>
         </div>
       </div>
 
       {/* Stock track */}
-      <div
-        style={{
-          height: "7px",
-          borderRadius: "999px",
-          background: "var(--chart-track)",
-          overflow: "hidden",
-        }}
-      >
+      <div className="h-[7px] rounded-pill bg-chart-track overflow-hidden">
         <div
-          style={{
-            height: "100%",
-            borderRadius: "999px",
-            width: `${pct}%`,
-            background: fillColor[st],
-            transition: `width var(--dur-slow) var(--ease-out)`,
-          }}
+          className={cn("h-full rounded-pill transition-[width] duration-[360ms] ease-out", fillClass[st])}
+          style={{ width: `${pct}%` }}
         />
       </div>
 
       {/* Footer: status pill only (reorder action omitted per spec) */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-        }}
-      >
+      <div className="flex items-center gap-2.5">
         <span
-          style={{
-            fontWeight: "var(--fw-semibold)" as unknown as number,
-            fontSize: "12.5px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "5px 10px",
-            borderRadius: "var(--radius-pill)",
-            border: "1px solid transparent",
-            ...pillStyle[st],
-          }}
+          className={cn(
+            "font-semibold text-[12.5px] inline-flex items-center gap-1.5 py-[5px] px-2.5 rounded-pill border border-transparent",
+            pillClass[st]
+          )}
         >
           {icon}
           {label}

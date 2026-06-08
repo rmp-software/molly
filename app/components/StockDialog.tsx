@@ -18,14 +18,7 @@ interface Props {
   mode: Mode;
 }
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "var(--text-sm)",
-  fontWeight: "var(--fw-semibold)" as unknown as number,
-  color: "var(--fg-2)",
-  marginBottom: "6px",
-  fontFamily: "var(--font-body)",
-};
+const labelCls = "block text-sm font-semibold text-fg-2 mb-1.5 font-body";
 
 export function StockDialog({ open, onClose, onSaved, med, mode }: Props) {
   const toast = useToast();
@@ -98,47 +91,15 @@ export function StockDialog({ open, onClose, onSaved, med, mode }: Props) {
   return (
     <Sheet open={open} onClose={onClose} title={title}>
       {med && (
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "var(--text-sm)",
-              color: "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-            }}
-          >
-            Remédio: <strong style={{ color: "var(--fg)" }}>{med.name}</strong>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <p className="m-0 text-sm text-fg-muted font-body">
+            Remédio: <strong className="text-fg">{med.name}</strong>
           </p>
 
           {/* Current stock context */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "12px 14px",
-              background: "var(--bg)",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "var(--text-sm)",
-                color: "var(--fg-muted)",
-              }}
-            >
-              Estoque atual
-            </span>
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontWeight: 700,
-                fontSize: "18px",
-                color: "var(--fg)",
-              }}
-            >
+          <div className="flex items-center justify-between py-3 px-3.5 bg-bg rounded-md border border-border">
+            <span className="font-body text-sm text-fg-muted">Estoque atual</span>
+            <span className="font-mono font-bold text-lg text-fg">
               {currentDisplay}
             </span>
           </div>
@@ -155,7 +116,7 @@ export function StockDialog({ open, onClose, onSaved, med, mode }: Props) {
             />
           ) : (
             <div>
-              <label style={labelStyle}>Contagem atual (total em mãos)</label>
+              <label className={labelCls}>Contagem atual (total em mãos)</label>
               <Input
                 placeholder="Ex: 10"
                 inputMode="decimal"

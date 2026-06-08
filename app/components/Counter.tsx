@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export interface CounterProps {
   since: Date | string;
@@ -30,6 +31,9 @@ function pad(x: number) {
   return String(x).padStart(2, "0");
 }
 
+const unitClass =
+  "font-body text-[0.34em] font-medium text-fg-muted tracking-normal mr-2";
+
 export function Counter({
   since,
   eyebrow = "Desde a última crise",
@@ -37,7 +41,7 @@ export function Counter({
   sub,
   size = "md",
   live = true,
-  className = "",
+  className,
   style,
 }: CounterProps) {
   const start = React.useMemo(
@@ -68,27 +72,9 @@ export function Counter({
       : "—";
 
   return (
-    <div
-      className={className}
-      style={{
-        fontFamily: "var(--font-body)",
-        textAlign: "center",
-        ...style,
-      }}
-    >
+    <div className={cn("font-body text-center", className)} style={style}>
       {eyebrow && (
-        <p
-          style={{
-            fontSize: "13px",
-            fontWeight: "var(--fw-semibold)" as unknown as number,
-            color: "var(--fg-2)",
-            letterSpacing: "0.01em",
-            margin: "0 0 6px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
+        <p className="text-[13px] font-semibold text-fg-2 tracking-[0.01em] mt-0 mb-1.5 inline-flex items-center gap-1.5">
           {icon}
           {eyebrow}
         </p>
@@ -96,85 +82,32 @@ export function Counter({
       <div
         role="timer"
         aria-label={eyebrow ? `${eyebrow}: ${valueText}` : valueText}
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontFeatureSettings: '"tnum" 1, "zero" 1',
-          fontWeight: 600,
-          color: "var(--fg)",
-          lineHeight: 1,
-          letterSpacing: "-0.03em",
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "center",
-          gap: "4px",
-          flexWrap: "wrap",
-        }}
+        className="font-mono font-semibold text-fg leading-none tracking-[-0.03em] flex items-baseline justify-center gap-1 flex-wrap [font-feature-settings:'tnum'_1,'zero'_1]"
       >
         {now === null ? (
-          <span style={{ fontSize: numSize, color: "var(--fg-muted)" }}>—</span>
+          <span className="text-fg-muted" style={{ fontSize: numSize }}>
+            —
+          </span>
         ) : (
           <>
             {days > 0 && (
               <span>
                 <span style={{ fontSize: numSize }}>{days}</span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "0.34em",
-                    fontWeight: 500,
-                    color: "var(--fg-muted)",
-                    letterSpacing: 0,
-                    marginRight: "8px",
-                  }}
-                >
-                  {days === 1 ? "dia" : "dias"}
-                </span>
+                <span className={unitClass}>{days === 1 ? "dia" : "dias"}</span>
               </span>
             )}
             <span>
               <span style={{ fontSize: numSize }}>{pad(hours)}</span>
-              <span
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontSize: "0.34em",
-                  fontWeight: 500,
-                  color: "var(--fg-muted)",
-                  letterSpacing: 0,
-                  marginRight: "8px",
-                }}
-              >
-                h
-              </span>
+              <span className={unitClass}>h</span>
             </span>
             <span>
               <span style={{ fontSize: numSize }}>{pad(mins)}</span>
-              <span
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontSize: "0.34em",
-                  fontWeight: 500,
-                  color: "var(--fg-muted)",
-                  letterSpacing: 0,
-                  marginRight: "8px",
-                }}
-              >
-                min
-              </span>
+              <span className={unitClass}>min</span>
             </span>
           </>
         )}
       </div>
-      {sub && (
-        <p
-          style={{
-            fontSize: "13px",
-            color: "var(--fg-muted)",
-            margin: "8px 0 0",
-          }}
-        >
-          {sub}
-        </p>
-      )}
+      {sub && <p className="text-[13px] text-fg-muted mt-2 mb-0">{sub}</p>}
     </div>
   );
 }

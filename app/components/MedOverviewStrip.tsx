@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 import type { EnrichedMed } from "@/app/api/medications/enrich";
 
 interface Props {
@@ -10,42 +11,19 @@ interface Props {
 interface StatChipProps {
   count: number;
   label: string;
-  style: React.CSSProperties;
+  tone: string;
 }
 
-function StatChip({ count, label, style }: StatChipProps) {
+function StatChip({ count, label, tone }: StatChipProps) {
   return (
     <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "2px",
-        padding: "10px 8px",
-        borderRadius: "var(--radius-md)",
-        ...style,
-      }}
+      className={cn(
+        "flex-1 flex flex-col items-center gap-0.5 py-2.5 px-2 rounded-md",
+        tone
+      )}
     >
-      <span
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontWeight: 700,
-          fontSize: "22px",
-          lineHeight: 1,
-        }}
-      >
-        {count}
-      </span>
-      <span
-        style={{
-          fontFamily: "var(--font-body)",
-          fontSize: "11px",
-          fontWeight: 600,
-          textAlign: "center",
-          lineHeight: 1.3,
-        }}
-      >
+      <span className="font-mono font-bold text-xl leading-none">{count}</span>
+      <span className="font-body text-2xs font-semibold text-center leading-[1.3]">
         {label}
       </span>
     </div>
@@ -58,36 +36,17 @@ export function MedOverviewStrip({ meds }: Props) {
   const urgent = meds.filter((m) => m.status === "urgent").length;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "8px",
-        margin: "0 18px 14px",
-      }}
-    >
-      <StatChip
-        count={ok}
-        label="em dia"
-        style={{
-          background: "var(--success-soft)",
-          color: "var(--success)",
-        }}
-      />
+    <div className="flex gap-2 mx-[18px] mb-3.5">
+      <StatChip count={ok} label="em dia" tone="bg-success-soft text-success" />
       <StatChip
         count={reorder}
         label="reabastecer"
-        style={{
-          background: "var(--warning-soft)",
-          color: "var(--warning)",
-        }}
+        tone="bg-warning-soft text-warning"
       />
       <StatChip
         count={urgent}
         label="acabando"
-        style={{
-          background: "var(--danger-soft)",
-          color: "var(--danger)",
-        }}
+        tone="bg-danger-soft text-danger"
       />
     </div>
   );

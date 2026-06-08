@@ -101,7 +101,7 @@ export function CardChip({
   return (
     <span
       className={cn(
-        "w-10 h-10 rounded-xl flex-none grid place-items-center",
+        "w-10 h-10 rounded-[12px] flex-none grid place-items-center",
         chipToneMap[tone],
         className
       )}

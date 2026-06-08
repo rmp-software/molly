@@ -66,63 +66,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     (pathname === "/" ? "/" : tabItems[0].id);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        minHeight: "100dvh",
-        background: "var(--bg)",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="relative min-h-[100dvh] bg-bg flex flex-col">
       {/* Header */}
-      <header
-        className="no-print"
-        style={{
-          padding: "20px 20px 12px",
-          fontFamily: "var(--font-display)",
-          maxWidth: "var(--app-max)",
-          width: "100%",
-          margin: "0 auto",
-          boxSizing: "border-box",
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "var(--text-2xl)",
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            color: "var(--fg)",
-            lineHeight: 1.1,
-          }}
-        >
+      <header className="no-print pt-5 px-5 pb-3 font-display max-w-[var(--app-max)] w-full mx-auto box-border">
+        <h1 className="m-0 text-2xl font-bold tracking-tight text-fg leading-[1.1]">
           {meta.greet}
         </h1>
-        <p
-          style={{
-            margin: "4px 0 0",
-            fontSize: "var(--text-sm)",
-            color: "var(--fg-muted)",
-            fontFamily: "var(--font-body)",
-          }}
-        >
-          {meta.sub}
-        </p>
+        <p className="mt-1 mb-0 text-sm text-fg-muted font-body">{meta.sub}</p>
       </header>
 
       {/* Main scrollable area */}
       <main
         aria-label="Conteúdo principal"
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          paddingBottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 24px)",
-          maxWidth: "var(--app-max)",
-          width: "100%",
-          margin: "0 auto",
-          boxSizing: "border-box",
-        }}
+        className="flex-1 overflow-y-auto pb-[calc(var(--tabbar-h)+var(--safe-bottom)+24px)] max-w-[var(--app-max)] w-full mx-auto box-border"
       >
         <LogSheetContext.Provider value={{ openLog: () => setLogOpen(true) }}>
           {children}

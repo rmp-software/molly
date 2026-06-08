@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export interface BarChartDataPoint {
   label: string;
@@ -56,15 +57,12 @@ export function BarChart({
   });
 
   return (
-    <div
-      className={className}
-      style={{ fontFamily: "var(--font-body)", width: "100%", ...style }}
-    >
+    <div className={cn("font-body w-full", className)} style={style}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label={ariaLabel}
-        style={{ display: "block", width: "100%", height: "auto", overflow: "visible" }}
+        className="block w-full h-auto overflow-visible"
       >
         {grid.map((g, i) => (
           <g key={i}>
