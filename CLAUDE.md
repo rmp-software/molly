@@ -34,6 +34,29 @@ user-facing copy, layout, or the design system.
   per-render font sizes), SVG geometry, state-driven transforms, `@keyframes`
   animations, and `next/og` `ImageResponse` routes (Satori = inline only).
 
+## Dependencies (build-vs-buy)
+
+- **Buy commodity UI; build domain logic.** Before hand-rolling a *solved* problem
+  (modals/drawers, toasts, dialogs, charts, focus traps, animations), reach for an
+  established library. Keep domain logic (`lib/dosing`, `lib/stats`, `lib/schedule`,
+  `lib/stock`) bespoke — that's the product.
+- **shadcn/ui is the delivery mechanism for commodity UI.** Components live in
+  `app/components/ui/` (you own/customize the source). Add with
+  `npx shadcn@latest add <name>`. It's wired via `components.json` + an `@theme`
+  **alias layer** in `globals.css` that maps shadcn's `--color-*` tokens to Molly's
+  (`--bg`, `--fg`, `--brand`, …) so components inherit the warm theme.
+  - **Do NOT run a blind `shadcn init`** — it rewrites `globals.css`. The config is
+    already hand-wired; just `add`.
+  - `utils` alias points at `@/lib/cn` (not the shadcn default `@/lib/utils`).
+  - Currently in use: `drawer` (Vaul — backs `Sheet`), `sonner` (toasts — backs
+    `Toast`/`useToast`), `alert-dialog` (destructive confirms), `chart` (Recharts).
+- **Keep native form controls on mobile.** `<select>`, checkbox, and date/time inputs
+  use the native OS pickers (better UX on iOS) — do not replace them with JS
+  dropdowns.
+- **Evaluate, don't reflex-install.** Judge a library on maintenance/adoption, bundle
+  size, fit, a11y, and license; note the tradeoff. Recharts (~100KB) is the one heavy
+  dep — justified by interactive charts.
+
 ## Gotchas
 
 - **Tailwind Preflight sets `svg { display: block }`.** A bare lucide icon in a
