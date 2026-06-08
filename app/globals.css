@@ -110,6 +110,12 @@
   --chart-grid:       #E6E0D5;
   --chart-track:      #F0EADF;
 
+  /* Categorical seizure-type colors (mapped to palette ramps) */
+  --chart-type-tonic-clonic: var(--gold-400);  /* #CE9833 */
+  --chart-type-focal:        var(--blue-400);  /* #5891B5 */
+  --chart-type-absence:      var(--green-400); /* #45AC6C */
+  --chart-type-other:        var(--amber-300); /* #F8C947 */
+
   /* ---------- Typography tokens ---------------------------- */
   --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
   --font-body:    'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -243,6 +249,12 @@
   --chart-grid:       #3A3329;
   --chart-track:      #211D17;
 
+  /* Lighter ramp shades for legibility on the dark surface */
+  --chart-type-tonic-clonic: var(--gold-300);  /* #DEB055 */
+  --chart-type-focal:        var(--blue-300);  /* #7FAECB */
+  --chart-type-absence:      var(--green-300); /* #71C490 */
+  --chart-type-other:        var(--amber-200); /* #FBDD84 */
+
   --scrim: rgba(0, 0, 0, 0.6);
 }
 
@@ -281,6 +293,11 @@
   --color-chart-bar-strong: var(--chart-bar-strong);
   --color-chart-grid:       var(--chart-grid);
   --color-chart-track:      var(--chart-track);
+
+  --color-chart-type-tonic-clonic: var(--chart-type-tonic-clonic);
+  --color-chart-type-focal:        var(--chart-type-focal);
+  --color-chart-type-absence:      var(--chart-type-absence);
+  --color-chart-type-other:        var(--chart-type-other);
 
   /* Font families */
   --font-family-display: var(--font-display);
