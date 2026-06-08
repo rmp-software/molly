@@ -5,6 +5,7 @@ import { Sheet } from "@/app/components/Sheet";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
+import { cn } from "@/lib/cn";
 import { Plus, X } from "lucide-react";
 
 interface Props {
@@ -31,31 +32,12 @@ const CATEGORY_LEAD_DAYS: Record<string, number> = {
   otc: 3,
 };
 
-const selectStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  minHeight: "48px",
-  padding: "12px 14px",
-  fontSize: "var(--text-base)",
-  fontFamily: "var(--font-body)",
-  color: "var(--fg)",
-  background: "var(--surface)",
-  border: "1.5px solid var(--border-strong)",
-  borderRadius: "var(--radius-md)",
-  outline: "none",
-  WebkitTapHighlightColor: "transparent",
-  boxSizing: "border-box",
-  appearance: "none",
-};
+const labelCls = "block text-sm font-semibold text-fg-2 mb-1.5 font-body";
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "var(--text-sm)",
-  fontWeight: "var(--fw-semibold)" as unknown as number,
-  color: "var(--fg-2)",
-  marginBottom: "6px",
-  fontFamily: "var(--font-body)",
-};
+const fieldBase =
+  "block w-full max-w-full min-w-0 text-base font-body text-fg bg-surface " +
+  "border-[1.5px] border-border-strong rounded-md outline-none appearance-none " +
+  "[-webkit-tap-highlight-color:transparent]";
 
 export function MedForm({ open, onClose, onCreated }: Props) {
   const toast = useToast();
@@ -158,7 +140,7 @@ export function MedForm({ open, onClose, onCreated }: Props) {
 
   return (
     <Sheet open={open} onClose={handleClose} title="Adicionar remédio">
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Nome */}
         <Input
           label="Nome"
@@ -170,9 +152,9 @@ export function MedForm({ open, onClose, onCreated }: Props) {
 
         {/* Categoria */}
         <div>
-          <label style={labelStyle}>Categoria</label>
+          <label className={labelCls}>Categoria</label>
           <select
-            style={selectStyle}
+            className={cn(fieldBase, "min-h-12 py-3 px-3.5")}
             value={category}
             onChange={(e) => handleCategoryChange(e.target.value)}
           >
@@ -186,9 +168,9 @@ export function MedForm({ open, onClose, onCreated }: Props) {
 
         {/* Forma */}
         <div>
-          <label style={labelStyle}>Forma</label>
+          <label className={labelCls}>Forma</label>
           <select
-            style={selectStyle}
+            className={cn(fieldBase, "min-h-12 py-3 px-3.5")}
             value={form}
             onChange={(e) => setForm(e.target.value)}
           >
@@ -220,38 +202,22 @@ export function MedForm({ open, onClose, onCreated }: Props) {
 
         {/* Horários */}
         <div>
-          <label style={labelStyle}>Horários de dose</label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <label className={labelCls}>Horários de dose</label>
+          <div className="flex flex-col gap-2">
             {doseTimes.map((t, idx) => (
-              <div key={idx} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <div key={idx} className="flex gap-2 items-center">
                 <input
                   type="time"
                   value={t}
                   onChange={(e) => updateTime(idx, e.target.value)}
-                  style={{
-                    ...selectStyle,
-                    flex: 1,
-                    minHeight: "44px",
-                    padding: "10px 12px",
-                  }}
+                  className={cn(fieldBase, "flex-1 min-h-11 py-2.5 px-3")}
                 />
                 {doseTimes.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeTime(idx)}
                     aria-label="Remover horário"
-                    style={{
-                      background: "var(--danger-soft)",
-                      border: "none",
-                      borderRadius: "var(--radius-md)",
-                      color: "var(--danger)",
-                      width: "44px",
-                      height: "44px",
-                      display: "grid",
-                      placeItems: "center",
-                      cursor: "pointer",
-                      flex: "none",
-                    }}
+                    className="bg-danger-soft border-none rounded-md text-danger w-11 h-11 grid place-items-center cursor-pointer flex-none"
                   >
                     <X size={16} />
                   </button>

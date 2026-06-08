@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { cn } from "@/lib/cn";
 
 export interface TabItem {
   id: string;
@@ -31,76 +32,14 @@ export function TabBar({
   onChange,
   centerAction,
   fixed = false,
-  className = "",
+  className,
 }: TabBarProps) {
   const mid = Math.ceil(items.length / 2);
   const left = centerAction ? items.slice(0, mid) : items;
   const right = centerAction ? items.slice(mid) : [];
 
-  const navStyle: React.CSSProperties = {
-    position: fixed ? "fixed" : "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: "var(--z-tabbar)" as unknown as number,
-    background: "color-mix(in srgb, var(--surface) 88%, transparent)",
-    WebkitBackdropFilter: "saturate(1.4) blur(14px)",
-    backdropFilter: "saturate(1.4) blur(14px)",
-    borderTop: "1px solid var(--border)",
-    paddingBottom: "var(--safe-bottom)",
-    fontFamily: "var(--font-body)",
-  };
-
-  const rowStyle: React.CSSProperties = {
-    height: "var(--tabbar-h)",
-    display: "flex",
-    alignItems: "stretch",
-    maxWidth: "var(--app-max)",
-    margin: "0 auto",
-  };
-
   const renderTab = (item: TabItem) => {
     const isActive = item.id === active;
-    const tabStyle: React.CSSProperties = {
-      flex: 1,
-      background: "none",
-      border: 0,
-      cursor: "pointer",
-      minWidth: "var(--tap-min)",
-      minHeight: "var(--tap-min)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "3px",
-      color: isActive ? "var(--brand)" : "var(--fg-muted)",
-      padding: "6px 4px",
-      WebkitTapHighlightColor: "transparent",
-      transition: `color var(--dur-fast) var(--ease-standard)`,
-      textDecoration: "none",
-    };
-    const inner = (
-      <>
-        <span
-          style={{
-            display: "inline-flex",
-            transition: `transform var(--dur-fast) var(--ease-spring)`,
-            transform: isActive ? "translateY(-1px)" : "none",
-          }}
-        >
-          {isActive && item.activeIcon ? item.activeIcon : item.icon}
-        </span>
-        <span
-          style={{
-            fontSize: "11px",
-            fontWeight: "var(--fw-semibold)" as unknown as number,
-            letterSpacing: "-0.01em",
-          }}
-        >
-          {item.label}
-        </span>
-      </>
-    );
     return (
       <Link
         key={item.id}
@@ -108,61 +47,55 @@ export function TabBar({
         aria-current={isActive ? "page" : undefined}
         aria-label={item.label}
         prefetch
-        style={tabStyle}
+        className={cn(
+          "flex-1 flex flex-col items-center justify-center gap-[3px] py-1.5 px-1 no-underline",
+          "min-w-[var(--tap-min)] min-h-[var(--tap-min)]",
+          "transition-colors duration-[140ms] ease-standard [-webkit-tap-highlight-color:transparent]",
+          isActive ? "text-brand" : "text-fg-muted"
+        )}
       >
-        {inner}
+        <span
+          className={cn(
+            "inline-flex transition-transform duration-[140ms] ease-spring",
+            isActive && "-translate-y-px"
+          )}
+        >
+          {isActive && item.activeIcon ? item.activeIcon : item.icon}
+        </span>
+        <span className="text-[11px] font-semibold tracking-[-0.01em]">
+          {item.label}
+        </span>
       </Link>
     );
   };
 
   return (
-    <nav className={className} style={navStyle}>
-      <div style={rowStyle}>
+    <nav
+      className={cn(
+        fixed ? "fixed" : "absolute",
+        "left-0 right-0 bottom-0 z-[var(--z-tabbar)] font-body",
+        "border-t border-border pb-[var(--safe-bottom)]",
+        "bg-[color-mix(in_srgb,var(--surface)_88%,transparent)]",
+        "[backdrop-filter:saturate(1.4)_blur(14px)] [-webkit-backdrop-filter:saturate(1.4)_blur(14px)]",
+        className
+      )}
+    >
+      <div className="h-[var(--tabbar-h)] flex items-stretch max-w-[var(--app-max)] mx-auto">
         {left.map(renderTab)}
         {centerAction && (
-          <div
-            style={{
-              flex: "none",
-              width: "78px",
-              position: "relative",
-            }}
-          >
+          <div className="flex-none w-[78px] relative">
             <button
               aria-label={centerAction.label}
               onClick={centerAction.onClick}
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "-22px",
-                transform: "translateX(-50%)",
-                width: "58px",
-                height: "58px",
-                borderRadius: "var(--radius-pill)",
-                background: "var(--brand)",
-                color: "var(--brand-on)",
-                border: "4px solid var(--surface)",
-                boxShadow: "var(--shadow-brand)",
-                cursor: "pointer",
-                display: "grid",
-                placeItems: "center",
-                transition: `background var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-spring)`,
-                WebkitTapHighlightColor: "transparent",
-              }}
+              className={cn(
+                "absolute left-1/2 -top-[22px] -translate-x-1/2 w-[58px] h-[58px] rounded-pill",
+                "bg-brand text-brand-on border-4 border-surface shadow-brand cursor-pointer grid place-items-center",
+                "transition-[background,transform] duration-[140ms] ease-spring [-webkit-tap-highlight-color:transparent]"
+              )}
             >
               {centerAction.icon}
             </button>
-            <span
-              style={{
-                position: "absolute",
-                top: "40px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                fontSize: "10.5px",
-                fontWeight: "var(--fw-bold)" as unknown as number,
-                color: "var(--brand)",
-                whiteSpace: "nowrap",
-              }}
-            >
+            <span className="absolute top-10 left-1/2 -translate-x-1/2 text-[10.5px] font-bold text-brand whitespace-nowrap">
               {centerAction.label}
             </span>
           </div>

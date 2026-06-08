@@ -56,62 +56,19 @@ export function NextDoseCard({ medName, at }: Props) {
   const countdown = now ? fmtCountdown(atDate, now) : "—";
 
   return (
-    <Card
-      variant="highlighted"
-      padding="md"
-      style={{ display: "flex", alignItems: "center", gap: "13px" }}
-    >
-      <span
-        style={{
-          width: "42px",
-          height: "42px",
-          borderRadius: "12px",
-          flex: "none",
-          display: "grid",
-          placeItems: "center",
-          background: "var(--surface)",
-          color: "var(--brand)",
-        }}
-      >
+    <Card variant="highlighted" padding="md" className="flex items-center gap-[13px]">
+      <span className="w-[42px] h-[42px] rounded-[12px] flex-none grid place-items-center bg-surface text-brand">
         <Pill size={21} />
       </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: "12.5px",
-            fontWeight: 600,
-            color: "var(--brand)",
-            fontFamily: "var(--font-body)",
-          }}
-        >
+      <div className="flex-1 min-w-0">
+        <div className="text-[12.5px] font-semibold text-brand font-body">
           Próxima dose
         </div>
-        <div
-          style={{
-            font: "700 17px/1.1 var(--font-display)",
-            color: "var(--fg)",
-            marginTop: "2px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <div className="font-display font-bold text-[17px] leading-[1.1] text-fg mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
           {medName} · {doseLabel}
         </div>
       </div>
-      <span
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontWeight: 600,
-          fontSize: "13px",
-          color: "var(--brand)",
-          background: "var(--surface)",
-          padding: "5px 9px",
-          borderRadius: "999px",
-          flexShrink: 0,
-          whiteSpace: "nowrap",
-        }}
-      >
+      <span className="font-mono font-semibold text-[13px] text-brand bg-surface py-[5px] px-[9px] rounded-pill flex-none whitespace-nowrap">
         {countdown}
       </span>
     </Card>
@@ -120,28 +77,11 @@ export function NextDoseCard({ medName, at }: Props) {
 
 export function NextDoseCardEmpty() {
   return (
-    <Card
-      variant="flat"
-      padding="md"
-      style={{ display: "flex", alignItems: "center", gap: "13px", opacity: 0.6 }}
-    >
-      <span
-        style={{
-          width: "42px",
-          height: "42px",
-          borderRadius: "12px",
-          flex: "none",
-          display: "grid",
-          placeItems: "center",
-          background: "var(--surface-2, var(--surface))",
-          color: "var(--fg-muted)",
-        }}
-      >
+    <Card variant="flat" padding="md" className="flex items-center gap-[13px] opacity-60">
+      <span className="w-[42px] h-[42px] rounded-[12px] flex-none grid place-items-center bg-surface text-fg-muted">
         <Pill size={21} />
       </span>
-      <div style={{ fontFamily: "var(--font-body)", fontSize: "14px", color: "var(--fg-muted)" }}>
-        Nenhuma dose agendada
-      </div>
+      <div className="font-body text-sm text-fg-muted">Nenhuma dose agendada</div>
     </Card>
   );
 }

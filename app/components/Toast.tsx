@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { CheckCircle, AlertTriangle, Info, XCircle, X } from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export type ToastVariant = "success" | "warning" | "error" | "info";
 
@@ -31,40 +32,23 @@ export function useToast() {
   return ctx;
 }
 
-const variantStyle: Record<ToastVariant, React.CSSProperties> = {
-  success: {
-    background: "var(--success-soft)",
-    color: "var(--success)",
-    borderColor: "var(--green-200)",
-  },
-  warning: {
-    background: "var(--warning-soft)",
-    color: "var(--warning)",
-    borderColor: "var(--amber-300)",
-  },
-  error: {
-    background: "var(--danger-soft)",
-    color: "var(--danger)",
-    borderColor: "var(--red-200)",
-  },
-  info: {
-    background: "var(--info-soft)",
-    color: "var(--info)",
-    borderColor: "var(--blue-200)",
-  },
+const variantClass: Record<ToastVariant, string> = {
+  success: "bg-success-soft text-success border-[var(--green-200)]",
+  warning: "bg-warning-soft text-warning border-[var(--amber-300)]",
+  error: "bg-danger-soft text-danger border-[var(--red-200)]",
+  info: "bg-info-soft text-info border-[var(--blue-200)]",
 };
 
 const VariantIcon = ({ variant }: { variant: ToastVariant }) => {
-  const style = { width: "18px", height: "18px", flex: "none" };
   switch (variant) {
     case "success":
-      return <CheckCircle style={style} />;
+      return <CheckCircle size={18} className="flex-none" />;
     case "warning":
-      return <AlertTriangle style={style} />;
+      return <AlertTriangle size={18} className="flex-none" />;
     case "error":
-      return <XCircle style={style} />;
+      return <XCircle size={18} className="flex-none" />;
     default:
-      return <Info style={style} />;
+      return <Info size={18} className="flex-none" />;
   }
 };
 
@@ -74,40 +58,20 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
     <div
       role="status"
       aria-live="polite"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "12px 14px",
-        borderRadius: "var(--radius-md)",
-        border: "1px solid transparent",
-        boxShadow: "var(--shadow-md)",
-        fontFamily: "var(--font-body)",
-        fontSize: "var(--text-sm)",
-        fontWeight: "var(--fw-medium)" as unknown as number,
-        minWidth: "240px",
-        maxWidth: "360px",
-        animation: "molly-toast-in 220ms var(--ease-out) both",
-        ...variantStyle[variant],
-      }}
+      className={cn(
+        "flex items-center gap-2.5 py-3 px-3.5 rounded-md border border-transparent shadow-md",
+        "font-body text-sm font-medium min-w-[240px] max-w-[360px]",
+        variantClass[variant]
+      )}
+      // keyframe entry animation stays inline (no utility for @keyframes)
+      style={{ animation: "molly-toast-in 220ms var(--ease-out) both" }}
     >
       <VariantIcon variant={variant} />
-      <span style={{ flex: 1 }}>{toast.message}</span>
+      <span className="flex-1">{toast.message}</span>
       <button
         aria-label="Fechar"
         onClick={() => onDismiss(toast.id)}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "currentColor",
-          opacity: 0.6,
-          display: "grid",
-          placeItems: "center",
-          padding: "12px",
-          borderRadius: "4px",
-          flexShrink: 0,
-        }}
+        className="bg-transparent border-0 cursor-pointer text-current opacity-60 grid place-items-center p-3 rounded-[4px] flex-none"
       >
         <X size={15} />
       </button>
@@ -149,18 +113,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         createPortal(
           <div
             aria-label="Notificações"
-            style={{
-              position: "fixed",
-              bottom: "calc(var(--tabbar-h) + var(--safe-bottom) + 12px)",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: "var(--z-toast)" as unknown as number,
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-              alignItems: "center",
-              pointerEvents: toasts.length > 0 ? "auto" : "none",
-            }}
+            className={cn(
+              "fixed bottom-[calc(var(--tabbar-h)+var(--safe-bottom)+12px)] left-1/2 -translate-x-1/2 z-[var(--z-toast)]",
+              "flex flex-col gap-2 items-center",
+              toasts.length > 0 ? "pointer-events-auto" : "pointer-events-none"
+            )}
           >
             {toasts.map((t) => (
               <ToastItem key={t.id} toast={t} onDismiss={dismiss} />

@@ -6,6 +6,7 @@ import { Clock, Minus, Plus } from "lucide-react";
 import { Button } from "@/app/components/Button";
 import { Textarea } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
+import { cn } from "@/lib/cn";
 import { fmtDuration } from "@/lib/format";
 import {
   TYPE_OPTIONS,
@@ -25,6 +26,12 @@ function getNowLocalDatetimeValue(): string {
   const mi = pad(now.getMinutes());
   return `${y}-${mo}-${d}T${h}:${mi}`;
 }
+
+const fieldLabel = "block text-[13px] font-semibold text-fg-2 font-body mb-2";
+const chipBase =
+  "rounded-pill font-semibold cursor-pointer font-body inline-flex items-center border-[1.5px] transition-all duration-150";
+const chipSelected = "border-brand bg-brand-soft text-brand-press";
+const chipUnselected = "border-border-strong bg-surface text-fg-2";
 
 // --- Component Props --------------------------------------------------------
 interface LogSeizureProps {
@@ -129,114 +136,44 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+    <div className="flex flex-col">
       {/* Lead copy */}
-      <p
-        style={{
-          margin: "0 0 18px",
-          fontSize: "var(--text-sm)",
-          color: "var(--fg-muted)",
-          lineHeight: 1.5,
-          fontFamily: "var(--font-body)",
-        }}
-      >
+      <p className="mt-0 mb-[18px] text-sm text-fg-muted leading-normal font-body">
         Respire. Vou guardar tudo pra você — pode ajustar os detalhes depois.
       </p>
 
       {/* Time row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          padding: "12px 14px",
-          marginBottom: "16px",
-          background: "var(--bg)",
-          borderRadius: "var(--radius-md)",
-        }}
-      >
-        <Clock size={18} color="var(--brand)" />
-        <span
-          style={{
-            fontSize: "14.5px",
-            color: "var(--fg)",
-            fontWeight: 500,
-            fontFamily: "var(--font-body)",
-          }}
-        >
-          Agora
-        </span>
-        <div style={{ marginLeft: "auto" }}>
+      <div className="flex items-center gap-2.5 py-3 px-3.5 mb-4 bg-bg rounded-md">
+        <Clock size={18} className="text-brand" />
+        <span className="text-[14.5px] text-fg font-medium font-body">Agora</span>
+        <div className="ml-auto">
           <input
             type="datetime-local"
             aria-label="Data e hora da crise"
             value={occurredAt}
             max={maxDatetime || undefined}
             onChange={(e) => setOccurredAt(e.target.value)}
-            style={{
-              fontFamily: "var(--font-mono, monospace)",
-              fontWeight: 600,
-              color: "var(--fg)",
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              fontSize: "14px",
-              cursor: "pointer",
-            }}
+            className="font-mono font-semibold text-fg bg-transparent border-none outline-none text-sm cursor-pointer"
           />
         </div>
       </div>
 
       {/* Duration stepper */}
-      <label
-        style={{
-          fontSize: "13px",
-          fontWeight: 600,
-          color: "var(--fg-2)",
-          fontFamily: "var(--font-body)",
-          marginBottom: "8px",
-          display: "block",
-        }}
-      >
-        Duração
-      </label>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          marginBottom: "18px",
-        }}
-      >
+      <label className={fieldLabel}>Duração</label>
+      <div className="flex items-center gap-4 mb-[18px]">
         <button
           type="button"
           onClick={decrementDuration}
           aria-label="Menos 5 segundos"
-          style={{
-            width: "44px",
-            height: "44px",
-            borderRadius: "999px",
-            border: "1.5px solid var(--border-strong)",
-            background: "var(--surface)",
-            color: "var(--fg)",
-            cursor: "pointer",
-            display: "grid",
-            placeItems: "center",
-            flexShrink: 0,
-          }}
+          className="w-11 h-11 rounded-pill border-[1.5px] border-border-strong bg-surface text-fg cursor-pointer grid place-items-center shrink-0"
         >
           <Minus size={20} />
         </button>
         <div
-          style={{
-            flex: 1,
-            textAlign: "center",
-            fontFamily: "var(--font-mono, monospace)",
-            fontWeight: 600,
-            fontSize: "30px",
-            color: durationSecs > 0 ? "var(--fg)" : "var(--fg-muted)",
-            fontFeatureSettings: '"tnum" 1',
-          }}
+          className={cn(
+            "flex-1 text-center font-mono font-semibold text-[30px] [font-feature-settings:'tnum'_1]",
+            durationSecs > 0 ? "text-fg" : "text-fg-muted"
+          )}
         >
           {durationSecs > 0 ? fmtDuration(durationSecs) : "—"}
         </div>
@@ -244,68 +181,28 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
           type="button"
           onClick={incrementDuration}
           aria-label="Mais 5 segundos"
-          style={{
-            width: "44px",
-            height: "44px",
-            borderRadius: "999px",
-            border: "1.5px solid var(--border-strong)",
-            background: "var(--surface)",
-            color: "var(--fg)",
-            cursor: "pointer",
-            display: "grid",
-            placeItems: "center",
-            flexShrink: 0,
-          }}
+          className="w-11 h-11 rounded-pill border-[1.5px] border-border-strong bg-surface text-fg cursor-pointer grid place-items-center shrink-0"
         >
           <Plus size={20} />
         </button>
       </div>
 
       {/* Type chips */}
-      <label
-        style={{
-          fontSize: "13px",
-          fontWeight: 600,
-          color: "var(--fg-2)",
-          fontFamily: "var(--font-body)",
-          marginBottom: "8px",
-          display: "block",
-        }}
-      >
-        Tipo <span style={{ color: "var(--danger)" }}>*</span>
+      <label className={fieldLabel}>
+        Tipo <span className="text-danger">*</span>
       </label>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "8px",
-          marginBottom: "18px",
-        }}
-      >
+      <div className="flex flex-wrap gap-2 mb-[18px]">
         {TYPE_OPTIONS.map((t) => (
           <button
             key={t.id}
             type="button"
             aria-pressed={type === t.id}
             onClick={() => setType(t.id)}
-            style={{
-              padding: "10px 14px",
-              borderRadius: "999px",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "var(--font-body)",
-              minHeight: "44px",
-              display: "inline-flex",
-              alignItems: "center",
-              border: "1.5px solid",
-              borderColor: type === t.id ? "var(--brand)" : "var(--border-strong)",
-              background:
-                type === t.id ? "var(--brand-soft, #ede9fe)" : "var(--surface)",
-              color:
-                type === t.id ? "var(--brand-press, var(--brand))" : "var(--fg-2)",
-              transition: "all 0.15s ease",
-            }}
+            className={cn(
+              chipBase,
+              "py-2.5 px-3.5 text-sm min-h-11",
+              type === t.id ? chipSelected : chipUnselected
+            )}
           >
             {t.label}
           </button>
@@ -313,50 +210,18 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
       </div>
 
       {/* Severity segmented control */}
-      <label
-        style={{
-          fontSize: "13px",
-          fontWeight: 600,
-          color: "var(--fg-2)",
-          fontFamily: "var(--font-body)",
-          marginBottom: "8px",
-          display: "block",
-        }}
-      >
-        Intensidade
-      </label>
-      <div
-        style={{
-          display: "flex",
-          gap: "6px",
-          marginBottom: "18px",
-          flexWrap: "wrap",
-        }}
-      >
+      <label className={fieldLabel}>Intensidade</label>
+      <div className="flex gap-1.5 mb-[18px] flex-wrap">
         {/* None option */}
         <button
           type="button"
           aria-pressed={severity === null}
           onClick={() => setSeverity(null)}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "999px",
-            fontSize: "13px",
-            fontWeight: 600,
-            cursor: "pointer",
-            fontFamily: "var(--font-body)",
-            minHeight: "36px",
-            display: "inline-flex",
-            alignItems: "center",
-            border: "1.5px solid",
-            borderColor: severity === null ? "var(--brand)" : "var(--border-strong)",
-            background: severity === null ? "var(--brand-soft, #ede9fe)" : "var(--surface)",
-            color:
-              severity === null
-                ? "var(--brand-press, var(--brand))"
-                : "var(--fg-2)",
-            transition: "all 0.15s ease",
-          }}
+          className={cn(
+            chipBase,
+            "py-2 px-3 text-[13px] min-h-9",
+            severity === null ? chipSelected : chipUnselected
+          )}
         >
           Nenhuma
         </button>
@@ -366,27 +231,11 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
             type="button"
             aria-pressed={severity === s.id}
             onClick={() => setSeverity(s.id)}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "999px",
-              fontSize: "13px",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "var(--font-body)",
-              minHeight: "36px",
-              display: "inline-flex",
-              alignItems: "center",
-              border: "1.5px solid",
-              borderColor:
-                severity === s.id ? "var(--brand)" : "var(--border-strong)",
-              background:
-                severity === s.id ? "var(--brand-soft, #ede9fe)" : "var(--surface)",
-              color:
-                severity === s.id
-                  ? "var(--brand-press, var(--brand))"
-                  : "var(--fg-2)",
-              transition: "all 0.15s ease",
-            }}
+            className={cn(
+              chipBase,
+              "py-2 px-3 text-[13px] min-h-9",
+              severity === s.id ? chipSelected : chipUnselected
+            )}
           >
             {s.label}
           </button>
@@ -394,33 +243,18 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
       </div>
 
       {/* Rescue medication toggle */}
-      <label
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          padding: "12px 14px",
-          background: "var(--bg)",
-          borderRadius: "var(--radius-md)",
-          marginBottom: "18px",
-          cursor: "pointer",
-          fontFamily: "var(--font-body)",
-          fontSize: "var(--text-sm)",
-          color: "var(--fg)",
-          fontWeight: 500,
-        }}
-      >
+      <label className="flex items-center gap-3 py-3 px-3.5 bg-bg rounded-md mb-[18px] cursor-pointer font-body text-sm text-fg font-medium">
         <input
           type="checkbox"
           checked={rescueGiven}
           onChange={(e) => setRescueGiven(e.target.checked)}
-          style={{ width: "18px", height: "18px", accentColor: "var(--brand)", flexShrink: 0 }}
+          className="w-[18px] h-[18px] accent-brand shrink-0"
         />
         Medicação de resgate administrada
       </label>
 
       {/* Notes */}
-      <div style={{ marginBottom: "24px" }}>
+      <div className="mb-6">
         <Textarea
           label="Observações"
           placeholder="Estava dormindo, se recuperou rápido…"
@@ -431,7 +265,7 @@ export function LogSeizure({ open, onClose }: LogSeizureProps) {
       </div>
 
       {/* Buttons */}
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div className="flex gap-2.5">
         <Button
           type="button"
           variant="secondary"

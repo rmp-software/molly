@@ -3,6 +3,7 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export interface SheetProps {
   open: boolean;
@@ -51,24 +52,18 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   return createPortal(
     <div
       aria-hidden={!open}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: "var(--z-sheet)" as unknown as number,
-        pointerEvents: open ? "auto" : "none",
-        visibility: open ? "visible" : "hidden",
-      }}
+      className={cn(
+        "fixed inset-0 z-[var(--z-sheet)]",
+        open ? "pointer-events-auto visible" : "pointer-events-none invisible"
+      )}
     >
       {/* Scrim */}
       <div
         onClick={onClose}
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "var(--scrim)",
-          opacity: open ? 1 : 0,
-          transition: `opacity var(--dur-base) var(--ease-standard)`,
-        }}
+        className={cn(
+          "absolute inset-0 bg-[var(--scrim)] transition-opacity duration-[220ms] ease-standard",
+          open ? "opacity-100" : "opacity-0"
+        )}
       />
       {/* Sheet panel */}
       <div
@@ -77,78 +72,30 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         aria-modal
         tabIndex={-1}
         {...(title ? { "aria-labelledby": titleId } : { "aria-label": "Sheet" })}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "var(--surface)",
-          borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
-          paddingBottom: "var(--safe-bottom)",
-          boxShadow: "var(--shadow-lg)",
-          transform: open ? "translateY(0)" : "translateY(100%)",
-          transition: `transform var(--dur-base) var(--ease-out)`,
-          maxHeight: "90dvh",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className={cn(
+          "absolute left-0 right-0 bottom-0 bg-surface rounded-t-xl pb-[var(--safe-bottom)] shadow-lg",
+          "max-h-[90dvh] flex flex-col transition-transform duration-[220ms] ease-out",
+          open ? "translate-y-0" : "translate-y-full"
+        )}
       >
         {/* Grip handle */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            paddingTop: "12px",
-            paddingBottom: "4px",
-            flexShrink: 0,
-          }}
-        >
-          <span
-            style={{
-              width: "36px",
-              height: "4px",
-              borderRadius: "999px",
-              background: "var(--border-strong)",
-            }}
-          />
+        <div className="flex justify-center pt-3 pb-1 flex-none">
+          <span className="w-9 h-1 rounded-pill bg-border-strong" />
         </div>
 
         {/* Header */}
         {title && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "8px 20px 12px",
-              flexShrink: 0,
-            }}
-          >
+          <div className="flex items-center justify-between pt-2 px-5 pb-3 flex-none">
             <span
               id={titleId}
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 600,
-                fontSize: "var(--text-xl)",
-                color: "var(--fg)",
-              }}
+              className="font-display font-semibold text-xl text-fg"
             >
               {title}
             </span>
             <button
               aria-label="Fechar"
               onClick={onClose}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--fg-muted)",
-                display: "grid",
-                placeItems: "center",
-                padding: "12px",
-                borderRadius: "var(--radius-sm)",
-                WebkitTapHighlightColor: "transparent",
-              }}
+              className="bg-transparent border-none cursor-pointer text-fg-muted grid place-items-center p-3 rounded-sm [-webkit-tap-highlight-color:transparent]"
             >
               <X size={20} />
             </button>
@@ -157,11 +104,10 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
 
         {/* Content */}
         <div
-          style={{
-            padding: title ? "0 20px 24px" : "12px 20px 24px",
-            overflowY: "auto",
-            flex: 1,
-          }}
+          className={cn(
+            "overflow-y-auto flex-1 px-5 pb-6",
+            title ? "pt-0" : "pt-3"
+          )}
         >
           {children}
         </div>

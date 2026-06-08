@@ -65,7 +65,7 @@ function Sparkline({ entries }: { entries: WeightEntry[] }) {
       width={W}
       height={H}
       aria-hidden="true"
-      style={{ display: "block", flexShrink: 0 }}
+      className="block flex-none"
     >
       <polyline
         points={polyline}
@@ -164,23 +164,10 @@ export function WeightLog({ initialEntries }: Props) {
 
   return (
     <Card>
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div className="flex flex-col gap-4">
         {/* Header with sparkline */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: "var(--font-body)",
-              fontWeight: "var(--fw-semibold)" as unknown as number,
-              fontSize: "var(--text-base)",
-              color: "var(--fg)",
-            }}
-          >
+        <div className="flex items-center justify-between">
+          <span className="font-body font-semibold text-base text-fg">
             Histórico de peso
           </span>
           {entries.length >= 2 && <Sparkline entries={entries} />}
@@ -188,38 +175,17 @@ export function WeightLog({ initialEntries }: Props) {
 
         {/* Entry list */}
         {entries.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div className="flex flex-col gap-2">
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 12px",
-                  background: "var(--bg)",
-                  borderRadius: "var(--radius-md)",
-                  fontFamily: "var(--font-body)",
-                }}
+                className="flex items-center justify-between py-2.5 px-3 bg-bg rounded-md font-body"
               >
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: "2px" }}
-                >
-                  <span
-                    style={{
-                      fontSize: "var(--text-base)",
-                      fontWeight: "var(--fw-semibold)" as unknown as number,
-                      color: "var(--fg)",
-                    }}
-                  >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-base font-semibold text-fg">
                     {fmtKg(entry.weightKg)}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "var(--text-xs)",
-                      color: "var(--fg-muted)",
-                    }}
-                  >
+                  <span className="text-xs text-fg-muted">
                     {fmtDatePtBR(entry.measuredOn)}
                   </span>
                 </div>
@@ -244,25 +210,15 @@ export function WeightLog({ initialEntries }: Props) {
             ))}
           </div>
         ) : (
-          <p
-            style={{
-              color: "var(--fg-muted)",
-              fontSize: "var(--text-sm)",
-              fontFamily: "var(--font-body)",
-              margin: 0,
-            }}
-          >
+          <p className="text-fg-muted text-sm font-body m-0">
             Nenhum peso registrado.
           </p>
         )}
 
         {/* Add form */}
-        <form
-          onSubmit={handleAdd}
-          style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-        >
-          <div style={{ display: "flex", gap: "8px" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
+        <form onSubmit={handleAdd} className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="flex-1 min-w-0">
               <Input
                 type="date"
                 label="Data"
@@ -271,7 +227,7 @@ export function WeightLog({ initialEntries }: Props) {
                 required
               />
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="flex-1 min-w-0">
               <Input
                 type="text"
                 inputMode="decimal"

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/cn";
 
 export type PillStatus = "ok" | "reorder" | "urgent" | "info" | "neutral";
 export type PillSize = "md" | "sm";
@@ -19,40 +20,28 @@ const PT_BR_LABELS: Record<"ok" | "reorder" | "urgent", string> = {
   urgent: "Acabando",
 };
 
-const statusStyles: Record<PillStatus, React.CSSProperties> = {
-  ok: {
-    background: "var(--success-soft)",
-    color: "var(--success)",
-    borderColor: "var(--green-200)",
-  },
-  reorder: {
-    background: "var(--warning-soft)",
-    color: "var(--warning)",
-    borderColor: "var(--amber-300)",
-  },
-  urgent: {
-    background: "var(--danger-soft)",
-    color: "var(--danger)",
-    borderColor: "var(--red-200)",
-  },
-  info: {
-    background: "var(--info-soft)",
-    color: "var(--info)",
-    borderColor: "var(--blue-200)",
-  },
-  neutral: {
-    background: "var(--bg-2)",
-    color: "var(--fg-2)",
-    borderColor: "var(--border)",
-  },
+const statusClass: Record<PillStatus, string> = {
+  ok: "bg-success-soft text-success border-[var(--green-200)]",
+  reorder: "bg-warning-soft text-warning border-[var(--amber-300)]",
+  urgent: "bg-danger-soft text-danger border-[var(--red-200)]",
+  info: "bg-info-soft text-info border-[var(--blue-200)]",
+  neutral: "bg-bg-2 text-fg-2 border-border",
 };
 
-const dotColors: Record<PillStatus, string> = {
-  ok: "var(--success)",
-  reorder: "var(--warning-accent)",
-  urgent: "var(--danger)",
-  info: "var(--info)",
-  neutral: "var(--fg-muted)",
+const dotClass: Record<PillStatus, string> = {
+  ok: "bg-success",
+  reorder: "bg-[var(--warning-accent)]",
+  urgent: "bg-danger",
+  info: "bg-info",
+  neutral: "bg-fg-muted",
+};
+
+const base =
+  "inline-flex items-center font-body font-semibold leading-none rounded-pill border border-transparent whitespace-nowrap";
+
+const sizeClass: Record<PillSize, string> = {
+  md: "text-[13px] gap-1.5 py-1.5 pr-[11px] pl-[9px]",
+  sm: "text-[11.5px] gap-[5px] py-1 pr-[9px] pl-[7px]",
 };
 
 export function StatusPill({
@@ -61,44 +50,32 @@ export function StatusPill({
   solid = false,
   icon,
   children,
-  className = "",
-  style,
+  className,
   ...rest
 }: StatusPillProps) {
-  const isSmall = size === "sm";
-
-  const pillStyle: React.CSSProperties = {
-    fontFamily: "var(--font-body)",
-    fontWeight: "var(--fw-semibold)" as unknown as number,
-    fontSize: isSmall ? "11.5px" : "13px",
-    lineHeight: 1,
-    display: "inline-flex",
-    alignItems: "center",
-    gap: isSmall ? "5px" : "6px",
-    padding: isSmall ? "4px 9px 4px 7px" : "6px 11px 6px 9px",
-    borderRadius: "var(--radius-pill)",
-    border: "1px solid transparent",
-    whiteSpace: "nowrap",
-    ...(solid && status === "urgent"
-      ? { background: "var(--danger)", color: "var(--neutral-0)", borderColor: "transparent" }
-      : statusStyles[status]),
-    ...style,
-  };
+  const solidUrgent = solid && status === "urgent";
 
   return (
-    <span className={className} style={pillStyle} {...rest}>
+    <span
+      className={cn(
+        base,
+        sizeClass[size],
+        solidUrgent
+          ? "bg-danger text-[var(--neutral-0)] border-transparent"
+          : statusClass[status],
+        className
+      )}
+      {...rest}
+    >
       {icon ? (
-        <span style={{ display: "inline-flex", flex: "none" }}>{icon}</span>
+        <span className="inline-flex flex-none">{icon}</span>
       ) : (
         <span
           aria-hidden="true"
-          style={{
-            width: "7px",
-            height: "7px",
-            borderRadius: "50%",
-            flex: "none",
-            background: solid && status === "urgent" ? "var(--neutral-0)" : dotColors[status],
-          }}
+          className={cn(
+            "w-[7px] h-[7px] rounded-full flex-none",
+            solidUrgent ? "bg-[var(--neutral-0)]" : dotClass[status]
+          )}
         />
       )}
       {children}
