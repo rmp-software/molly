@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { fmtDateTimePt, fmtDuration } from "@/lib/format";
 import { typeLabelPt, type SeizureType, type Severity } from "@/lib/seizure-types";
 
@@ -21,26 +22,20 @@ interface Props {
   episodes: RecentEpisodeData[];
 }
 
+const badgeBase =
+  "inline-flex items-center py-px px-[7px] rounded-pill text-[10px] font-bold font-body border uppercase tracking-wide";
+
 export function RecentEpisodes({ episodes }: Props) {
   if (episodes.length === 0) {
     return (
-      <p
-        style={{
-          fontFamily: "var(--font-body)",
-          fontSize: "var(--text-sm)",
-          color: "var(--fg-muted)",
-          margin: 0,
-          textAlign: "center",
-          padding: "8px 0",
-        }}
-      >
+      <p className="font-body text-sm text-fg-muted m-0 text-center py-2">
         Nenhum episódio registrado ainda.
       </p>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className="flex flex-col">
       {episodes.map((ep, i) => {
         const date = new Date(ep.occurredAt);
         const isEmergency = ep.durationSeconds !== null && ep.durationSeconds > 300;
@@ -49,95 +44,45 @@ export function RecentEpisodes({ episodes }: Props) {
           <Link
             key={ep.id}
             href={`/seizures/${ep.id}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "11px 0",
-              borderTop: i !== 0 ? "1px solid var(--border)" : "none",
-              textDecoration: "none",
-              color: "inherit",
-            }}
+            className={cn(
+              "flex items-center gap-3 py-[11px] no-underline text-inherit",
+              i !== 0 && "border-t border-border"
+            )}
           >
             {/* Date/time column */}
-            <div
-              style={{
-                width: "72px",
-                flexShrink: 0,
-                textAlign: "center",
-                fontFamily: "var(--font-mono)",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "var(--fg)",
-                lineHeight: 1.3,
-              }}
-            >
+            <div className="w-[72px] shrink-0 text-center font-mono text-xs font-semibold text-fg leading-[1.3]">
               {fmtDateTimePt(date)}
             </div>
 
             {/* Main info */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: "14.5px",
-                  fontWeight: 600,
-                  color: "var(--fg)",
-                  fontFamily: "var(--font-body)",
-                  marginBottom: "2px",
-                }}
-              >
+            <div className="flex-1 min-w-0">
+              <div className="text-[14.5px] font-semibold text-fg font-body mb-0.5">
                 {typeLabelPt(ep.type)}
               </div>
-              <div
-                style={{
-                  fontSize: "12.5px",
-                  color: "var(--fg-muted)",
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
+              <div className="text-[12.5px] text-fg-muted font-mono">
                 {ep.durationSeconds && ep.durationSeconds > 0
                   ? fmtDuration(ep.durationSeconds)
                   : "—"}
               </div>
               {/* Mini badges */}
               {(ep.isCluster || isEmergency) && (
-                <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
+                <div className="flex gap-1 mt-1 flex-wrap">
                   {ep.isCluster && (
                     <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        padding: "1px 7px",
-                        borderRadius: "999px",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        fontFamily: "var(--font-body)",
-                        background: "var(--warning-soft, #fef3c7)",
-                        color: "var(--warning, #d97706)",
-                        border: "1px solid var(--amber-300, #fcd34d)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                      }}
+                      className={cn(
+                        badgeBase,
+                        "bg-warning-soft text-warning border-[var(--amber-300)]"
+                      )}
                     >
                       Cluster
                     </span>
                   )}
                   {isEmergency && (
                     <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        padding: "1px 7px",
-                        borderRadius: "999px",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        fontFamily: "var(--font-body)",
-                        background: "var(--danger-soft, #fee2e2)",
-                        color: "var(--danger, #dc2626)",
-                        border: "1px solid var(--red-200, #fecaca)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                      }}
+                      className={cn(
+                        badgeBase,
+                        "bg-danger-soft text-danger border-[var(--red-200)]"
+                      )}
                     >
                       Emergência
                     </span>
@@ -147,7 +92,7 @@ export function RecentEpisodes({ episodes }: Props) {
             </div>
 
             {/* Chevron */}
-            <span style={{ color: "var(--fg-muted)", display: "inline-flex", flexShrink: 0 }}>
+            <span className="text-fg-muted inline-flex shrink-0">
               <ChevronRight size={18} />
             </span>
           </Link>

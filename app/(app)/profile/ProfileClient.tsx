@@ -9,6 +9,7 @@ import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
 import { WeightLog, WeightEntry } from "@/app/components/WeightLog";
 import { useToast } from "@/app/components/Toast";
+import { cn } from "@/lib/cn";
 import { fmtKg } from "@/lib/format";
 
 export interface DogData {
@@ -47,6 +48,9 @@ function dogSubtitle(dog: DogData): string | null {
   return null;
 }
 
+const infoRowCls = "flex flex-col gap-1 py-2.5 border-b border-border";
+const infoLabelCls = "text-xs text-fg-muted font-body";
+
 interface InfoRowProps {
   label: string;
   value: string;
@@ -65,44 +69,20 @@ function InfoRow({
   inputType = "text",
 }: InfoRowProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-        padding: "10px 0",
-        borderBottom: "1px solid var(--border)",
-      }}
-    >
+    <div className={infoRowCls}>
       {editing ? (
         <Input
           label={label}
           type={inputType}
           value={editValue}
           onChange={(e) => onChange(e.target.value)}
-          style={{
-            minHeight: "36px",
-            padding: "6px 10px",
-            fontSize: "var(--text-sm)",
-          }}
+          className="min-h-9 py-1.5 px-2.5 text-sm"
         />
       ) : (
         <>
+          <span className={infoLabelCls}>{label}</span>
           <span
-            style={{
-              fontSize: "var(--text-xs)",
-              color: "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-            }}
-          >
-            {label}
-          </span>
-          <span
-            style={{
-              fontSize: "var(--text-base)",
-              color: value ? "var(--fg)" : "var(--fg-muted)",
-              fontFamily: "var(--font-body)",
-            }}
+            className={cn("text-base font-body", value ? "text-fg" : "text-fg-muted")}
           >
             {value || "—"}
           </span>
@@ -182,59 +162,19 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
   }
 
   return (
-    <div
-      style={{
-        padding: "0 20px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-      }}
-    >
+    <div className="px-5 pb-6 flex flex-col gap-4">
       {/* Avatar card */}
-      <Card variant="highlighted" style={{ textAlign: "center" }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
-          <div
-            style={{
-              width: "72px",
-              height: "72px",
-              borderRadius: "50%",
-              background: "var(--brand-soft)",
-              display: "grid",
-              placeItems: "center",
-              color: "var(--brand)",
-            }}
-          >
+      <Card variant="highlighted" className="text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-[72px] h-[72px] rounded-full bg-brand-soft grid place-items-center text-brand">
             <PawPrint size={36} />
           </div>
           <div>
-            <h2
-              style={{
-                margin: 0,
-                fontFamily: "var(--font-display)",
-                fontSize: "var(--text-2xl)",
-                fontWeight: 700,
-                color: "var(--fg)",
-                letterSpacing: "-0.02em",
-              }}
-            >
+            <h2 className="m-0 font-display text-2xl font-bold text-fg tracking-tight">
               {dog.name}
             </h2>
             {subtitle && (
-              <p
-                style={{
-                  margin: "4px 0 0",
-                  fontFamily: "var(--font-body)",
-                  fontSize: "var(--text-sm)",
-                  color: "var(--fg-muted)",
-                }}
-              >
+              <p className="mt-1 mb-0 font-body text-sm text-fg-muted">
                 {subtitle}
               </p>
             )}
@@ -244,27 +184,13 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
 
       {/* Info card */}
       <Card>
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div className="flex flex-col">
           {/* Header row */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "4px",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-body)",
-                fontWeight: "var(--fw-semibold)" as unknown as number,
-                fontSize: "var(--text-base)",
-                color: "var(--fg)",
-              }}
-            >
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-body font-semibold text-base text-fg">
               Informações
             </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="flex gap-2">
               {editing ? (
                 <>
                   <Button
@@ -300,31 +226,13 @@ export function ProfileClient({ dog: initialDog, initialWeights }: Props) {
           </div>
 
           {/* Peso row — read-only, sourced from weight log */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-              padding: "10px 0",
-              borderBottom: "1px solid var(--border)",
-            }}
-          >
+          <div className={infoRowCls}>
+            <span className={infoLabelCls}>Peso</span>
             <span
-              style={{
-                fontSize: "var(--text-xs)",
-                color: "var(--fg-muted)",
-                fontFamily: "var(--font-body)",
-              }}
-            >
-              Peso
-            </span>
-            <span
-              style={{
-                fontSize: "var(--text-base)",
-                color:
-                  latestWeight !== null ? "var(--fg)" : "var(--fg-muted)",
-                fontFamily: "var(--font-body)",
-              }}
+              className={cn(
+                "text-base font-body",
+                latestWeight !== null ? "text-fg" : "text-fg-muted"
+              )}
             >
               {latestWeight !== null ? fmtKg(latestWeight) : "—"}
             </span>

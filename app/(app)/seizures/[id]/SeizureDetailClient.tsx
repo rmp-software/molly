@@ -7,6 +7,7 @@ import { Card } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { Input, Textarea } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
+import { cn } from "@/lib/cn";
 import { fmtDuration, fmtDateTimePt } from "@/lib/format";
 import {
   TYPE_OPTIONS,
@@ -30,6 +31,16 @@ export interface SeizureEpisodeData {
 interface Props {
   episode: SeizureEpisodeData;
 }
+
+const fieldLabel = "block text-sm font-semibold text-fg-2 mb-2 font-body";
+const chipBase =
+  "rounded-pill font-semibold cursor-pointer font-body inline-flex items-center border-[1.5px]";
+const chipSelected = "border-brand bg-brand-soft text-brand-press";
+const chipUnselected = "border-border-strong bg-surface text-fg-2";
+const stepperBtn =
+  "w-10 h-10 rounded-pill border-[1.5px] border-border-strong bg-surface text-fg cursor-pointer grid place-items-center shrink-0";
+const badgeBase =
+  "inline-flex items-center py-1 px-3 rounded-pill text-xs font-bold font-body border uppercase tracking-wide";
 
 function severityLabelPt(severity: Severity | null): string {
   if (!severity) return "—";
@@ -156,46 +167,16 @@ export function SeizureDetailClient({ episode }: Props) {
   }
 
   return (
-    <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div className="px-5 flex flex-col gap-4">
       {/* Badges row */}
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+      <div className="flex gap-2 flex-wrap">
         {isEmergency && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "4px 12px",
-              borderRadius: "999px",
-              fontSize: "12px",
-              fontWeight: 700,
-              fontFamily: "var(--font-body)",
-              background: "var(--danger-soft, #fee2e2)",
-              color: "var(--danger, #dc2626)",
-              border: "1px solid var(--red-200, #fecaca)",
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
-          >
+          <span className={cn(badgeBase, "bg-danger-soft text-danger border-[var(--red-200)]")}>
             Emergência
           </span>
         )}
         {episode.isCluster && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "4px 12px",
-              borderRadius: "999px",
-              fontSize: "12px",
-              fontWeight: 700,
-              fontFamily: "var(--font-body)",
-              background: "var(--warning-soft, #fef3c7)",
-              color: "var(--warning, #d97706)",
-              border: "1px solid var(--amber-300, #fcd34d)",
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
-          >
+          <span className={cn(badgeBase, "bg-warning-soft text-warning border-[var(--amber-300)]")}>
             Cluster
           </span>
         )}
@@ -203,7 +184,7 @@ export function SeizureDetailClient({ episode }: Props) {
 
       {/* Detail card */}
       <Card>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="flex flex-col gap-3">
           <Detail label="Data/hora" value={fmtDateTimePt(occurredAtDate)} />
           <Detail label="Tipo" value={typeLabelPt(episode.type)} />
           <Detail
@@ -225,7 +206,7 @@ export function SeizureDetailClient({ episode }: Props) {
 
       {/* Edit / Delete buttons */}
       {!editing && (
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="flex gap-2.5">
           <Button
             variant="secondary"
             onClick={() => {
@@ -256,16 +237,8 @@ export function SeizureDetailClient({ episode }: Props) {
       {/* Edit form */}
       {editing && (
         <Card>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <h3
-              style={{
-                margin: 0,
-                fontFamily: "var(--font-display)",
-                fontSize: "var(--text-lg)",
-                fontWeight: 700,
-                color: "var(--fg)",
-              }}
-            >
+          <div className="flex flex-col gap-4">
+            <h3 className="m-0 font-display text-lg font-bold text-fg">
               Editar episódio
             </h3>
 
@@ -281,47 +254,21 @@ export function SeizureDetailClient({ episode }: Props) {
 
             {/* Duration */}
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-sm)",
-                  fontWeight: 600,
-                  color: "var(--fg-2)",
-                  marginBottom: "8px",
-                  fontFamily: "var(--font-body)",
-                }}
-              >
-                Duração
-              </label>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <label className={fieldLabel}>Duração</label>
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setDurationSecs((s) => Math.max(0, s - 5))}
                   aria-label="Menos 5 segundos"
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "999px",
-                    border: "1.5px solid var(--border-strong)",
-                    background: "var(--surface)",
-                    color: "var(--fg)",
-                    cursor: "pointer",
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
+                  className={stepperBtn}
                 >
                   <Minus size={18} />
                 </button>
                 <span
-                  style={{
-                    flex: 1,
-                    textAlign: "center",
-                    fontFamily: "var(--font-mono, monospace)",
-                    fontWeight: 600,
-                    fontSize: "22px",
-                    color: durationSecs > 0 ? "var(--fg)" : "var(--fg-muted)",
-                  }}
+                  className={cn(
+                    "flex-1 text-center font-mono font-semibold text-xl",
+                    durationSecs > 0 ? "text-fg" : "text-fg-muted"
+                  )}
                 >
                   {durationSecs > 0 ? fmtDuration(durationSecs) : "—"}
                 </span>
@@ -329,18 +276,7 @@ export function SeizureDetailClient({ episode }: Props) {
                   type="button"
                   onClick={() => setDurationSecs((s) => s + 5)}
                   aria-label="Mais 5 segundos"
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "999px",
-                    border: "1.5px solid var(--border-strong)",
-                    background: "var(--surface)",
-                    color: "var(--fg)",
-                    cursor: "pointer",
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
+                  className={stepperBtn}
                 >
                   <Plus size={18} />
                 </button>
@@ -349,47 +285,19 @@ export function SeizureDetailClient({ episode }: Props) {
 
             {/* Type chips */}
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-sm)",
-                  fontWeight: 600,
-                  color: "var(--fg-2)",
-                  marginBottom: "8px",
-                  fontFamily: "var(--font-body)",
-                }}
-              >
-                Tipo
-              </label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              <label className={fieldLabel}>Tipo</label>
+              <div className="flex flex-wrap gap-2">
                 {TYPE_OPTIONS.map((t) => (
                   <button
                     key={t.id}
                     type="button"
                     aria-pressed={type === t.id}
                     onClick={() => setType(t.id)}
-                    style={{
-                      padding: "8px 14px",
-                      borderRadius: "999px",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "var(--font-body)",
-                      minHeight: "40px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      border: "1.5px solid",
-                      borderColor:
-                        type === t.id ? "var(--brand)" : "var(--border-strong)",
-                      background:
-                        type === t.id
-                          ? "var(--brand-soft, #ede9fe)"
-                          : "var(--surface)",
-                      color:
-                        type === t.id
-                          ? "var(--brand-press, var(--brand))"
-                          : "var(--fg-2)",
-                    }}
+                    className={cn(
+                      chipBase,
+                      "py-2 px-3.5 text-sm min-h-10",
+                      type === t.id ? chipSelected : chipUnselected
+                    )}
                   >
                     {t.label}
                   </button>
@@ -399,42 +307,17 @@ export function SeizureDetailClient({ episode }: Props) {
 
             {/* Severity */}
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-sm)",
-                  fontWeight: 600,
-                  color: "var(--fg-2)",
-                  marginBottom: "8px",
-                  fontFamily: "var(--font-body)",
-                }}
-              >
-                Intensidade
-              </label>
-              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <label className={fieldLabel}>Intensidade</label>
+              <div className="flex gap-1.5 flex-wrap">
                 <button
                   type="button"
                   aria-pressed={severity === null}
                   onClick={() => setSeverity(null)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "999px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "var(--font-body)",
-                    border: "1.5px solid",
-                    borderColor:
-                      severity === null ? "var(--brand)" : "var(--border-strong)",
-                    background:
-                      severity === null
-                        ? "var(--brand-soft, #ede9fe)"
-                        : "var(--surface)",
-                    color:
-                      severity === null
-                        ? "var(--brand-press, var(--brand))"
-                        : "var(--fg-2)",
-                  }}
+                  className={cn(
+                    chipBase,
+                    "py-1.5 px-3 text-[13px]",
+                    severity === null ? chipSelected : chipUnselected
+                  )}
                 >
                   Nenhuma
                 </button>
@@ -444,25 +327,11 @@ export function SeizureDetailClient({ episode }: Props) {
                     type="button"
                     aria-pressed={severity === s.id}
                     onClick={() => setSeverity(s.id)}
-                    style={{
-                      padding: "6px 12px",
-                      borderRadius: "999px",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "var(--font-body)",
-                      border: "1.5px solid",
-                      borderColor:
-                        severity === s.id ? "var(--brand)" : "var(--border-strong)",
-                      background:
-                        severity === s.id
-                          ? "var(--brand-soft, #ede9fe)"
-                          : "var(--surface)",
-                      color:
-                        severity === s.id
-                          ? "var(--brand-press, var(--brand))"
-                          : "var(--fg-2)",
-                    }}
+                    className={cn(
+                      chipBase,
+                      "py-1.5 px-3 text-[13px]",
+                      severity === s.id ? chipSelected : chipUnselected
+                    )}
                   >
                     {s.label}
                   </button>
@@ -471,28 +340,12 @@ export function SeizureDetailClient({ episode }: Props) {
             </div>
 
             {/* Rescue */}
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                cursor: "pointer",
-                fontFamily: "var(--font-body)",
-                fontSize: "var(--text-sm)",
-                color: "var(--fg)",
-                fontWeight: 500,
-              }}
-            >
+            <label className="flex items-center gap-3 cursor-pointer font-body text-sm text-fg font-medium">
               <input
                 type="checkbox"
                 checked={rescueGiven}
                 onChange={(e) => setRescueGiven(e.target.checked)}
-                style={{
-                  width: "18px",
-                  height: "18px",
-                  accentColor: "var(--brand)",
-                  flexShrink: 0,
-                }}
+                className="w-[18px] h-[18px] accent-brand shrink-0"
               />
               Medicação de resgate administrada
             </label>
@@ -507,7 +360,7 @@ export function SeizureDetailClient({ episode }: Props) {
             />
 
             {/* Form buttons */}
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div className="flex gap-2.5">
               <Button
                 type="button"
                 variant="secondary"
@@ -536,28 +389,11 @@ export function SeizureDetailClient({ episode }: Props) {
 // Small helper for detail row
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-      <span
-        style={{
-          fontSize: "var(--text-xs)",
-          color: "var(--fg-muted)",
-          fontFamily: "var(--font-body)",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-        }}
-      >
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-fg-muted font-body font-semibold uppercase tracking-[0.05em]">
         {label}
       </span>
-      <span
-        style={{
-          fontSize: "var(--text-base)",
-          color: "var(--fg)",
-          fontFamily: "var(--font-body)",
-        }}
-      >
-        {value}
-      </span>
+      <span className="text-base text-fg font-body">{value}</span>
     </div>
   );
 }

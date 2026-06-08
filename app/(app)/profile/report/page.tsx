@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Printer, Download, RefreshCw } from "lucide-react";
 import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
+import { cn } from "@/lib/cn";
 import { fmtNum, fmtKg, fmtDuration, fmtDateTimePt } from "@/lib/format";
 import { typeLabelPt } from "@/lib/seizure-types";
 
@@ -120,19 +121,12 @@ function dateInputToIso(dateStr: string, endOfDay = false): string {
   return endOfDay ? `${dateStr}T23:59:59.999-03:00` : `${dateStr}T00:00:00.000-03:00`;
 }
 
-const dateInputStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 0,
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  fontFamily: "var(--font-body)",
-  fontSize: "var(--text-sm)",
-  padding: "8px 10px",
-  borderRadius: "var(--radius-sm)",
-  border: "1.5px solid var(--border-strong)",
-  background: "var(--surface)",
-  color: "var(--fg)",
-};
+const dateFieldCls =
+  "w-full min-w-0 max-w-full box-border font-body text-sm py-2 px-2.5 rounded-sm border-[1.5px] border-border-strong bg-surface text-fg";
+
+const rangeLabelCls = "text-sm text-fg-muted font-body";
+const cardHeading = "m-0 mb-3 font-display text-lg font-bold text-fg";
+const metaLine = "mt-1 mb-0 font-body text-sm";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -211,17 +205,9 @@ export default function ReportPage() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: "0 20px 40px" }}>
+    <div className="px-5 pb-10">
       {/* Toolbar (hidden in print) */}
-      <div
-        className="no-print"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          marginBottom: "20px",
-        }}
-      >
+      <div className="no-print flex flex-col gap-3 mb-5">
         {/* Back */}
         <div>
           <Button
@@ -235,54 +221,23 @@ export default function ReportPage() {
         </div>
 
         {/* Date range */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "12px",
-            alignItems: "flex-end",
-          }}
-        >
-          <label
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-              flex: "1 1 140px",
-              minWidth: 0,
-            }}
-          >
-            <span
-              style={{ fontSize: "var(--text-sm)", color: "var(--fg-muted)", fontFamily: "var(--font-body)" }}
-            >
-              De
-            </span>
+        <div className="flex flex-wrap gap-3 items-end">
+          <label className="flex flex-col gap-1.5 flex-[1_1_140px] min-w-0">
+            <span className={rangeLabelCls}>De</span>
             <input
               type="date"
               value={pendingFrom}
               onChange={(e) => setPendingFrom(e.target.value)}
-              style={dateInputStyle}
+              className={dateFieldCls}
             />
           </label>
-          <label
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-              flex: "1 1 140px",
-              minWidth: 0,
-            }}
-          >
-            <span
-              style={{ fontSize: "var(--text-sm)", color: "var(--fg-muted)", fontFamily: "var(--font-body)" }}
-            >
-              Até
-            </span>
+          <label className="flex flex-col gap-1.5 flex-[1_1_140px] min-w-0">
+            <span className={rangeLabelCls}>Até</span>
             <input
               type="date"
               value={pendingTo}
               onChange={(e) => setPendingTo(e.target.value)}
-              style={dateInputStyle}
+              className={dateFieldCls}
             />
           </label>
           <Button
@@ -291,25 +246,25 @@ export default function ReportPage() {
             icon={<RefreshCw size={14} />}
             onClick={handleUpdate}
             loading={loading}
-            style={{ flex: "1 1 100%" }}
+            className="flex-[1_1_100%]"
           >
             Atualizar
           </Button>
         </div>
 
         {/* Export */}
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div className="flex gap-2">
           <Button
             variant="secondary"
             size="sm"
             icon={<Printer size={14} />}
             onClick={() => window.print()}
             title="Abre o diálogo de impressão do navegador. Escolha 'Salvar como PDF' para exportar."
-            style={{ flex: 1 }}
+            className="flex-1"
           >
             Salvar como PDF
           </Button>
-          <a href={csvHref} download style={{ flex: 1, display: "flex" }}>
+          <a href={csvHref} download className="flex-1 flex">
             <Button
               variant="secondary"
               size="sm"
@@ -323,49 +278,29 @@ export default function ReportPage() {
       </div>
 
       {/* Print hint (hidden in print) */}
-      <p
-        className="no-print"
-        style={{
-          fontSize: "var(--text-xs)",
-          color: "var(--fg-muted)",
-          fontFamily: "var(--font-body)",
-          marginBottom: "16px",
-          marginTop: "-8px",
-        }}
-      >
+      <p className="no-print text-xs text-fg-muted font-body mb-4 -mt-2">
         Dica: &ldquo;Salvar como PDF&rdquo; abre o diálogo de impressão do navegador — escolha &ldquo;Salvar como PDF&rdquo; para exportar.
       </p>
 
       {/* Loading / error states */}
       {loading && !report && (
-        <p style={{ fontFamily: "var(--font-body)", color: "var(--fg-muted)", textAlign: "center", padding: "40px 0" }}>
+        <p className="font-body text-fg-muted text-center py-10">
           Carregando relatório…
         </p>
       )}
       {error && (
-        <p style={{ fontFamily: "var(--font-body)", color: "var(--danger)", padding: "16px 0" }}>
-          {error}
-        </p>
+        <p className="font-body text-danger py-4">{error}</p>
       )}
 
       {/* ─── Report Content ────────────────────────────────────────────────── */}
       {report && (
         <div id="report-content">
           {/* Header */}
-          <div style={{ marginBottom: "24px", borderBottom: "2px solid var(--border)", paddingBottom: "16px" }}>
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: "var(--font-display)",
-                fontSize: "var(--text-2xl)",
-                fontWeight: 700,
-                color: "var(--fg)",
-                letterSpacing: "-0.02em",
-              }}
-            >
+          <div className="mb-6 border-b-2 border-border pb-4">
+            <h1 className="m-0 font-display text-2xl font-bold text-fg tracking-tight">
               {report.dog.name}
             </h1>
-            <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg-muted)" }}>
+            <p className="mt-1 mb-0 font-body text-sm text-fg-muted">
               {[
                 report.dog.breed,
                 report.dog.birthdate ? `Nascimento: ${formatDate(report.dog.birthdate)}` : null,
@@ -375,60 +310,43 @@ export default function ReportPage() {
                 .join(" · ")}
             </p>
             {report.dog.diagnosis && (
-              <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg)" }}>
+              <p className={cn(metaLine, "text-fg")}>
                 <strong>Diagnóstico:</strong> {report.dog.diagnosis}
               </p>
             )}
             {report.dog.vetName && (
-              <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg)" }}>
+              <p className={cn(metaLine, "text-fg")}>
                 <strong>Veterinária:</strong> {report.dog.vetName}
               </p>
             )}
             {report.dog.emergencyContact && (
-              <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg)" }}>
+              <p className={cn(metaLine, "text-fg")}>
                 <strong>Emergência:</strong> {report.dog.emergencyContact}
               </p>
             )}
             {report.latestWeightKg != null && (
-              <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg)" }}>
+              <p className={cn(metaLine, "text-fg")}>
                 <strong>Peso atual:</strong> {fmtKg(report.latestWeightKg)}
               </p>
             )}
 
-            <p style={{ margin: "12px 0 0", fontFamily: "var(--font-display)", fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--fg)", letterSpacing: "-0.01em" }}>
+            <p className="mt-3 mb-0 font-display text-xl font-bold text-fg tracking-snug">
               Relatório de crises
             </p>
-            <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg-muted)" }}>
+            <p className="mt-1 mb-0 font-body text-sm text-fg-muted">
               Período: {formatDate(report.range.from)} – {formatDate(report.range.to)}
             </p>
             {generatedAt && (
-              <p style={{ margin: "2px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-xs)", color: "var(--fg-muted)" }}>
+              <p className="mt-0.5 mb-0 font-body text-xs text-fg-muted">
                 Gerado em: {fmtDateTimePt(generatedAt)}
               </p>
             )}
           </div>
 
           {/* Summary block */}
-          <Card style={{ marginBottom: "20px" }}>
-            <h2
-              style={{
-                margin: "0 0 12px",
-                fontFamily: "var(--font-display)",
-                fontSize: "var(--text-lg)",
-                fontWeight: 700,
-                color: "var(--fg)",
-              }}
-            >
-              Resumo
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                gap: "12px",
-                marginBottom: "16px",
-              }}
-            >
+          <Card className="mb-5">
+            <h2 className={cardHeading}>Resumo</h2>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 mb-4">
               <SummaryItem label="Total de crises" value={String(report.summary.total)} />
               <SummaryItem
                 label={
@@ -455,22 +373,15 @@ export default function ReportPage() {
 
             {/* By type */}
             {Object.keys(report.summary.byType).length > 0 && (
-              <div style={{ marginBottom: "12px" }}>
-                <p style={{ margin: "0 0 6px", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--fg)" }}>
+              <div className="mb-3">
+                <p className="mt-0 mb-1.5 font-body text-sm font-semibold text-fg">
                   Por tipo
                 </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                <div className="flex flex-wrap gap-2">
                   {Object.entries(report.summary.byType).map(([type, count]) => (
                     <span
                       key={type}
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-sm)",
-                        padding: "3px 10px",
-                        borderRadius: "var(--radius-pill)",
-                        background: "var(--brand-soft)",
-                        color: "var(--brand)",
-                      }}
+                      className="font-body text-sm py-[3px] px-2.5 rounded-pill bg-brand-soft text-brand"
                     >
                       {typeLabelPt(type as Parameters<typeof typeLabelPt>[0])}: {count}
                     </span>
@@ -482,21 +393,14 @@ export default function ReportPage() {
             {/* By severity */}
             {Object.keys(report.summary.bySeverity).length > 0 && (
               <div>
-                <p style={{ margin: "0 0 6px", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--fg)" }}>
+                <p className="mt-0 mb-1.5 font-body text-sm font-semibold text-fg">
                   Por severidade
                 </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                <div className="flex flex-wrap gap-2">
                   {Object.entries(report.summary.bySeverity).map(([sev, count]) => (
                     <span
                       key={sev}
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-sm)",
-                        padding: "3px 10px",
-                        borderRadius: "var(--radius-pill)",
-                        background: "var(--bg-2)",
-                        color: "var(--fg-2)",
-                      }}
+                      className="font-body text-sm py-[3px] px-2.5 rounded-pill bg-bg-2 text-fg-2"
                     >
                       {sev === "unknown" ? "Não informada" : (SEVERITY_PT[sev] ?? sev)}: {count}
                     </span>
@@ -507,47 +411,24 @@ export default function ReportPage() {
           </Card>
 
           {/* Episodes table */}
-          <Card style={{ marginBottom: "20px", overflowX: "auto" }}>
-            <h2
-              style={{
-                margin: "0 0 12px",
-                fontFamily: "var(--font-display)",
-                fontSize: "var(--text-lg)",
-                fontWeight: 700,
-                color: "var(--fg)",
-              }}
-            >
+          <Card className="mb-5 overflow-x-auto">
+            <h2 className={cardHeading}>
               Crises no período ({report.episodes.length})
             </h2>
             {report.episodes.length === 0 ? (
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg-muted)" }}>
+              <p className="font-body text-sm text-fg-muted">
                 Nenhuma crise registrada neste período.
               </p>
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontFamily: "var(--font-body)",
-                    fontSize: "var(--text-sm)",
-                    color: "var(--fg)",
-                  }}
-                >
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse font-body text-sm text-fg">
                   <thead>
                     <tr>
                       {["Data/hora", "Tipo", "Duração", "Severidade", "Cluster", "Resgate", "Observações"].map(
                         (h) => (
                           <th
                             key={h}
-                            style={{
-                              textAlign: "left",
-                              padding: "6px 10px",
-                              borderBottom: "1.5px solid var(--border)",
-                              color: "var(--fg-muted)",
-                              fontWeight: 600,
-                              whiteSpace: "nowrap",
-                            }}
+                            className="text-left py-1.5 px-2.5 border-b-[1.5px] border-border text-fg-muted font-semibold whitespace-nowrap"
                           >
                             {h}
                           </th>
@@ -557,31 +438,22 @@ export default function ReportPage() {
                   </thead>
                   <tbody>
                     {report.episodes.map((ep, idx) => (
-                      <tr
-                        key={ep.id}
-                        style={{
-                          background: idx % 2 === 0 ? "transparent" : "var(--bg-2)",
-                        }}
-                      >
-                        <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>
+                      <tr key={ep.id} className={idx % 2 === 0 ? "bg-transparent" : "bg-bg-2"}>
+                        <td className="py-1.5 px-2.5 whitespace-nowrap">
                           {fmtDateTimePt(new Date(ep.occurredAt))}
                         </td>
-                        <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>
+                        <td className="py-1.5 px-2.5 whitespace-nowrap">
                           {typeLabelPt(ep.type as Parameters<typeof typeLabelPt>[0])}
                         </td>
-                        <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>
+                        <td className="py-1.5 px-2.5 whitespace-nowrap">
                           {ep.durationSeconds != null ? fmtDuration(ep.durationSeconds) : "—"}
                         </td>
-                        <td style={{ padding: "6px 10px", whiteSpace: "nowrap" }}>
+                        <td className="py-1.5 px-2.5 whitespace-nowrap">
                           {ep.severity ? (SEVERITY_PT[ep.severity] ?? ep.severity) : "—"}
                         </td>
-                        <td style={{ padding: "6px 10px" }}>
-                          {ep.isCluster ? "Sim" : "Não"}
-                        </td>
-                        <td style={{ padding: "6px 10px" }}>
-                          {ep.rescueGiven ? "Sim" : "Não"}
-                        </td>
-                        <td style={{ padding: "6px 10px", maxWidth: "200px", wordBreak: "break-word" }}>
+                        <td className="py-1.5 px-2.5">{ep.isCluster ? "Sim" : "Não"}</td>
+                        <td className="py-1.5 px-2.5">{ep.rescueGiven ? "Sim" : "Não"}</td>
+                        <td className="py-1.5 px-2.5 max-w-[200px] break-words">
                           {ep.notes ?? "—"}
                         </td>
                       </tr>
@@ -594,46 +466,29 @@ export default function ReportPage() {
 
           {/* Medications section */}
           {report.medications.length > 0 && (
-            <Card style={{ marginBottom: "20px" }}>
-              <h2
-                style={{
-                  margin: "0 0 12px",
-                  fontFamily: "var(--font-display)",
-                  fontSize: "var(--text-lg)",
-                  fontWeight: 700,
-                  color: "var(--fg)",
-                }}
-              >
-                Medicamentos atuais
-              </h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <Card className="mb-5">
+              <h2 className={cardHeading}>Medicamentos atuais</h2>
+              <div className="flex flex-col gap-3">
                 {report.medications.map((med, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: "var(--radius-sm)",
-                      background: "var(--bg-2)",
-                    }}
-                  >
-                    <p style={{ margin: 0, fontFamily: "var(--font-body)", fontWeight: 600, fontSize: "var(--text-base)", color: "var(--fg)" }}>
+                  <div key={i} className="py-2.5 px-3 rounded-sm bg-bg-2">
+                    <p className="m-0 font-body font-semibold text-base text-fg">
                       {med.name}
                       {med.strengthMg != null && (
-                        <span style={{ fontWeight: 400, color: "var(--fg-muted)", marginLeft: "6px" }}>
+                        <span className="font-normal text-fg-muted ml-1.5">
                           {fmtNum(med.strengthMg)} mg
                         </span>
                       )}
                     </p>
-                    <p style={{ margin: "2px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg-muted)" }}>
+                    <p className="mt-0.5 mb-0 font-body text-sm text-fg-muted">
                       {[
                         CATEGORY_PT[med.category] ?? med.category,
                         FORM_PT[med.form] ?? med.form,
                       ].join(" · ")}
                     </p>
                     {med.activeSchedule && (
-                      <p style={{ margin: "4px 0 0", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg)" }}>
+                      <p className="mt-1 mb-0 font-body text-sm text-fg">
                         <strong>Horários:</strong> {med.activeSchedule.doseTimes.join(", ")} · {fmtNum(med.activeSchedule.unitsPerDose)} unid./dose
-                        {" "}<span style={{ color: "var(--fg-muted)" }}>(desde {formatDate(med.activeSchedule.effectiveFrom + "T00:00:00Z")})</span>
+                        {" "}<span className="text-fg-muted">(desde {formatDate(med.activeSchedule.effectiveFrom + "T00:00:00Z")})</span>
                       </p>
                     )}
                   </div>
@@ -644,19 +499,9 @@ export default function ReportPage() {
 
           {/* Dose-change history */}
           {report.scheduleChanges.length > 0 && (
-            <Card style={{ marginBottom: "20px" }}>
-              <h2
-                style={{
-                  margin: "0 0 12px",
-                  fontFamily: "var(--font-display)",
-                  fontSize: "var(--text-lg)",
-                  fontWeight: 700,
-                  color: "var(--fg)",
-                }}
-              >
-                Alterações de dose no período
-              </h2>
-              <ul style={{ margin: 0, padding: "0 0 0 16px", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--fg)", lineHeight: 1.7 }}>
+            <Card className="mb-5">
+              <h2 className={cardHeading}>Alterações de dose no período</h2>
+              <ul className="m-0 pl-4 font-body text-sm text-fg leading-[1.7]">
                 {report.scheduleChanges.map((sc, i) => (
                   <li key={i}>
                     <strong>{sc.medName}</strong> — a partir de {formatDate(sc.effectiveFrom + "T00:00:00Z")}:{" "}
@@ -676,34 +521,9 @@ export default function ReportPage() {
 
 function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
-    <div
-      style={{
-        padding: "12px",
-        borderRadius: "var(--radius-sm)",
-        background: "var(--bg-2)",
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          fontFamily: "var(--font-body)",
-          fontSize: "var(--text-xs)",
-          color: "var(--fg-muted)",
-          marginBottom: "4px",
-        }}
-      >
-        {label}
-      </p>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: "var(--font-display)",
-          fontSize: "var(--text-xl)",
-          fontWeight: 700,
-          color: "var(--fg)",
-          letterSpacing: "-0.02em",
-        }}
-      >
+    <div className="p-3 rounded-sm bg-bg-2">
+      <p className="m-0 mb-1 font-body text-xs text-fg-muted">{label}</p>
+      <p className="m-0 font-display text-xl font-bold text-fg tracking-tight">
         {value}
       </p>
     </div>

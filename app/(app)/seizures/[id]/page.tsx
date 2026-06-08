@@ -40,30 +40,11 @@ export default async function SeizureDetailPage({ params }: Props) {
 
   return (
     <div>
-      <div
-        style={{
-          padding: "0 20px 16px",
-          fontFamily: "var(--font-display)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 4px",
-            fontSize: "var(--text-xl)",
-            fontWeight: 700,
-            color: "var(--fg)",
-          }}
-        >
+      <div className="px-5 pb-4 font-display">
+        <h2 className="mt-0 mb-1 text-xl font-bold text-fg">
           {typeLabel[episode.type] ?? episode.type}
         </h2>
-        <p
-          style={{
-            margin: 0,
-            fontSize: "var(--text-sm)",
-            color: "var(--fg-muted)",
-            fontFamily: "var(--font-body)",
-          }}
-        >
+        <p className="m-0 text-sm text-fg-muted font-body">
           Detalhes do episódio
         </p>
       </div>

@@ -469,6 +469,27 @@
       - Layout: --app-max 640px (desktop centered), --tabbar-h 64px, --tap-min 44px, honor safe-area-inset-bottom.
     </spacing_radii_shadows_motion>
 
+    <styling_conventions>
+      - Utility-first Tailwind v4. The design tokens above ARE the utility vocabulary: they are mapped in
+        globals.css via `@theme inline` (colors → bg-surface/text-fg/…, radii → rounded-md/…, font sizes →
+        text-2xs…text-5xl, shadows → shadow-sm/shadow-brand/shadow-focus, leading/tracking/ease). Off-scale
+        one-offs use arbitrary values, e.g. min-h-[44px], py-[26px].
+      - Do NOT use raw hex or `var(--…)` inside a `style` prop. Style with semantic utility classes only.
+        Raw palette tokens not exposed as semantic colors (e.g. --green-200, --gold-300) may be referenced as
+        arbitrary values: border-[var(--green-200)].
+      - Conditional / state styling uses the cn() helper (lib/cn.ts = clsx + tailwind-merge) with className
+        lookups (e.g. a Record<status, classes>), never inline `style` ternaries.
+      - Reusable primitives (Button, Card, Input, …) own their variants via className maps composed with cn();
+        callers pass props/variants, not ad-hoc styles.
+      - Inline `style` is a LAST RESORT, allowed only for values that cannot be a utility class:
+        • computed/programmatic dimensions (progress-bar fill width %, per-render font sizes),
+        • SVG geometry (x/y/width/points/heights, chart transitions),
+        • state-driven transforms (sheet/drawer translate), and @keyframes animations (no utility exists).
+        • next/og ImageResponse routes (icon.tsx, apple-icon.tsx, pwa-icon) — Satori supports ONLY inline
+          styles, so those files are inline by necessity.
+      - Tap targets stay ≥ 44px; focus ring via `focus:shadow-focus` plus the global :focus-visible outline.
+    </styling_conventions>
+
     <components>
       <!-- Specs + JSX reference in .design-system/.../project/components/**. Recreate visually in app/. -->
       - Button: variants primary (brand fill, --brand-on) / secondary (border, no fill) / ghost / destructive;
