@@ -5,10 +5,11 @@ import { Card } from "@/app/components/Card";
 import { FrequencyChart } from "@/app/components/FrequencyChart";
 import { TypeBreakdown } from "@/app/components/TypeBreakdown";
 import { RecentEpisodes } from "@/app/components/RecentEpisodes";
+import { DurationTrendChart } from "@/app/components/DurationTrendChart";
 import { cn } from "@/lib/cn";
-import { fmtNum } from "@/lib/format";
+import { fmtNum, fmtDuration } from "@/lib/format";
 import { Activity, Award, Calendar } from "lucide-react";
-import { type TrendsPayload } from "@/lib/trends";
+import { type TrendsPayload, type TrendsDurationStats } from "@/lib/trends";
 import { EPISODE_HISTORY_START } from "@/lib/seizure-types";
 
 // ─── Types mirroring API response ────────────────────────────────────────────
@@ -82,6 +83,70 @@ function StatCard({
     </Card>
   );
 }
+
+// ─── Duration delta card ──────────────────────────────────────────────────────
+
+function DurationDeltaCard({ stats }: { stats: TrendsDurationStats }) {
+  const { currentAvg, previousAvg, deltaSeconds, emergencyCount } = stats;
+
+  // With the simplified empty-state guard, this card only renders when there is
+  // at least one bucket with data — so currentAvg is guaranteed non-null here.
+  // currentAvg is an arithmetic mean (often fractional); round before formatting
+  // so fmtDuration's floor doesn't drop a sub-second remainder.
+  const bigValue =
+    currentAvg != null ? fmtDuration(Math.round(currentAvg)) : "—";
+
+  // Delta row: arrow + magnitude vs the previous equal-length window. The delta
+  // is a mean difference (fractional) — round it before formatting and before
+  // testing its sign so a 0.4s drift reads as "estável" rather than "+0s".
+  const roundedDelta = deltaSeconds == null ? null : Math.round(deltaSeconds);
+  let deltaNode: React.ReactNode;
+  if (previousAvg == null || roundedDelta == null) {
+    deltaNode = <span className="text-fg-muted">sem período anterior</span>;
+  } else if (roundedDelta > 0) {
+    deltaNode = (
+      <span className="text-danger font-semibold">
+        ▲ +{fmtDuration(roundedDelta)} vs anterior
+      </span>
+    );
+  } else if (roundedDelta < 0) {
+    deltaNode = (
+      <span className="text-success font-semibold">
+        ▼ −{fmtDuration(Math.abs(roundedDelta))} vs anterior
+      </span>
+    );
+  } else {
+    deltaNode = <span className="text-fg-muted">estável vs anterior</span>;
+  }
+
+  return (
+    <Card padding="sm">
+      <div className="font-mono font-semibold text-2xl text-fg leading-none">
+        {bigValue}
+      </div>
+      <div className="text-2xs text-fg-muted mt-1 font-body">
+        duração média (tônico-clônica)
+      </div>
+      <div className="text-[13px] mt-2 font-body">{deltaNode}</div>
+      {emergencyCount > 0 && (
+        <div className="text-[13px] mt-1 font-body text-danger font-semibold">
+          {emergencyCount === 1
+            ? "1 crise acima de 1 min"
+            : `${emergencyCount} crises acima de 1 min`}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// Slope-based tendency over the visible range (distinct from the vs-anterior
+// delta). pt-BR label per direction; null when flat is not worth surfacing —
+// here we always show it as a subtle caption to give the chart a read at a glance.
+const DIRECTION_LABEL: Record<TrendsDurationStats["direction"], string> = {
+  up: "subindo",
+  down: "descendo",
+  flat: "estável",
+};
 
 // ─── Range / bucket chips ─────────────────────────────────────────────────────
 
@@ -178,9 +243,24 @@ export function TrendsClient({ initial, now }: Props) {
     fetchStats(rangeKey, b, data.firstEpisodeAt);
   }
 
-  const { stats, series, typeSeries, typesPresent, breakdown, medChanges, recent, range } =
-    data;
+  const {
+    stats,
+    series,
+    typeSeries,
+    typesPresent,
+    breakdown,
+    medChanges,
+    recent,
+    range,
+    durationSeries,
+    durationStats,
+  } = data;
   const hasAnyData = series.some((s) => s.count > 0) || recent.length > 0;
+
+  // Duration card renders only when ≥1 tonic-clonic episode with a recorded
+  // duration exists in range; otherwise a gentle empty state. This single
+  // canonical condition guarantees currentAvg is non-null when the card renders.
+  const hasDurations = durationSeries.some((d) => d.n > 0);
 
   const rangeLabel = fmtRangeLabel(range.from, range.to);
 
@@ -287,6 +367,31 @@ export function TrendsClient({ initial, now }: Props) {
           icon={<Calendar size={18} className="text-brand" />}
         />
       </div>
+
+      {/* Duration of tonic-clonic seizures card */}
+      <Card padding="lg">
+        <h3 className="m-0 mb-0.5 font-display font-semibold text-[17px] text-fg">
+          Duração das crises tônico-clônicas
+        </h3>
+        <p className="mt-0 mb-2.5 text-[13px] text-fg-muted font-body">
+          {rangeLabel}
+        </p>
+        {hasDurations ? (
+          <>
+            <DurationTrendChart data={durationSeries} height={180} />
+            <p className="mt-1.5 text-2xs text-fg-muted font-body">
+              Tendência: {DIRECTION_LABEL[durationStats.direction]}
+            </p>
+            <div className="mt-4 pt-4 border-t border-border">
+              <DurationDeltaCard stats={durationStats} />
+            </div>
+          </>
+        ) : (
+          <div className="py-8 text-center text-fg-muted font-body text-sm">
+            Sem durações de crises tônico-clônicas neste período.
+          </div>
+        )}
+      </Card>
 
       {/* Recent episodes card */}
       <Card padding="lg">
