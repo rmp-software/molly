@@ -2,31 +2,18 @@
 
 import React, { useState, useCallback, useRef } from "react";
 import { Card } from "@/app/components/Card";
-import { FrequencyChart, type FrequencyChartSeries, type FrequencyChartMedChange } from "@/app/components/FrequencyChart";
-import { RecentEpisodes, type RecentEpisodeData } from "@/app/components/RecentEpisodes";
+import { FrequencyChart } from "@/app/components/FrequencyChart";
+import { RecentEpisodes } from "@/app/components/RecentEpisodes";
 import { cn } from "@/lib/cn";
 import { fmtNum } from "@/lib/format";
 import { Activity, Award, Calendar } from "lucide-react";
+import { type TrendsPayload } from "@/lib/trends";
 
 // ─── Types mirroring API response ────────────────────────────────────────────
 
-interface StatsPayload {
-  monthlyAverage: number;
-  longestGapDays: number | null;
-  totalInRange: number;
-  totalInYear: number;
-  timeSinceLast: { days: number } | null;
-}
-
-interface StatsResponse {
-  range: { from: string; to: string };
-  bucket: "week" | "month";
-  series: FrequencyChartSeries[];
-  stats: StatsPayload;
-  breakdown: unknown;
-  medChanges: FrequencyChartMedChange[];
-  recent: RecentEpisodeData[];
-}
+// The full response shape lives in `lib/trends.ts` (single source of truth,
+// shared by the server page and the stats API route).
+type StatsResponse = TrendsPayload;
 
 // ─── Range helpers ────────────────────────────────────────────────────────────
 

@@ -2,14 +2,8 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { getActiveDogId } from "@/lib/scope";
 import { prisma } from "@/lib/db";
-import {
-  perPeriod,
-  timeSinceLast,
-  longestGapDays,
-  breakdown,
-  monthlyAverage,
-  type Episode,
-} from "@/lib/stats";
+import { type Episode } from "@/lib/stats";
+import { buildTrendsPayload } from "@/lib/trends";
 import { serializeEpisode } from "@/lib/seizure-types";
 
 export async function GET(request: Request) {
@@ -62,42 +56,6 @@ export async function GET(request: Request) {
     durationSeconds: e.durationSeconds,
   }));
 
-  // Episodes within the requested range
-  const rangeEpisodes = allEpisodes.filter(
-    (e) => e.occurredAt >= from && e.occurredAt < to
-  );
-
-  // Build series (seriesRaw reused below for annotation bucket indices)
-  const seriesRaw = perPeriod(rangeEpisodes, bucket, { from, to });
-  const series = seriesRaw.map((s) => ({
-    label: s.label,
-    start: s.start.toISOString(),
-    count: s.count,
-  }));
-
-  // Stats
-  const mAvg = monthlyAverage(rangeEpisodes, { from, to });
-  const gapDays = longestGapDays(allEpisodes);
-  const tsl = timeSinceLast(allEpisodes, now);
-
-  // Total in current calendar year
-  const yearStart = new Date(now.getFullYear(), 0, 1);
-  const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
-  const totalInYear = allEpisodes.filter(
-    (e) => e.occurredAt >= yearStart && e.occurredAt < yearEnd
-  ).length;
-
-  const stats = {
-    monthlyAverage: mAvg,
-    longestGapDays: gapDays,
-    totalInRange: rangeEpisodes.length,
-    totalInYear,
-    timeSinceLast: tsl ? { days: tsl.days } : null,
-  };
-
-  // Breakdown for the range
-  const bdResult = breakdown(rangeEpisodes);
-
   // Med changes: MedicationSchedule rows for this dog within the range
   // Will be empty until Task 10 creates medications
   const medSchedules = await prisma.medicationSchedule.findMany({
@@ -109,34 +67,6 @@ export async function GET(request: Request) {
       },
     },
     include: { medication: true },
-  });
-
-  // Use seriesRaw (computed above) for annotation bucket indices
-  const medChanges = medSchedules.map((sched) => {
-    const changeDate = sched.effectiveFrom instanceof Date
-      ? sched.effectiveFrom
-      : new Date(sched.effectiveFrom);
-
-    // Find which bucket this date falls into
-    let bucketIndex = -1;
-    for (let i = 0; i < seriesRaw.length; i++) {
-      const bucketStart = seriesRaw[i].start;
-      const bucketEnd =
-        i + 1 < seriesRaw.length
-          ? seriesRaw[i + 1].start
-          : to;
-      if (changeDate >= bucketStart && changeDate < bucketEnd) {
-        bucketIndex = i;
-        break;
-      }
-    }
-
-    const unitsStr = sched.unitsPerDose ? ` ${sched.unitsPerDose}×` : "";
-    return {
-      date: changeDate.toISOString(),
-      label: `${sched.medication.name}${unitsStr}`,
-      bucketIndex,
-    };
   });
 
   // Recent episodes: last 8, newest first
@@ -159,13 +89,14 @@ export async function GET(request: Request) {
     })
   );
 
-  return NextResponse.json({
-    range: { from: from.toISOString(), to: to.toISOString() },
+  const payload = buildTrendsPayload(allEpisodes, {
+    from,
+    to,
     bucket,
-    series,
-    stats,
-    breakdown: bdResult,
-    medChanges,
+    now,
+    medSchedules,
     recent,
   });
+
+  return NextResponse.json(payload);
 }
