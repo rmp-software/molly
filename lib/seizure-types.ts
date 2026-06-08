@@ -4,6 +4,13 @@
 export const VALID_TYPES = ["tonic_clonic", "focal", "absence", "other"] as const;
 export const VALID_SEVERITIES = ["mild", "moderate", "severe"] as const;
 
+// Episode-history anchor (NOT a birthdate): the floor for the "Tudo" (All) range
+// when no episodes exist yet — there is no earlier data to chart before this.
+// Date string in America/Sao_Paulo terms; consumers build the Date (e.g.
+// `new Date(`${EPISODE_HISTORY_START}T00:00:00-03:00`)` or local-time semantics
+// consistent with the rest of the codebase).
+export const EPISODE_HISTORY_START = "2024-01-01";
+
 export type SeizureType = (typeof VALID_TYPES)[number];
 export type Severity = (typeof VALID_SEVERITIES)[number];
 
