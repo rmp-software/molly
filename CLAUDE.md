@@ -24,8 +24,13 @@ that touches user-facing UI MUST also be verified by driving the running app:
 - Use **Playwright** (the `playwright` MCP server is available) to load the affected
   route(s), assert the expected elements/text/state are actually present, and exercise
   the relevant interactions (range/filter toggles, forms, navigation).
+- **Always test at a phone viewport** (e.g. iPhone ~390×844 / 393px wide) — NOT tablet
+  or desktop. This is a mobile-first PWA; the phone is the real surface.
 - **Capture screenshots and visually review them** for layout/overflow/contrast — a
   green assertion is not a passing render.
+- **Visual jank is a blocker.** "Not broken but janky" — misalignment, overflow,
+  clipped text, cramped spacing, bad wrapping, jumpy/unsettled charts — fails the gate
+  even when the feature functionally works. Fix it before the change is considered done.
 - Verify on **WebKit (iPhone-emulated)** as well as desktop (this is a mobile-first
   PWA; see the iOS native-date-input gotcha below — verify platform fixes on the real
   engine, not Chromium).
