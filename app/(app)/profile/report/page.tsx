@@ -61,6 +61,14 @@ interface ReportPayload {
     longestGapDays: number | null;
     byType: Record<string, number>;
     bySeverity: Record<string, number>;
+    durationStats: {
+      currentAvg: number | null;
+      previousAvg: number | null;
+      deltaSeconds: number | null;
+      direction: "up" | "down" | "flat";
+      emergencyCount: number;
+      maxSeconds: number | null;
+    };
   };
   medications: MedInfo[];
   scheduleChanges: ScheduleChange[];
@@ -84,6 +92,12 @@ const FORM_PT: Record<string, string> = {
   pill: "Comprimido",
   capsule: "Cápsula",
   tablet: "Tablete",
+};
+
+const DIRECTION_LABEL: Record<"up" | "down" | "flat", string> = {
+  up: "subindo",
+  down: "descendo",
+  flat: "estável",
 };
 
 function formatDate(isoStr: string): string {
@@ -408,6 +422,9 @@ export default function ReportPage() {
                 </div>
               </div>
             )}
+
+            {/* Tonic-clonic duration block */}
+            <DurationBlock stats={report.summary.durationStats} />
           </Card>
 
           {/* Episodes table */}
@@ -513,6 +530,109 @@ export default function ReportPage() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Duration Block ───────────────────────────────────────────────────────────
+
+function DurationBlock({
+  stats,
+}: {
+  stats: ReportPayload["summary"]["durationStats"];
+}) {
+  const { currentAvg, maxSeconds, emergencyCount, deltaSeconds, previousAvg, direction } =
+    stats;
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border">
+      <p className="mt-0 mb-2 font-body text-sm font-semibold text-fg">
+        Duração das crises tônico-clônicas
+      </p>
+
+      {currentAvg == null ? (
+        <p className="m-0 font-body text-sm text-fg-muted">
+          Sem durações de crises tônico-clônicas registradas neste período.
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
+            <DurationItem label="Média" value={fmtDuration(Math.round(currentAvg))} />
+            <DurationItem
+              label="Máxima"
+              value={maxSeconds != null ? fmtDuration(maxSeconds) : "—"}
+            />
+            <DurationItem
+              label="Acima de 1 min"
+              value={String(emergencyCount)}
+              danger={emergencyCount > 0}
+            />
+          </div>
+
+          {/* Trend: slope direction + delta vs previous window */}
+          <p className="mt-2.5 mb-0 font-body text-sm text-fg">
+            <span className="text-fg-muted">Tendência:</span>{" "}
+            <span className="font-semibold">{DIRECTION_LABEL[direction]}</span>
+            {previousAvg == null ? (
+              <span className="text-fg-muted">{" "}· sem período anterior</span>
+            ) : (
+              <DurationDelta deltaSeconds={deltaSeconds} previousAvg={previousAvg} />
+            )}
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DurationDelta({
+  deltaSeconds,
+  previousAvg,
+}: {
+  deltaSeconds: number | null;
+  previousAvg: number | null;
+}) {
+  // Round the mean difference before testing its sign so a sub-second drift
+  // reads as "estável" rather than "+0s".
+  const rounded = deltaSeconds == null ? null : Math.round(deltaSeconds);
+  if (previousAvg == null || rounded == null) return null;
+  if (rounded > 0) {
+    return (
+      <span className="text-danger font-semibold">
+        {" "}· ▲ +{fmtDuration(rounded)} vs anterior
+      </span>
+    );
+  }
+  if (rounded < 0) {
+    return (
+      <span className="text-success font-semibold">
+        {" "}· ▼ −{fmtDuration(Math.abs(rounded))} vs anterior
+      </span>
+    );
+  }
+  return <span className="text-fg-muted">{" "}· estável vs anterior</span>;
+}
+
+function DurationItem({
+  label,
+  value,
+  danger = false,
+}: {
+  label: string;
+  value: string;
+  danger?: boolean;
+}) {
+  return (
+    <div className="p-3 rounded-sm bg-bg-2">
+      <p className="m-0 mb-1 font-body text-xs text-fg-muted">{label}</p>
+      <p
+        className={cn(
+          "m-0 font-mono text-xl font-bold tracking-tight",
+          danger ? "text-danger" : "text-fg"
+        )}
+      >
+        {value}
+      </p>
     </div>
   );
 }
