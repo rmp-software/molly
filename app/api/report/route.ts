@@ -3,7 +3,7 @@ import { requireSession } from "@/lib/auth";
 import { getActiveDog } from "@/lib/scope";
 import { prisma } from "@/lib/db";
 import { serializeEpisode } from "@/lib/seizure-types";
-import { monthlyAverage, longestGapDays, breakdown } from "@/lib/stats";
+import { monthlyAverage, longestGapDays, breakdown, durationStats } from "@/lib/stats";
 import { activeScheduleOn } from "@/lib/schedule";
 import { dbDateToLocalMidnight } from "@/lib/dates";
 
@@ -77,6 +77,41 @@ export async function GET(request: Request) {
   const avgPerMonth = monthlyAverage(episodeObjs, { from, to });
   const gapDays = longestGapDays(episodeObjs);
   const { byType, bySeverity } = breakdown(episodeObjs);
+
+  // durationStats only matters when there's ≥1 tonic-clonic episode in range;
+  // otherwise skip the full-history fetch + computation and use the empty sentinel.
+  // durationStats needs ALL episodes (it filters the previous-window internally),
+  // so fetch the dog's full history rather than only the in-range rows.
+  // bucket = "month": the report is a static document, so month buckets are the
+  // sensible slope granularity (not week/day, which would be noisy here).
+  let tonicClonicDuration: ReturnType<typeof durationStats>;
+  if (episodeObjs.some((e) => e.type === "tonic_clonic")) {
+    const allEpisodeRows = await prisma.seizureEpisode.findMany({
+      where: { dogId: dog.id },
+      orderBy: { occurredAt: "asc" },
+    });
+    const allEpisodeObjs = allEpisodeRows.map((e) => ({
+      occurredAt: e.occurredAt,
+      type: e.type,
+      severity: e.severity ?? null,
+      durationSeconds: e.durationSeconds ?? null,
+    }));
+    tonicClonicDuration = durationStats(
+      allEpisodeObjs,
+      { from, to },
+      "tonic_clonic",
+      "month"
+    );
+  } else {
+    tonicClonicDuration = {
+      currentAvg: null,
+      previousAvg: null,
+      deltaSeconds: null,
+      direction: "flat",
+      emergencyCount: 0,
+      maxSeconds: null,
+    };
+  }
 
   // Fetch active medications with latest schedule
   const medications = await prisma.medication.findMany({
@@ -158,6 +193,14 @@ export async function GET(request: Request) {
       longestGapDays: gapDays,
       byType,
       bySeverity,
+      durationStats: {
+        currentAvg: tonicClonicDuration.currentAvg,
+        previousAvg: tonicClonicDuration.previousAvg,
+        deltaSeconds: tonicClonicDuration.deltaSeconds,
+        direction: tonicClonicDuration.direction,
+        emergencyCount: tonicClonicDuration.emergencyCount,
+        maxSeconds: tonicClonicDuration.maxSeconds,
+      },
     },
     medications: serializedMeds,
     scheduleChanges: serializedScheduleChanges,
