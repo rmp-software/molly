@@ -120,6 +120,20 @@ function dateInputToIso(dateStr: string, endOfDay = false): string {
   return endOfDay ? `${dateStr}T23:59:59.999-03:00` : `${dateStr}T00:00:00.000-03:00`;
 }
 
+const dateInputStyle: React.CSSProperties = {
+  width: "100%",
+  minWidth: 0,
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  fontFamily: "var(--font-body)",
+  fontSize: "var(--text-sm)",
+  padding: "8px 10px",
+  borderRadius: "var(--radius-sm)",
+  border: "1.5px solid var(--border-strong)",
+  background: "var(--surface)",
+  color: "var(--fg)",
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ReportPage() {
@@ -203,72 +217,87 @@ export default function ReportPage() {
         className="no-print"
         style={{
           display: "flex",
-          alignItems: "center",
+          flexDirection: "column",
           gap: "12px",
           marginBottom: "20px",
-          flexWrap: "wrap",
         }}
       >
-        <Button
-          variant="ghost"
-          size="sm"
-          icon={<ArrowLeft size={16} />}
-          onClick={() => router.back()}
-          style={{ flexShrink: 0 }}
-        >
-          Voltar
-        </Button>
+        {/* Back */}
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<ArrowLeft size={16} />}
+            onClick={() => router.back()}
+          >
+            Voltar
+          </Button>
+        </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", flex: 1 }}>
+        {/* Date range */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "12px",
+            alignItems: "flex-end",
+          }}
+        >
           <label
-            style={{ fontSize: "var(--text-sm)", color: "var(--fg-muted)", fontFamily: "var(--font-body)" }}
-          >
-            De
-          </label>
-          <input
-            type="date"
-            value={pendingFrom}
-            onChange={(e) => setPendingFrom(e.target.value)}
             style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-sm)",
-              padding: "6px 10px",
-              borderRadius: "var(--radius-sm)",
-              border: "1.5px solid var(--border-strong)",
-              background: "var(--surface)",
-              color: "var(--fg)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              flex: "1 1 140px",
+              minWidth: 0,
             }}
-          />
+          >
+            <span
+              style={{ fontSize: "var(--text-sm)", color: "var(--fg-muted)", fontFamily: "var(--font-body)" }}
+            >
+              De
+            </span>
+            <input
+              type="date"
+              value={pendingFrom}
+              onChange={(e) => setPendingFrom(e.target.value)}
+              style={dateInputStyle}
+            />
+          </label>
           <label
-            style={{ fontSize: "var(--text-sm)", color: "var(--fg-muted)", fontFamily: "var(--font-body)" }}
-          >
-            Até
-          </label>
-          <input
-            type="date"
-            value={pendingTo}
-            onChange={(e) => setPendingTo(e.target.value)}
             style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-sm)",
-              padding: "6px 10px",
-              borderRadius: "var(--radius-sm)",
-              border: "1.5px solid var(--border-strong)",
-              background: "var(--surface)",
-              color: "var(--fg)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "6px",
+              flex: "1 1 140px",
+              minWidth: 0,
             }}
-          />
+          >
+            <span
+              style={{ fontSize: "var(--text-sm)", color: "var(--fg-muted)", fontFamily: "var(--font-body)" }}
+            >
+              Até
+            </span>
+            <input
+              type="date"
+              value={pendingTo}
+              onChange={(e) => setPendingTo(e.target.value)}
+              style={dateInputStyle}
+            />
+          </label>
           <Button
             variant="secondary"
             size="sm"
             icon={<RefreshCw size={14} />}
             onClick={handleUpdate}
             loading={loading}
+            style={{ flex: "1 1 100%" }}
           >
             Atualizar
           </Button>
         </div>
 
+        {/* Export */}
         <div style={{ display: "flex", gap: "8px" }}>
           <Button
             variant="secondary"
@@ -276,14 +305,16 @@ export default function ReportPage() {
             icon={<Printer size={14} />}
             onClick={() => window.print()}
             title="Abre o diálogo de impressão do navegador. Escolha 'Salvar como PDF' para exportar."
+            style={{ flex: 1 }}
           >
             Salvar como PDF
           </Button>
-          <a href={csvHref} download>
+          <a href={csvHref} download style={{ flex: 1, display: "flex" }}>
             <Button
               variant="secondary"
               size="sm"
               icon={<Download size={14} />}
+              fullWidth
             >
               Baixar CSV
             </Button>

@@ -262,7 +262,7 @@ export function WeightLog({ initialEntries }: Props) {
           style={{ display: "flex", flexDirection: "column", gap: "12px" }}
         >
           <div style={{ display: "flex", gap: "8px" }}>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <Input
                 type="date"
                 label="Data"
@@ -271,7 +271,7 @@ export function WeightLog({ initialEntries }: Props) {
                 required
               />
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <Input
                 type="text"
                 inputMode="decimal"
