@@ -491,7 +491,9 @@
     </styling_conventions>
 
     <components>
-      <!-- Specs + JSX reference in .design-system/.../project/components/**. Recreate visually in app/. -->
+      <!-- .design-system/.../project/components/** is a visual/behavioral REFERENCE, not an
+           instruction to hand-build. Components may be backed by shadcn/established libraries
+           (see CLAUDE.md → Dependencies); match the reference's look & behavior. -->
       - Button: variants primary (brand fill, --brand-on) / secondary (border, no fill) / ghost / destructive;
         sizes incl. lg (hero). Press translateY(1px) + tighter shadow; focus = --focus-ring-shadow;
         disabled opacity ~.45. Min height 44px.

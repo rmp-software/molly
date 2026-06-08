@@ -333,6 +333,28 @@
   --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in:       cubic-bezier(0.4, 0, 1, 1);
   --ease-spring:   cubic-bezier(0.34, 1.32, 0.64, 1);
+
+  /* shadcn alias layer — map shadcn's semantic tokens to Molly's tokens so
+     shadcn/ui components inherit the warm theme unmodified. */
+  --color-background:            var(--bg);
+  --color-foreground:            var(--fg);
+  --color-card:                  var(--surface);
+  --color-card-foreground:       var(--fg);
+  --color-popover:               var(--surface);
+  --color-popover-foreground:    var(--fg);
+  --color-primary:               var(--brand);
+  --color-primary-foreground:    var(--brand-on);
+  --color-secondary:             var(--bg-2);
+  --color-secondary-foreground:  var(--fg-2);
+  --color-muted:                 var(--bg-2);
+  --color-muted-foreground:      var(--fg-muted);
+  --color-accent:                var(--brand-soft);
+  --color-accent-foreground:     var(--brand-press);
+  --color-destructive:           var(--danger);
+  --color-destructive-foreground: var(--neutral-0);
+  --color-border:                var(--border);
+  --color-input:                 var(--border-strong);
+  --color-ring:                  var(--focus-ring);
 }
 
 /* ---------- Keyframe animations -------------------------- */
