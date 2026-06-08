@@ -13,6 +13,7 @@ import { Logo } from "../components/Logo";
 import { Sheet } from "../components/Sheet";
 import { useToast } from "../components/Toast";
 import { cn } from "@/lib/cn";
+import { typeLabelPt, type SeizureType } from "@/lib/seizure-types";
 import {
   Home,
   Activity,
@@ -72,6 +73,40 @@ export default function StyleguidePage() {
     { label: "Mai", value: 1 },
     { label: "Jun", value: 2 },
   ];
+
+  // Each displayed type has at least one non-zero bucket so the legend/stacks
+  // honestly demo "zero types absent" (production passes only typesPresent).
+  // Columns intentionally vary which type is topmost (incl. cases where the
+  // canonical-last type `other` is zero) to exercise the rounded-top logic.
+  const stackedTypeData = [
+    { label: "Jan", tonic_clonic: 2, focal: 1, absence: 1, other: 0 },
+    { label: "Fev", tonic_clonic: 1, focal: 0, absence: 1, other: 1 },
+    { label: "Mar", tonic_clonic: 3, focal: 2, absence: 0, other: 2 },
+    { label: "Abr", tonic_clonic: 1, focal: 1, absence: 2, other: 0 },
+  ];
+
+  // STATIC literal swatch classes (one per seizure type) — present in source so
+  // Turbopack's JIT generates them. Never build these dynamically.
+  const typeSwatchClass: Record<SeizureType, string> = {
+    tonic_clonic: "bg-[var(--chart-type-tonic-clonic)]",
+    focal: "bg-[var(--chart-type-focal)]",
+    absence: "bg-[var(--chart-type-absence)]",
+    other: "bg-[var(--chart-type-other)]",
+  };
+
+  const typeStacks = (
+    [
+      { id: "tonic_clonic", cssVar: "--chart-type-tonic-clonic" },
+      { id: "focal", cssVar: "--chart-type-focal" },
+      { id: "absence", cssVar: "--chart-type-absence" },
+      { id: "other", cssVar: "--chart-type-other" },
+    ] as const
+  ).map((t) => ({
+    key: t.id,
+    label: typeLabelPt(t.id),
+    color: `var(${t.cssVar})`,
+    swatchClass: typeSwatchClass[t.id],
+  }));
 
   return (
     <div className="max-w-[480px] mx-auto pt-6 px-4 pb-[120px]">
@@ -220,6 +255,31 @@ export default function StyleguidePage() {
             data={chartData}
             annotations={[{ index: 3, label: "Dose ajustada" }]}
           />
+        </Card>
+      </Section>
+
+      {/* Stacked BarChart by seizure type */}
+      <Section title="Gráfico de barras empilhado (por tipo)">
+        <Card variant="default" padding="md">
+          <div className="font-semibold text-[15px] mb-3">Crises por tipo</div>
+          <BarChart
+            data={stackedTypeData}
+            stacks={typeStacks}
+            ariaLabel="Crises por tipo ao longo do tempo"
+          />
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+            {typeStacks.map((s) => (
+              <div key={s.key} className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "h-2.5 w-2.5 shrink-0 rounded-[2px]",
+                    s.swatchClass,
+                  )}
+                />
+                <span className="text-2xs text-fg-2">{s.label}</span>
+              </div>
+            ))}
+          </div>
         </Card>
       </Section>
 

@@ -42,7 +42,6 @@ export function FrequencyChart({ series, medChanges = [], height = 180 }: Props)
     <BarChart
       data={data}
       height={height}
-      gridLines={3}
       annotations={annotations}
       ariaLabel="Frequência de crises ao longo do tempo"
     />
