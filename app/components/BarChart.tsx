@@ -136,10 +136,19 @@ function StackedTooltip({
 // the rounded top. We can't rely on array position (the last stack may be 0 for
 // a given column), so we compute the topmost present key per data row and apply
 // the radius via a custom shape that rounds only that segment.
+type StackedBarShapeProps = {
+  payload?: Record<string, unknown>;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  fill?: string;
+};
+
 function makeStackedBarShape(stackKey: string, stackKeys: string[]) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function StackedBarShape(props: any) {
-    const payload = props?.payload as Record<string, unknown> | undefined;
+  // Recharts passes a superset of these props; we read only what we need.
+  return function StackedBarShape(props: StackedBarShapeProps) {
+    const payload = props.payload;
     const topKey = payload
       ? [...stackKeys]
           .reverse()
@@ -174,6 +183,27 @@ export function BarChart({
       )
     : baseConfig;
 
+  // Annotations sharing a bucket would overprint into an illegible smear, and
+  // long labels collide/clip at phone width. Merge per-bucket (showing the first
+  // label + `+N` when several land together) and truncate to a compact width so
+  // each reference line carries one short, readable tag.
+  const mergedAnnotations = (() => {
+    const byIndex = new Map<number, string[]>();
+    for (const a of annotations) {
+      const list = byIndex.get(a.index);
+      if (list) list.push(a.label);
+      else byIndex.set(a.index, [a.label]);
+    }
+    const truncate = (s: string, n = 14) =>
+      s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s;
+    return [...byIndex.entries()].map(([index, labels]) => {
+      const extra = labels.length - 1;
+      const label =
+        truncate(labels[0]) + (extra > 0 ? ` +${extra}` : "");
+      return { index, label };
+    });
+  })();
+
   return (
     <ChartContainer
       config={config}
@@ -191,16 +221,27 @@ export function BarChart({
           tick={{ fill: "var(--fg-muted)", fontSize: 11 }}
         />
         <YAxis hide domain={[0, "dataMax"]} />
-        {annotations.map((a, i) => (
-          <ReferenceLine
-            key={`ann-${i}-${a.index}`}
-            x={data[a.index]?.label}
-            stroke="var(--info)"
-            strokeDasharray="3 3"
-            strokeWidth={1.5}
-            label={{ value: a.label, fill: "var(--info)", fontSize: 10, position: "insideTopLeft" }}
-          />
-        ))}
+        {mergedAnnotations.map((a) => {
+          // Anchor labels in the right third to the inside-right edge so they
+          // grow leftward and never clip off the chart at phone width.
+          const denom = data.length > 1 ? data.length - 1 : 1;
+          const isRightEdge = data.length > 0 && a.index / denom > 0.5;
+          return (
+            <ReferenceLine
+              key={`ann-${a.index}`}
+              x={data[a.index]?.label}
+              stroke="var(--info)"
+              strokeDasharray="3 3"
+              strokeWidth={1.5}
+              label={{
+                value: a.label,
+                fill: "var(--info)",
+                fontSize: 10,
+                position: isRightEdge ? "insideTopRight" : "insideTopLeft",
+              }}
+            />
+          );
+        })}
         {isStacked ? (
           <>
             <ChartTooltip
