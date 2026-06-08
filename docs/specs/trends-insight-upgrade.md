@@ -1,7 +1,15 @@
+---
+slug: trends-insight-upgrade
+status: planned
+linear_project_id: e8a0cc19-bc1b-4780-a279-b976334a5291
+linear_parent_issue: RMP-167
+feature_branch: feature/trends-insight-upgrade
+---
+
 # Trends insight upgrade — design
 
 Date: 2026-06-08
-Status: approved (pending spec review)
+Status: approved
 
 ## Problem
 

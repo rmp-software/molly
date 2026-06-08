@@ -35,5 +35,8 @@ yarn-error.log*
 # Test coverage
 /coverage
 
+# Local Linear feature-lifecycle cache (per-machine; not source)
+.linear_features.json
+
 # TypeScript
 *.tsbuildinfo
