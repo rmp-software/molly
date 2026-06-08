@@ -7,6 +7,17 @@ import { Card } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/app/components/ui/alert-dialog";
 import { fmtKg } from "@/lib/format";
 
 export interface WeightEntry {
@@ -96,16 +107,11 @@ export function WeightLog({ initialEntries }: Props) {
   const [dateVal, setDateVal] = useState("");
   const [kgVal, setKgVal] = useState("");
   const [loading, setLoading] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const deleteConfirmTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Only set today's date on the client (avoid SSR mismatch)
   useEffect(() => {
     setDateVal(getTodayIso());
   }, []);
-
-  // Clear delete-confirm timer on unmount to avoid state updates on unmounted component
-  useEffect(() => () => { if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current); }, []);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -141,16 +147,7 @@ export function WeightLog({ initialEntries }: Props) {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (deleteConfirm !== id) {
-      setDeleteConfirm(id);
-      // Auto-reset confirm after 4 s if user doesn't confirm
-      if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
-      deleteConfirmTimerRef.current = setTimeout(() => setDeleteConfirm(null), 4000);
-      return;
-    }
-    if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
-    setDeleteConfirm(null);
+  async function doDelete(id: string) {
     try {
       const res = await fetch(`/api/weight/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Erro ao remover");
@@ -189,23 +186,36 @@ export function WeightLog({ initialEntries }: Props) {
                     {fmtDatePtBR(entry.measuredOn)}
                   </span>
                 </div>
-                <Button
-                  variant={deleteConfirm === entry.id ? "destructive" : "ghost"}
-                  size="sm"
-                  iconOnly
-                  icon={<Trash2 size={16} />}
-                  aria-label={
-                    deleteConfirm === entry.id
-                      ? "Confirmar remoção"
-                      : "Remover peso"
-                  }
-                  onClick={() => handleDelete(entry.id)}
-                  title={
-                    deleteConfirm === entry.id
-                      ? "Clique novamente para confirmar"
-                      : "Remover"
-                  }
-                />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconOnly
+                      icon={<Trash2 size={16} />}
+                      aria-label="Remover peso"
+                      title="Remover"
+                    />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remover este peso?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {fmtKg(entry.weightKg)} · {fmtDatePtBR(entry.measuredOn)}. Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-pill">Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        variant="destructive"
+                        className="rounded-pill"
+                        onClick={() => doDelete(entry.id)}
+                      >
+                        Remover
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             ))}
           </div>

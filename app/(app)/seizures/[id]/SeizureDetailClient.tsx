@@ -7,6 +7,17 @@ import { Card } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { Input, Textarea } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/app/components/ui/alert-dialog";
 import { cn } from "@/lib/cn";
 import { fmtDuration, fmtDateTimePt } from "@/lib/format";
 import {
@@ -87,13 +98,7 @@ export function SeizureDetailClient({ episode }: Props) {
     setMaxDatetime(`${y}-${mo}-${d}T${h}:${mi}`);
   }, []);
 
-  // Delete confirm state (two-tap pattern)
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const deleteConfirmTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Clear delete-confirm timer on unmount to avoid state updates on unmounted component
-  useEffect(() => () => { if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current); }, []);
 
   const occurredAtDate = new Date(episode.occurredAt);
   const isEmergency =
@@ -139,16 +144,7 @@ export function SeizureDetailClient({ episode }: Props) {
     }
   }
 
-  async function handleDelete() {
-    if (!deleteConfirm) {
-      setDeleteConfirm(true);
-      // Auto-reset confirm after 4 s if user doesn't confirm
-      if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
-      deleteConfirmTimerRef.current = setTimeout(() => setDeleteConfirm(false), 4000);
-      return;
-    }
-    if (deleteConfirmTimerRef.current) clearTimeout(deleteConfirmTimerRef.current);
-    setDeleteConfirm(false);
+  async function doDelete() {
     setDeleting(true);
     try {
       const res = await fetch(`/api/seizures/${episode.id}`, {
@@ -216,21 +212,41 @@ export function SeizureDetailClient({ episode }: Props) {
               setSeverity(episode.severity);
               setRescueGiven(episode.rescueGiven);
               setNotes(episode.notes ?? "");
-              setDeleteConfirm(false);
               setEditing(true);
             }}
           >
             Editar
           </Button>
-          <Button
-            variant={deleteConfirm ? "destructive" : "ghost"}
-            icon={<Trash2 size={16} />}
-            loading={deleting}
-            onClick={handleDelete}
-            title={deleteConfirm ? "Clique para confirmar exclusão" : "Excluir episódio"}
-          >
-            {deleteConfirm ? "Confirmar exclusão" : "Excluir"}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                icon={<Trash2 size={16} />}
+                loading={deleting}
+                title="Excluir episódio"
+              >
+                Excluir
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir este episódio?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-pill">Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  className="rounded-pill"
+                  onClick={doDelete}
+                >
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )}
 
