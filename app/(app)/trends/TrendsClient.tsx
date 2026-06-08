@@ -3,11 +3,13 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Card } from "@/app/components/Card";
 import { FrequencyChart } from "@/app/components/FrequencyChart";
+import { TypeBreakdown } from "@/app/components/TypeBreakdown";
 import { RecentEpisodes } from "@/app/components/RecentEpisodes";
 import { cn } from "@/lib/cn";
 import { fmtNum } from "@/lib/format";
 import { Activity, Award, Calendar } from "lucide-react";
 import { type TrendsPayload } from "@/lib/trends";
+import { EPISODE_HISTORY_START } from "@/lib/seizure-types";
 
 // ─── Types mirroring API response ────────────────────────────────────────────
 
@@ -19,11 +21,20 @@ type StatsResponse = TrendsPayload;
 
 type RangeKey = "3m" | "6m" | "12m" | "all";
 
-function computeRange(key: RangeKey, now: Date): { from: string; to: string } {
+function computeRange(
+  key: RangeKey,
+  now: Date,
+  firstEpisodeAt: string | null
+): { from: string; to: string } {
   const to = now.toISOString();
   if (key === "all") {
-    // Far-past origin for "all"
-    return { from: new Date(2000, 0, 1).toISOString(), to };
+    // Start at the first episode; floor at the episode-history anchor when none.
+    // Build the anchor with an explicit America/Sao_Paulo (-03:00) offset so the
+    // ISO floor doesn't shift a day earlier in non-UTC-3 browsers.
+    const from =
+      firstEpisodeAt ??
+      new Date(`${EPISODE_HISTORY_START}T00:00:00-03:00`).toISOString();
+    return { from, to };
   }
   const months = key === "3m" ? 3 : key === "12m" ? 12 : 6;
   const from = new Date(now.getFullYear(), now.getMonth() - months, now.getDate());
@@ -119,7 +130,11 @@ export function TrendsClient({ initial, now }: Props) {
   const currentYear = nowDate.getFullYear();
 
   const fetchStats = useCallback(
-    async (newRange: RangeKey, newBucket: "week" | "month") => {
+    async (
+      newRange: RangeKey,
+      newBucket: "week" | "month",
+      firstEpisodeAt: string | null
+    ) => {
       // Abort any in-flight request before starting a new one
       abortRef.current?.abort();
       const controller = new AbortController();
@@ -127,7 +142,10 @@ export function TrendsClient({ initial, now }: Props) {
 
       setLoading(true);
       try {
-        const range = computeRange(newRange, nowDate);
+        // `firstEpisodeAt` is range-independent (computed over all episodes), so
+        // the current payload's value is correct even before this fetch lands —
+        // the first "Tudo" click uses it without a server round-trip.
+        const range = computeRange(newRange, nowDate, firstEpisodeAt);
         const params = new URLSearchParams({
           from: range.from,
           to: range.to,
@@ -152,15 +170,16 @@ export function TrendsClient({ initial, now }: Props) {
 
   function handleRangeChange(key: RangeKey) {
     setRangeKey(key);
-    fetchStats(key, bucket);
+    fetchStats(key, bucket, data.firstEpisodeAt);
   }
 
   function handleBucketChange(b: "week" | "month") {
     setBucket(b);
-    fetchStats(rangeKey, b);
+    fetchStats(rangeKey, b, data.firstEpisodeAt);
   }
 
-  const { stats, series, medChanges, recent, range } = data;
+  const { stats, series, typeSeries, typesPresent, breakdown, medChanges, recent, range } =
+    data;
   const hasAnyData = series.some((s) => s.count > 0) || recent.length > 0;
 
   const rangeLabel = fmtRangeLabel(range.from, range.to);
@@ -219,7 +238,25 @@ export function TrendsClient({ initial, now }: Props) {
         </div>
 
         {hasAnyData ? (
-          <FrequencyChart series={series} medChanges={medChanges} height={180} />
+          <>
+            <FrequencyChart
+              typeSeries={typeSeries}
+              typesPresent={typesPresent}
+              medChanges={medChanges}
+              height={180}
+            />
+            {typesPresent.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <h4 className="m-0 mb-2.5 font-display font-semibold text-[15px] text-fg">
+                  Por tipo
+                </h4>
+                <TypeBreakdown
+                  byType={breakdown.byType}
+                  typesPresent={typesPresent}
+                />
+              </div>
+            )}
+          </>
         ) : (
           <div className="py-8 text-center text-fg-muted font-body text-sm">
             Nenhuma crise registrada ainda.

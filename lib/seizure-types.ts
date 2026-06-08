@@ -31,6 +31,28 @@ export function typeLabelPt(type: SeizureType): string {
   return TYPE_OPTIONS.find((t) => t.id === type)?.label ?? type;
 }
 
+// ─── Per-type chart colors (single source of truth) ───────────────────────────
+// Both maps are keyed by SeizureType and MUST stay in lockstep so the chart
+// (`fill`) and the HTML swatches (legend/breakdown/tooltip) match exactly.
+//
+// `TYPE_SWATCH_CLASS` values are STATIC literal Tailwind classes — they must
+// remain literal strings present in source so Turbopack's JIT scans and
+// generates them. Never build these dynamically.
+export const TYPE_SWATCH_CLASS: Record<SeizureType, string> = {
+  tonic_clonic: "bg-[var(--chart-type-tonic-clonic)]",
+  focal: "bg-[var(--chart-type-focal)]",
+  absence: "bg-[var(--chart-type-absence)]",
+  other: "bg-[var(--chart-type-other)]",
+};
+
+// Matching `var(--…)` strings feed the Recharts SVG `fill`.
+export const TYPE_COLOR_VAR: Record<SeizureType, string> = {
+  tonic_clonic: "var(--chart-type-tonic-clonic)",
+  focal: "var(--chart-type-focal)",
+  absence: "var(--chart-type-absence)",
+  other: "var(--chart-type-other)",
+};
+
 export function serializeEpisode(e: {
   id: string;
   occurredAt: Date;
