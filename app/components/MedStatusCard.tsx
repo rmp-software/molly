@@ -104,7 +104,7 @@ export function MedStatusCard({
     >
       {/* Header block: top row + full-width subtitle, grouped tightly together */}
       <div className="flex flex-col gap-1.5">
-        {/* Top row: chip · name · days block · ⋯ */}
+        {/* Top row: chip · name · ⋯ */}
         <div className="flex items-center gap-3">
           {chipIcon && (
             <span
@@ -119,19 +119,6 @@ export function MedStatusCard({
           <p className="font-display font-semibold text-lg text-fg m-0 min-w-0 flex-1">
             {name}
           </p>
-          <div className="text-right flex-none">
-            <div
-              className={cn(
-                "font-mono font-semibold text-[24px] leading-none [font-feature-settings:'tnum'_1,'zero'_1]",
-                daysNumClass[st]
-              )}
-            >
-              {daysRemaining}
-            </div>
-            <div className="text-2xs text-fg-muted mt-0.5">
-              {daysRemaining === 1 ? "dia restante" : "dias restantes"}
-            </div>
-          </div>
           {onMenuClick && (
             <button
               type="button"
@@ -163,16 +150,29 @@ export function MedStatusCard({
         />
       </div>
 
-      {/* Footer: status pill only (reorder action omitted per spec) */}
-      <div className="flex items-center gap-2.5">
+      {/* Footer: status pill + days-remaining, grouped with the bar's hierarchy.
+          Days sits below the bar (not the header) at a small size; the number
+          keeps the status color as the urgency cue. */}
+      <div className="flex items-center justify-between gap-2.5">
         <span
           className={cn(
-            "font-semibold text-[12.5px] inline-flex items-center gap-1.5 py-[5px] px-2.5 rounded-pill border border-transparent",
+            "font-semibold text-[12.5px] inline-flex items-center gap-1.5 py-[5px] px-2.5 rounded-pill border border-transparent min-w-0",
             pillClass[st]
           )}
         >
           {icon}
           {label}
+        </span>
+        <span className="flex-none text-[13px] text-fg-muted whitespace-nowrap">
+          <span
+            className={cn(
+              "font-mono font-semibold [font-feature-settings:'tnum'_1,'zero'_1]",
+              daysNumClass[st]
+            )}
+          >
+            {daysRemaining}
+          </span>{" "}
+          {daysRemaining === 1 ? "dia restante" : "dias restantes"}
         </span>
       </div>
     </div>
