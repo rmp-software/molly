@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export type MedStatus = "ok" | "reorder" | "urgent";
@@ -15,6 +16,8 @@ export interface MedStatusCardProps {
   chipIcon?: React.ReactNode;
   pillLabel?: string;
   onClick?: () => void;
+  onMenuClick?: () => void;
+  menuLabel?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -65,6 +68,8 @@ export function MedStatusCard({
   chipIcon,
   pillLabel,
   onClick,
+  onMenuClick,
+  menuLabel,
   className,
   style,
 }: MedStatusCardProps) {
@@ -97,35 +102,57 @@ export function MedStatusCard({
       style={style}
       {...interactiveProps}
     >
-      {/* Top row */}
-      <div className="flex items-center gap-3">
-        {chipIcon && (
-          <span
-            className={cn(
-              "w-[42px] h-[42px] rounded-[12px] flex-none grid place-items-center",
-              chipToneClass[st]
-            )}
-          >
-            {chipIcon}
-          </span>
+      {/* Header block: top row + full-width subtitle, grouped tightly together */}
+      <div className="flex flex-col gap-1.5">
+        {/* Top row: chip · name · days block · ⋯ */}
+        <div className="flex items-center gap-3">
+          {chipIcon && (
+            <span
+              className={cn(
+                "w-[42px] h-[42px] rounded-[12px] flex-none grid place-items-center",
+                chipToneClass[st]
+              )}
+            >
+              {chipIcon}
+            </span>
+          )}
+          <p className="font-display font-semibold text-lg text-fg m-0 min-w-0 flex-1">
+            {name}
+          </p>
+          <div className="text-right flex-none">
+            <div
+              className={cn(
+                "font-mono font-semibold text-[24px] leading-none [font-feature-settings:'tnum'_1,'zero'_1]",
+                daysNumClass[st]
+              )}
+            >
+              {daysRemaining}
+            </div>
+            <div className="text-2xs text-fg-muted mt-0.5">
+              {daysRemaining === 1 ? "dia restante" : "dias restantes"}
+            </div>
+          </div>
+          {onMenuClick && (
+            <button
+              type="button"
+              aria-label={menuLabel ?? `Ações para ${name}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onMenuClick();
+              }}
+              className="flex-none w-11 h-11 -mr-2 grid place-items-center text-fg-muted rounded-md transition-colors duration-[140ms] ease-standard active:bg-bg [-webkit-tap-highlight-color:transparent]"
+            >
+              <MoreHorizontal size={20} />
+            </button>
+          )}
+        </div>
+
+        {/* Full-width subtitle: dose · times · mg/kg. Fits on one line at phone
+            width; if ever too narrow it wraps only at the " · " separators (each
+            fact uses non-breaking spaces) — never mid-phrase, never truncated. */}
+        {dose && (
+          <p className="text-[13px] text-fg-muted m-0 leading-snug">{dose}</p>
         )}
-        <div>
-          <p className="font-display font-semibold text-lg text-fg m-0">{name}</p>
-          {dose && <p className="text-[13px] text-fg-muted mt-px mb-0">{dose}</p>}
-        </div>
-        <div className="ml-auto text-right flex-none">
-          <div
-            className={cn(
-              "font-mono font-semibold text-[24px] leading-none [font-feature-settings:'tnum'_1,'zero'_1]",
-              daysNumClass[st]
-            )}
-          >
-            {daysRemaining}
-          </div>
-          <div className="text-2xs text-fg-muted mt-0.5">
-            {daysRemaining === 1 ? "dia restante" : "dias restantes"}
-          </div>
-        </div>
       </div>
 
       {/* Stock track */}
