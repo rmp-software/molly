@@ -39,6 +39,12 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  // iOS ignores `media` on apple-touch-icon (unlike rel="icon"), and a web clip
+  // can't switch icons by light/dark — so we declare ONE unconditional icon.
+  // It's the gold-on-dark brand tile, which reads as intentional in both modes.
+  icons: {
+    apple: { url: "/pwa-icon/apple", sizes: "180x180", type: "image/png" },
+  },
 };
 
 export const viewport: Viewport = {
