@@ -48,7 +48,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#B27A22",
+  // Theme-aware browser chrome: brand gold in light, dark surface in dark.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#B27A22" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1712" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -63,6 +67,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
+      suppressHydrationWarning
       className={`${bricolageGrotesque.variable} ${hankenGrotesk.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

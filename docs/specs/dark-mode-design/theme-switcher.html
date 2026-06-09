@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Molly — Seletor de tema</title>
+
+<link rel="stylesheet" href="_ds/molly-design-system-790ab342-86f0-4c86-8002-97e8dcea00f5/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/molly-design-system-790ab342-86f0-4c86-8002-97e8dcea00f5/tokens/colors.css">
+<link rel="stylesheet" href="_ds/molly-design-system-790ab342-86f0-4c86-8002-97e8dcea00f5/tokens/typography.css">
+<link rel="stylesheet" href="_ds/molly-design-system-790ab342-86f0-4c86-8002-97e8dcea00f5/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/molly-design-system-790ab342-86f0-4c86-8002-97e8dcea00f5/styles.css">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+<script src="_ds/molly-design-system-790ab342-86f0-4c86-8002-97e8dcea00f5/_ds_bundle.js"></script>
+
+<style>
+  html, body { margin: 0; }
+  body {
+    background: #E4DCCD;
+    font-family: var(--font-body);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- Showcase scaffold (neutral, not part of the product) ---- */
+  .sheet { max-width: 980px; margin: 0 auto; padding: 56px 32px 96px; }
+  .sheet__kicker {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: var(--ls-wider);
+    text-transform: uppercase; color: var(--gold-700);
+  }
+  .sheet__title {
+    font-family: var(--font-display); font-weight: 700; font-size: 34px;
+    letter-spacing: var(--ls-tight); color: #2A251D; margin: 8px 0 10px;
+  }
+  .sheet__lede {
+    font-size: 15.5px; line-height: 1.55; color: #5E5648; max-width: 62ch; margin: 0;
+  }
+  .section { margin-top: 56px; }
+  .section__label {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 22px;
+  }
+  .section__num {
+    font-family: var(--font-mono); font-size: 12px; color: #9A8F7C;
+  }
+  .section__name {
+    font-family: var(--font-display); font-weight: 600; font-size: 19px;
+    letter-spacing: -0.01em; color: #2A251D;
+  }
+  .section__hint { font-size: 13.5px; color: #7C7263; margin-left: auto; }
+
+  .frames { display: flex; gap: 40px; flex-wrap: wrap; }
+  .frame { display: flex; flex-direction: column; gap: 12px; }
+  .frame__cap {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: #4E463A;
+  }
+  .frame__cap .swatch {
+    width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(0,0,0,.12);
+  }
+
+  /* ---- Phone frame ---- */
+  .phone {
+    width: 390px; height: 720px; border-radius: 44px; overflow: hidden;
+    position: relative; background: var(--bg);
+    box-shadow: 0 34px 64px rgba(53,48,39,.22), 0 0 0 1px rgba(53,48,39,.10);
+    transition: background var(--dur-base) var(--ease-standard);
+  }
+  .phone__island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 112px; height: 32px; border-radius: 20px; background: #000; z-index: 50;
+  }
+  .phone__statusbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 54px; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 30px 0; box-sizing: border-box;
+    font-family: var(--font-body); font-weight: 600; font-size: 15px;
+  }
+  .phone__home {
+    position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%);
+    width: 128px; height: 5px; border-radius: 100px; z-index: 60;
+  }
+  .phone__scroll { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* ---- THEME SWITCHER (the deliverable) ---- */
+  .theme-switch {
+    --seg-w: 44px; --seg-h: 40px; --seg-icon: 18px;
+    display: inline-flex; align-items: center; padding: 3px; gap: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-pill); box-shadow: var(--shadow-sm);
+  }
+  .theme-switch--sunken { background: var(--bg-2); border-color: transparent; box-shadow: none; }
+  .theme-switch--ghost  { background: transparent; border-color: transparent; box-shadow: none; }
+  .theme-seg {
+    appearance: none; -webkit-appearance: none; border: 0; margin: 0; padding: 0;
+    width: var(--seg-w); height: var(--seg-h); background: transparent; cursor: pointer;
+    display: grid; place-items: center; border-radius: var(--radius-pill);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .theme-seg__inner {
+    width: calc(var(--seg-w) - 4px); height: calc(var(--seg-h) - 6px); border-radius: var(--radius-pill);
+    display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--fg-muted);
+    transition: background var(--dur-base) var(--ease-standard),
+                color var(--dur-base) var(--ease-standard),
+                transform var(--dur-fast) var(--ease-standard);
+  }
+  .theme-seg:hover .theme-seg__inner { color: var(--fg-2); }
+  .theme-seg:active .theme-seg__inner { transform: scale(0.92); }
+  .theme-seg[aria-checked="true"] .theme-seg__inner {
+    background: var(--brand-soft); color: var(--brand);
+  }
+  .theme-switch--sel-solid .theme-seg[aria-checked="true"] .theme-seg__inner {
+    background: var(--brand); color: var(--brand-on);
+  }
+  .theme-switch--sel-ring .theme-seg[aria-checked="true"] .theme-seg__inner {
+    background: transparent; color: var(--brand); box-shadow: inset 0 0 0 2px var(--brand);
+  }
+  .theme-seg:focus-visible { outline: none; }
+  .theme-seg:focus-visible .theme-seg__inner { box-shadow: var(--focus-ring-shadow); }
+  .theme-seg svg { width: var(--seg-icon); height: var(--seg-icon); stroke-width: 2.25; }
+  .theme-seg__label { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; }
+  .theme-switch--labeled .theme-seg { width: auto; }
+  .theme-switch--labeled .theme-seg__inner { width: auto; padding: 0 14px; }
+
+  /* close-up cards */
+  .closeups { display: flex; gap: 24px; flex-wrap: wrap; }
+  .closeup {
+    background: var(--neutral-0); border: 1px solid #E2DACB; border-radius: 20px;
+    padding: 26px 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+    box-shadow: 0 6px 18px rgba(53,48,39,.07);
+  }
+  .closeup--dark { background: #211D17; border-color: #3A3329; }
+  .closeup__scale { transform: scale(1.5); transform-origin: center; padding: 12px 0; }
+  .closeup__meta { text-align: center; }
+  .closeup__name {
+    font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--fg);
+  }
+  .closeup--dark .closeup__name { color: #F3EEE3; }
+  .closeup__desc { font-size: 12.5px; color: var(--fg-muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+const { Card } = window.MollyDesignSystem_790ab3;
+
+/* Lucide icon helper — renders <i data-lucide> then upgrades to <svg>. */
+function Icon({ name, size = 18 }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const host = ref.current;
+    if (!host || !window.lucide) return;
+    host.innerHTML = '';
+    const i = document.createElement('i');
+    i.setAttribute('data-lucide', name);
+    host.appendChild(i);
+    window.lucide.createIcons({ attrs: { width: size, height: size } });
+  });
+  return <span ref={ref} style={{ display: 'inline-flex' }} aria-hidden="true" />;
+}
+
+/* ============================================================
+   ThemeSwitcher — icon-only segmented control: sun / moon / monitor
+   One selected at a time, brand-tinted. Quiet, ≥44px tap targets.
+   ============================================================ */
+const THEME_OPTS = [
+  { id: 'light',  icon: 'sun',     label: 'Claro' },
+  { id: 'dark',   icon: 'moon',    label: 'Escuro' },
+  { id: 'system', icon: 'monitor', label: 'Sistema' },
+];
+
+function ThemeSwitcher({ value, onChange, className = '', style, showLabels = false }) {
+  return (
+    <div className={('theme-switch ' + className).trim()} role="radiogroup" aria-label="Tema do app" style={style}>
+      {THEME_OPTS.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          role="radio"
+          aria-checked={value === o.id}
+          aria-label={o.label}
+          title={o.label}
+          className="theme-seg"
+          onClick={() => onChange(o.id)}
+        >
+          <span className="theme-seg__inner">
+            <Icon name={o.icon} size={18} />
+            {showLabels && <span className="theme-seg__label">{o.label}</span>}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* resolve light|dark|system → actual theme attr for a given demo phone */
+function resolveTheme(value, systemFallback) {
+  if (value === 'system') return systemFallback;
+  return value;
+}
+
+/* ============================================================
+   Perfil screen — reuses the DS Card; switcher pins to the
+   top-right corner of the centered avatar card.
+   ============================================================ */
+function InfoRow({ icon, k, v, mono }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderTop: '1px solid var(--border)' }}>
+      <span style={{ color: 'var(--brand)', display: 'inline-flex' }}><Icon name={icon} size={18} /></span>
+      <span style={{ fontSize: 14.5, color: 'var(--fg-2)' }}>{k}</span>
+      <span style={{ marginLeft: 'auto', fontSize: 14.5, fontWeight: 600, color: 'var(--fg)', fontFamily: mono ? 'var(--font-mono)' : 'inherit', whiteSpace: 'nowrap' }}>{v}</span>
+    </div>
+  );
+}
+
+function PerfilScreen({ themeValue, onThemeChange, placement, switchProps }) {
+  const switcher = <ThemeSwitcher value={themeValue} onChange={onThemeChange} {...switchProps} />;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '14px 18px 8px' }}>
+      {/* header — switcher lives at the very top-right of the screen */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 2px 2px', minHeight: 46 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ font: '700 21px var(--font-display)', color: 'var(--fg)', letterSpacing: '-0.02em' }}>Molly</div>
+          <div style={{ fontSize: 12.5, color: 'var(--fg-muted)', marginTop: 1 }}>Perfil e saúde</div>
+        </div>
+        {placement === 'header' && switcher}
+      </div>
+
+      {/* avatar / name card */}
+      <Card padding="lg" style={{ textAlign: 'center', position: 'relative' }}>
+        {placement === 'card' && (
+          <div style={{ position: 'absolute', top: 12, right: 12 }}>{switcher}</div>
+        )}
+        <div style={{
+          width: 88, height: 88, borderRadius: 999, margin: '8px auto 12px', background: 'var(--brand-soft)',
+          display: 'grid', placeItems: 'center', color: 'var(--brand)',
+        }}>
+          <Icon name="paw-print" size={42} />
+        </div>
+        <div style={{ font: '700 24px var(--font-display)', color: 'var(--fg)' }}>Molly</div>
+        <div style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 2 }}>Golden retriever · 6 anos</div>
+      </Card>
+
+      {/* details */}
+      <Card padding="lg" style={{ paddingTop: 4, paddingBottom: 4 }}>
+        <InfoRow icon="weight" k="Peso" v="29,4 kg" mono />
+        <InfoRow icon="stethoscope" k="Veterinária" v="Dra. Helena" />
+        <InfoRow icon="calendar-heart" k="Diagnóstico" v="Epilepsia idiopática" />
+        <InfoRow icon="phone" k="Emergência" v="(11) 9 8765-4321" />
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================
+   Phone frame (Molly-styled, ~390px)
+   ============================================================ */
+function Phone({ theme, children }) {
+  const dark = theme === 'dark';
+  const fg = dark ? '#F3EEE3' : '#2A251D';
+  return (
+    <div className="phone" data-theme={dark ? 'dark' : undefined}>
+      <div className="phone__island" />
+      <div className="phone__statusbar" style={{ color: fg }}>
+        <span>9h41</span>
+        <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+          <Icon name="signal" size={15} />
+          <Icon name="wifi" size={15} />
+          <Icon name="battery-medium" size={17} />
+        </span>
+      </div>
+      <div className="phone__scroll" style={{ paddingTop: 48 }}>
+        {children}
+      </div>
+      <div className="phone__home" style={{ background: dark ? 'rgba(255,255,255,.7)' : 'rgba(0,0,0,.22)' }} />
+    </div>
+  );
+}
+
+function DemoPhone({ initial, placement, switchProps }) {
+  const [value, setValue] = useState(initial);
+  const sysFallback = initial === 'dark' ? 'dark' : 'light';
+  const resolved = resolveTheme(value, sysFallback);
+  return (
+    <Phone theme={resolved}>
+      <PerfilScreen themeValue={value} onThemeChange={setValue} placement={placement} switchProps={switchProps} />
+    </Phone>
+  );
+}
+
+/* ============================================================
+   Close-up of a single selected state
+   ============================================================ */
+function CloseUp({ selected, dark, switchProps }) {
+  const opt = THEME_OPTS.find((o) => o.id === selected);
+  return (
+    <div className={'closeup' + (dark ? ' closeup--dark' : '')} data-theme={dark ? 'dark' : undefined}>
+      <div className="closeup__scale">
+        <ThemeSwitcher value={selected} onChange={() => {}} {...switchProps} />
+      </div>
+      <div className="closeup__meta">
+        <div className="closeup__name">{opt.label}</div>
+        <div className="closeup__desc">{selected === 'system' ? 'segue o aparelho' : selected === 'dark' ? 'tema escuro' : 'tema claro'}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Page
+   ============================================================ */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "placement": "Topo",
+  "selected": "Suave",
+  "container": "P\u00edlula",
+  "tapSize": 44,
+  "labels": false
+}/*EDITMODE-END*/;
+
+const PLACEMENT_MAP = { 'Topo': 'header', 'No cart\u00e3o': 'card' };
+const SELECTED_MAP  = { 'Suave': 'soft', 'S\u00f3lido': 'solid', 'Contorno': 'ring' };
+const CONTAINER_MAP = { 'P\u00edlula': 'pill', 'Afundado': 'sunken', 'Fantasma': 'ghost' };
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  const placement = PLACEMENT_MAP[t.placement] || 'header';
+  const selKey = SELECTED_MAP[t.selected] || 'soft';
+  const contKey = CONTAINER_MAP[t.container] || 'pill';
+
+  const switchProps = {
+    className: [
+      contKey !== 'pill' ? 'theme-switch--' + contKey : '',
+      selKey !== 'soft' ? 'theme-switch--sel-' + selKey : '',
+      t.labels ? 'theme-switch--labeled' : '',
+    ].filter(Boolean).join(' '),
+    style: {
+      '--seg-w': t.tapSize + 'px',
+      '--seg-h': (t.tapSize - 4) + 'px',
+      '--seg-icon': Math.round(t.tapSize * 0.4) + 'px',
+    },
+    showLabels: t.labels,
+  };
+
+  return (
+    <div className="sheet">
+      <div className="sheet__kicker">Molly · componente</div>
+      <h1 className="sheet__title">Seletor de tema</h1>
+      <p className="sheet__lede">
+        Um controle segmentado compacto, só com ícones — sol, lua e monitor (claro, escuro, sistema).
+        Fica no canto superior direito do perfil da Molly. Quieto e discreto, com o segmento
+        ativo tingido de dourado da marca e alvos de toque de 44px.
+      </p>
+
+      <div className="section">
+        <div className="section__label">
+          <span className="section__num">01</span>
+          <span className="section__name">No perfil</span>
+          <span className="section__hint">toque para alternar — cada aparelho reage de verdade</span>
+        </div>
+        <div className="frames">
+          <div className="frame">
+            <div className="frame__cap"><span className="swatch" style={{ background: '#F7F3EC' }}></span>Tema claro</div>
+            <DemoPhone initial="light" placement={placement} switchProps={switchProps} />
+          </div>
+          <div className="frame">
+            <div className="frame__cap"><span className="swatch" style={{ background: '#1A1712' }}></span>Tema escuro</div>
+            <DemoPhone initial="dark" placement={placement} switchProps={switchProps} />
+          </div>
+        </div>
+      </div>
+
+      <div className="section">
+        <div className="section__label">
+          <span className="section__num">02</span>
+          <span className="section__name">Estados de seleção</span>
+          <span className="section__hint">exatamente um ativo por vez</span>
+        </div>
+        <div className="closeups">
+          <CloseUp selected="light" switchProps={switchProps} />
+          <CloseUp selected="dark" switchProps={switchProps} />
+          <CloseUp selected="system" switchProps={switchProps} />
+        </div>
+        <div className="closeups" style={{ marginTop: 24 }}>
+          <CloseUp selected="light" dark switchProps={switchProps} />
+          <CloseUp selected="dark" dark switchProps={switchProps} />
+          <CloseUp selected="system" dark switchProps={switchProps} />
+        </div>
+      </div>
+
+      <TweaksPanel>
+        <TweakSection label="Posição" />
+        <TweakRadio label="Onde fica" value={t.placement} options={['Topo', 'No cart\u00e3o']}
+          onChange={(v) => setTweak('placement', v)} />
+        <TweakSection label="Estilo" />
+        <TweakRadio label="Segmento ativo" value={t.selected} options={['Suave', 'S\u00f3lido', 'Contorno']}
+          onChange={(v) => setTweak('selected', v)} />
+        <TweakRadio label="Recipiente" value={t.container} options={['P\u00edlula', 'Afundado', 'Fantasma']}
+          onChange={(v) => setTweak('container', v)} />
+        <TweakToggle label="Mostrar rótulos" value={t.labels}
+          onChange={(v) => setTweak('labels', v)} />
+        <TweakSection label="Tamanho" />
+        <TweakSlider label="Alvo de toque" value={t.tapSize} min={40} max={56} step={2} unit="px"
+          onChange={(v) => setTweak('tapSize', v)} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+function mount() {
+  if (!window.MollyDesignSystem_790ab3 || !window.lucide || !window.useTweaks) { setTimeout(mount, 40); return; }
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  setTimeout(() => window.lucide && window.lucide.createIcons(), 60);
+}
+mount();
+</script>
+</body>
+</html>
