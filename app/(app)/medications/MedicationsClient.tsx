@@ -4,11 +4,11 @@ import React, { useState, useCallback } from "react";
 import { MedStatusCard } from "@/app/components/MedStatusCard";
 import { MedOverviewStrip } from "@/app/components/MedOverviewStrip";
 import { MedForm } from "@/app/components/MedForm";
+import { MedActionDrawer } from "@/app/components/MedActionDrawer";
 import { ScheduleForm } from "@/app/components/ScheduleForm";
 import { StockDialog } from "@/app/components/StockDialog";
 import { Button } from "@/app/components/Button";
-import { Pill, Plus, Package, RefreshCw, Edit, Calendar, CalendarPlus } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { Pill, Plus } from "lucide-react";
 import { fmtNum } from "@/lib/format";
 import type { EnrichedMed } from "@/app/api/medications/enrich";
 
@@ -18,23 +18,24 @@ interface Props {
 
 type StockMode = "restock" | "adjust";
 
-function buildDoseLabel(med: EnrichedMed): string {
-  if (!med.activeSchedule) return "Sem agendamento ativo";
+// Make every space inside a single fact non-breaking, so the only places the
+// subtitle is allowed to wrap are the " · " fact separators — never mid-phrase.
+const nb = (s: string): string => s.replace(/ /g, " ");
+
+// dose · times · mg/kg, assembled as discrete facts joined by a (breakable)
+// " · ". Fits on one line at phone width; wraps cleanly between facts if it ever
+// must. All info is always shown — never truncated.
+function buildSubtitle(med: EnrichedMed): string {
+  if (!med.activeSchedule) return nb("Sem agendamento ativo");
   const times = med.activeSchedule.doseTimes.length;
   const units = med.activeSchedule.unitsPerDose;
-  const unitsStr = fmtNum(units);
-  const timesStr = `${times}× ao dia`;
 
-  if (med.strengthMg) {
-    const doseMg = units * med.strengthMg;
-    return `${fmtNum(doseMg)} mg/dose · ${timesStr}`;
-  }
-  return `${unitsStr} un · ${timesStr}`;
-}
+  const facts: string[] = [];
+  facts.push(med.strengthMg ? `${fmtNum(units * med.strengthMg)} mg/dose` : `${fmtNum(units)} un`);
+  facts.push(`${times}× ao dia`);
+  if (med.mgPerKg != null) facts.push(`${fmtNum(med.mgPerKg)} mg/kg/dia`);
 
-function buildMgKgLabel(med: EnrichedMed): string | undefined {
-  if (med.mgPerKg == null) return undefined;
-  return `${fmtNum(med.mgPerKg)} mg/kg/dia`;
+  return facts.map(nb).join(" · ");
 }
 
 export function MedicationsClient({ initialMeds }: Props) {
@@ -42,12 +43,11 @@ export function MedicationsClient({ initialMeds }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [stockOpen, setStockOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
   const [selectedMed, setSelectedMed] = useState<EnrichedMed | null>(null);
   const [stockMode, setStockMode] = useState<StockMode>("restock");
-  const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
-    setRefreshing(true);
     try {
       const res = await fetch("/api/medications");
       if (res.ok) {
@@ -56,8 +56,6 @@ export function MedicationsClient({ initialMeds }: Props) {
       }
     } catch {
       // silent
-    } finally {
-      setRefreshing(false);
     }
   }, []);
 
@@ -78,6 +76,11 @@ export function MedicationsClient({ initialMeds }: Props) {
     setScheduleOpen(true);
   }
 
+  function openActions(med: EnrichedMed) {
+    setSelectedMed(med);
+    setActionOpen(true);
+  }
+
   return (
     <div className="pt-1 pb-2">
       {/* Overview strip */}
@@ -95,71 +98,17 @@ export function MedicationsClient({ initialMeds }: Props) {
           </div>
         ) : (
           meds.map((med) => {
-            const dose = buildDoseLabel(med);
-            const mgKgLabel = buildMgKgLabel(med);
-            const doseWithMgKg = mgKgLabel ? `${dose} · ${mgKgLabel}` : dose;
-
             return (
-              <div key={med.id} className="flex flex-col gap-2">
-                <MedStatusCard
-                  name={med.name}
-                  dose={doseWithMgKg}
-                  daysRemaining={med.daysRemaining ?? 0}
-                  capacityDays={med.reorderLeadTimeDays + 14}
-                  status={med.status}
-                  chipIcon={<Pill size={18} />}
-                />
-
-                {/* Action buttons */}
-                <div
-                  className={cn(
-                    "flex gap-2 flex-wrap transition-opacity duration-200",
-                    refreshing ? "opacity-50 pointer-events-none" : "opacity-100"
-                  )}
-                >
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={<Package size={14} />}
-                    onClick={() => openRestock(med)}
-                    disabled={refreshing}
-                    className="flex-1 min-w-[100px] min-h-11"
-                  >
-                    Repor
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={<RefreshCw size={14} />}
-                    onClick={() => openAdjust(med)}
-                    disabled={refreshing}
-                    className="flex-1 min-w-[100px] min-h-11"
-                  >
-                    Corrigir
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={<Calendar size={14} />}
-                    onClick={() => openSchedule(med)}
-                    disabled={refreshing}
-                    className="flex-[1_1_100%] min-h-11"
-                  >
-                    Agendamento
-                  </Button>
-                  {med.activeSchedule && (
-                    <a
-                      href={`/api/medications/${med.id}/calendar.ics`}
-                      download
-                      aria-label={`Adicionar ${med.name} ao Google Agenda (baixar .ics)`}
-                      className="flex items-center justify-center gap-1.5 flex-[1_1_100%] min-h-11 py-[9px] px-3.5 text-sm font-body font-bold text-brand bg-surface border-[1.5px] border-border-strong rounded-pill no-underline cursor-pointer whitespace-nowrap"
-                    >
-                      <CalendarPlus size={14} />
-                      Adicionar ao Google Agenda
-                    </a>
-                  )}
-                </div>
-              </div>
+              <MedStatusCard
+                key={med.id}
+                name={med.name}
+                dose={buildSubtitle(med)}
+                daysRemaining={med.daysRemaining ?? 0}
+                capacityDays={med.reorderLeadTimeDays + 14}
+                status={med.status}
+                chipIcon={<Pill size={18} />}
+                onMenuClick={() => openActions(med)}
+              />
             );
           })
         )}
@@ -177,6 +126,15 @@ export function MedicationsClient({ initialMeds }: Props) {
       </div>
 
       {/* Sheets */}
+      <MedActionDrawer
+        open={actionOpen}
+        onClose={() => setActionOpen(false)}
+        med={selectedMed}
+        onRestock={openRestock}
+        onAdjust={openAdjust}
+        onSchedule={openSchedule}
+      />
+
       <MedForm
         open={addOpen}
         onClose={() => setAddOpen(false)}
