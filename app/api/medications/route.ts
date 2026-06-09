@@ -47,7 +47,7 @@ async function getLatestWeightKg(dogId: string): Promise<number | null> {
   return entry ? entry.weightKg.toNumber() : null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await requireSession();
   } catch {
@@ -57,8 +57,10 @@ export async function GET() {
   const dogId = await getActiveDogId();
   const now = new Date();
 
+  const archived = new URL(request.url).searchParams.get("archived") === "1";
+
   const [meds, latestWeightKg] = await Promise.all([
-    getMedWithRelations(dogId, true),
+    getMedWithRelations(dogId, !archived),
     getLatestWeightKg(dogId),
   ]);
 
