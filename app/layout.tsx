@@ -39,6 +39,26 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  // iOS bakes the home-screen icon at install time and can't switch it live,
+  // so we ship explicit light/dark apple-touch-icons and let iOS pick by scheme
+  // via the `media` attribute. Without a dark variant iOS desaturates the gold
+  // tile into a gray paw on black.
+  icons: {
+    apple: [
+      {
+        url: "/pwa-icon/apple",
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/pwa-icon/apple-dark",
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
