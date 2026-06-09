@@ -141,22 +141,26 @@ ScheduleForm / EditMedForm), triggers the `.ics` download, or opens the archive 
 
 **Subtitle layout.** Today `200 mg/dose · 2× ao dia · 16,67 mg/kg/dia` sits in the
 cramped middle column of the header row and wraps mid-phrase every time. Move it to its
-own full-width line below the name+days row so it gets the full card width:
+own full-width line below the header so it gets the full card width.
+
+**Days-remaining placement (updated from review, RMP-184).** With the inline action row
+gone, the large header days block looked out of place, so it moves **below the stock bar**
+into the bar's hierarchy — smaller, on the footer row beside the status pill (number keeps
+the status color as the urgency cue). The header is now just icon · name · ⋯:
 
 ```
 ┌──────────────────────────────────┐
-│ 💊  Fenobarbital            28    │   header row: icon · name · days block
-│                       dias restantes│
+│ 💊  Fenobarbital              ⋯   │   header row: icon · name · ⋯
 │ 200 mg/dose · 2× ao dia · 16,67 mg/kg/dia │  ← full-width subtitle (one line)
 │ [████████████████████]            │   stock bar
-│ (Estoque OK)                      │
+│ (Estoque OK)            25 dias restantes │  footer: status pill · days-remaining
 └──────────────────────────────────┘
 ```
 
 Spacing requirement (explicit, from review): the subtitle must stay **visually tied to
-the name** — tight intentional gap between the header row and the subtitle, with clearly
-more separation before the stock bar. It must not read as floating away below the taller
-two-line days block. Verify this exact gap at phone width via screenshot before done.
+the name** — tight intentional gap below the header, with clearly more separation before
+the stock bar. The days number keeps `font-mono` + tabular figures (app_spec typography).
+Verify the gap + footer alignment at phone width via screenshot before done.
 
 Copy (pt-BR):
 - Drawer rows: `Repor estoque`, `Corrigir estoque`, `Agendamento`,
