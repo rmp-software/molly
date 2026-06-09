@@ -22,6 +22,8 @@ type PrismaMedRow = {
   form: string;
   strengthMg: Prisma.Decimal | null;
   reorderLeadTimeDays: number;
+  isActive: boolean;
+  archivedAt: Date | null;
   notes: string | null;
   schedules: Array<{
     id: string;
@@ -44,6 +46,8 @@ export interface EnrichedMed {
   form: string;
   strengthMg: number | null;
   reorderLeadTimeDays: number;
+  isActive: boolean;
+  archivedAt: string | null;
   notes: string | null;
   activeSchedule: {
     id: string;
@@ -121,6 +125,10 @@ export function enrichMed(
     form: med.form,
     strengthMg: strengthMgNum,
     reorderLeadTimeDays: leadTime,
+    isActive: med.isActive,
+    archivedAt: med.archivedAt
+      ? (med.archivedAt instanceof Date ? med.archivedAt : new Date(med.archivedAt)).toISOString()
+      : null,
     notes: med.notes,
     activeSchedule: activeSchedRow
       ? {
