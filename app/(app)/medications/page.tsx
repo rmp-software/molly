@@ -15,13 +15,20 @@ export default async function MedicationsPage() {
   const dogId = await getActiveDogId();
   const now = new Date();
 
-  const [meds, weightEntry] = await Promise.all([
+  const medInclude = {
+    schedules: { orderBy: { effectiveFrom: "asc" } },
+    stockTransactions: { orderBy: { occurredAt: "asc" } },
+  } as const;
+
+  const [meds, archivedMeds, weightEntry] = await Promise.all([
     prisma.medication.findMany({
       where: { dogId, isActive: true },
-      include: {
-        schedules: { orderBy: { effectiveFrom: "asc" } },
-        stockTransactions: { orderBy: { occurredAt: "asc" } },
-      },
+      include: medInclude,
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.medication.findMany({
+      where: { dogId, isActive: false },
+      include: medInclude,
       orderBy: { createdAt: "asc" },
     }),
     prisma.weightEntry.findFirst({
@@ -33,6 +40,14 @@ export default async function MedicationsPage() {
 
   const latestWeightKg = weightEntry ? weightEntry.weightKg.toNumber() : null;
   const enrichedMeds = meds.map((med) => enrichMed(med, now, latestWeightKg));
+  const enrichedArchived = archivedMeds.map((med) =>
+    enrichMed(med, now, latestWeightKg)
+  );
 
-  return <MedicationsClient initialMeds={enrichedMeds} />;
+  return (
+    <MedicationsClient
+      initialMeds={enrichedMeds}
+      initialArchivedMeds={enrichedArchived}
+    />
+  );
 }
