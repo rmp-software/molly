@@ -113,6 +113,7 @@ model Medication {
   strengthMg         Decimal?    @db.Decimal(8, 2) @map("strength_mg")
   reorderLeadTimeDays Int        @map("reorder_lead_time_days")
   isActive           Boolean     @default(true) @map("is_active")
+  archivedAt         DateTime?   @db.Timestamptz(6) @map("archived_at")
   notes              String?
   createdAt          DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
   updatedAt          DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")

@@ -36,6 +36,7 @@ interface MedInfo {
   category: string;
   form: string;
   strengthMg: number | null;
+  archivedAt: string | null;
   activeSchedule: {
     doseTimes: string[];
     unitsPerDose: number;
@@ -506,6 +507,11 @@ export default function ReportPage() {
                       <p className="mt-1 mb-0 font-body text-sm text-fg">
                         <strong>Horários:</strong> {med.activeSchedule.doseTimes.join(", ")} · {fmtNum(med.activeSchedule.unitsPerDose)} unid./dose
                         {" "}<span className="text-fg-muted">(desde {formatDate(med.activeSchedule.effectiveFrom + "T00:00:00Z")})</span>
+                      </p>
+                    )}
+                    {med.archivedAt && (
+                      <p className="mt-1 mb-0 font-body text-sm text-fg-muted">
+                        Descontinuado em {formatDate(med.archivedAt)}
                       </p>
                     )}
                   </div>
