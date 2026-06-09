@@ -6,6 +6,7 @@ import { serializeEpisode } from "@/lib/seizure-types";
 import { monthlyAverage, longestGapDays, breakdown, durationStats } from "@/lib/stats";
 import { activeScheduleOn } from "@/lib/schedule";
 import { dbDateToLocalMidnight } from "@/lib/dates";
+import { wasActiveDuring } from "@/lib/medications";
 
 function defaultRange(): { from: Date; to: Date } {
   const to = new Date();
@@ -113,14 +114,24 @@ export async function GET(request: Request) {
     };
   }
 
-  // Fetch active medications with latest schedule
-  const medications = await prisma.medication.findMany({
-    where: { dogId: dog.id, isActive: true },
+  // Fetch ALL medications for the dog with their schedules, then keep only the
+  // ones whose active window overlaps the report range [from, to] — that includes
+  // currently-active meds AND archived-but-overlapping meds (so discontinuing a
+  // med doesn't erase it from a report covering a period the dog was on it).
+  const allMedications = await prisma.medication.findMany({
+    where: { dogId: dog.id },
     include: {
       schedules: { orderBy: { effectiveFrom: "asc" } },
     },
     orderBy: { createdAt: "asc" },
   });
+
+  // Currently-active meds are always shown — they're the dog's current regimen,
+  // so a report for any range still lists them (matching the prior behavior).
+  // Archived meds appear only when their active window overlapped [from, to].
+  const medications = allMedications.filter(
+    (med) => med.isActive || wasActiveDuring(med, from, to)
+  );
 
   const now = new Date();
   const serializedMeds = medications.map((med) => {
@@ -137,6 +148,7 @@ export async function GET(request: Request) {
       category: med.category as string,
       form: med.form as string,
       strengthMg: med.strengthMg ? med.strengthMg.toNumber() : null,
+      archivedAt: med.archivedAt ? med.archivedAt.toISOString() : null,
       activeSchedule: active
         ? {
             doseTimes: active.doseTimes,
@@ -147,7 +159,9 @@ export async function GET(request: Request) {
     };
   });
 
-  // Fetch schedule changes (MedicationSchedule rows) within range for active meds
+  // Fetch schedule changes (MedicationSchedule rows) within range for the meds
+  // active-during-range (keyed off the filtered set above, so a discontinued med's
+  // dose changes within the range still appear).
   const allScheduleChanges = await prisma.medicationSchedule.findMany({
     where: {
       medicationId: { in: medications.map((m) => m.id) },
