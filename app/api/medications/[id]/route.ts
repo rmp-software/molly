@@ -179,10 +179,24 @@ export async function DELETE(
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayDate = new Date(todayStr + "T00:00:00Z");
+
   try {
-    await prisma.medication.update({
-      where: { id },
-      data: { isActive: false },
+    await prisma.$transaction(async (tx) => {
+      await tx.medication.update({
+        where: { id },
+        data: { isActive: false, archivedAt: new Date() },
+      });
+
+      // Close any open schedule (effectiveTo = null) as of today. updateMany is
+      // atomic and defensive: under the normal one-open-schedule invariant it
+      // closes that row, and if a stray second open row ever existed it closes
+      // it too rather than leaving it dangling.
+      await tx.medicationSchedule.updateMany({
+        where: { medicationId: id, effectiveTo: null },
+        data: { effectiveTo: todayDate },
+      });
     });
     return NextResponse.json({ success: true });
   } catch {
