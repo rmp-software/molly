@@ -84,7 +84,9 @@ export function ThemeSwitcher({ className }: { className?: string }) {
             className={cn(
               "flex h-[34px] w-10 items-center justify-center rounded-pill text-fg-muted",
               // bg/color animate at dur-base, the press-scale at dur-fast (per design).
-              "[transition:background-color_var(--dur-base)_var(--ease-standard),color_var(--dur-base)_var(--ease-standard),transform_var(--dur-fast)_var(--ease-standard)]",
+              // NB Tailwind v4 `scale-*` sets the independent `scale` property, not
+              // `transform` — so the transition must name `scale` to ease the press.
+              "[transition:background-color_var(--dur-base)_var(--ease-standard),color_var(--dur-base)_var(--ease-standard),scale_var(--dur-fast)_var(--ease-standard)]",
               "group-hover:text-fg-2 group-active:scale-[0.92]",
               "group-aria-checked:bg-brand-soft group-aria-checked:text-brand",
               "group-focus-visible:shadow-focus",
