@@ -5,6 +5,7 @@ import { MedStatusCard } from "@/app/components/MedStatusCard";
 import { MedOverviewStrip } from "@/app/components/MedOverviewStrip";
 import { MedForm } from "@/app/components/MedForm";
 import { MedActionDrawer } from "@/app/components/MedActionDrawer";
+import { EditMedForm } from "@/app/components/EditMedForm";
 import { ScheduleForm } from "@/app/components/ScheduleForm";
 import { StockDialog } from "@/app/components/StockDialog";
 import { Button } from "@/app/components/Button";
@@ -42,6 +43,7 @@ export function MedicationsClient({ initialMeds }: Props) {
   const [meds, setMeds] = useState<EnrichedMed[]>(initialMeds);
   const [addOpen, setAddOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [stockOpen, setStockOpen] = useState(false);
   const [actionOpen, setActionOpen] = useState(false);
   const [selectedMed, setSelectedMed] = useState<EnrichedMed | null>(null);
@@ -74,6 +76,11 @@ export function MedicationsClient({ initialMeds }: Props) {
   function openSchedule(med: EnrichedMed) {
     setSelectedMed(med);
     setScheduleOpen(true);
+  }
+
+  function openEdit(med: EnrichedMed) {
+    setSelectedMed(med);
+    setEditOpen(true);
   }
 
   function openActions(med: EnrichedMed) {
@@ -133,6 +140,7 @@ export function MedicationsClient({ initialMeds }: Props) {
         onRestock={openRestock}
         onAdjust={openAdjust}
         onSchedule={openSchedule}
+        onEdit={openEdit}
       />
 
       <MedForm
@@ -144,6 +152,13 @@ export function MedicationsClient({ initialMeds }: Props) {
       <ScheduleForm
         open={scheduleOpen}
         onClose={() => setScheduleOpen(false)}
+        onSaved={refresh}
+        med={selectedMed}
+      />
+
+      <EditMedForm
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
         onSaved={refresh}
         med={selectedMed}
       />

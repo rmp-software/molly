@@ -5,6 +5,7 @@ import { Sheet } from "@/app/components/Sheet";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
 import { useToast } from "@/app/components/Toast";
+import { MedDetailsFields, labelCls, fieldBase } from "@/app/components/MedDetailsFields";
 import { cn } from "@/lib/cn";
 import { Plus, X } from "lucide-react";
 
@@ -14,30 +15,11 @@ interface Props {
   onCreated: () => void;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: "continuous", label: "Contínuo" },
-  { value: "otc", label: "Balcão" },
-  { value: "compounded", label: "Manipulado" },
-] as const;
-
-const FORM_OPTIONS = [
-  { value: "pill", label: "Comprimido" },
-  { value: "capsule", label: "Cápsula" },
-  { value: "tablet", label: "Tablete" },
-] as const;
-
 const CATEGORY_LEAD_DAYS: Record<string, number> = {
   compounded: 7,
   continuous: 3,
   otc: 3,
 };
-
-const labelCls = "block text-sm font-semibold text-fg-2 mb-1.5 font-body";
-
-const fieldBase =
-  "block w-full max-w-full min-w-0 text-base font-body text-fg bg-surface " +
-  "border-[1.5px] border-border-strong rounded-md outline-none appearance-none " +
-  "[-webkit-tap-highlight-color:transparent]";
 
 export function MedForm({ open, onClose, onCreated }: Props) {
   const toast = useToast();
@@ -52,9 +34,28 @@ export function MedForm({ open, onClose, onCreated }: Props) {
   const [startingStock, setStartingStock] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleCategoryChange(cat: string) {
-    setCategory(cat);
-    setLeadDays(String(CATEGORY_LEAD_DAYS[cat] ?? 3));
+  // The five shared detail fields are controlled via a single patch handler so
+  // we can keep MedForm's create-only behavior of defaulting the lead time from
+  // the chosen category.
+  function handleDetailsChange(patch: {
+    name?: string;
+    category?: string;
+    form?: string;
+    strengthMg?: string;
+    leadDays?: string;
+  }) {
+    if (patch.name !== undefined) setName(patch.name);
+    if (patch.form !== undefined) setForm(patch.form);
+    if (patch.strengthMg !== undefined) setStrengthMg(patch.strengthMg);
+    if (patch.category !== undefined) {
+      // Changing the category resets the lead time to the category default; this
+      // wins over an explicit leadDays in the same patch (the UI only ever sends
+      // one field at a time, but make the precedence explicit).
+      setCategory(patch.category);
+      setLeadDays(String(CATEGORY_LEAD_DAYS[patch.category] ?? 3));
+    } else if (patch.leadDays !== undefined) {
+      setLeadDays(patch.leadDays);
+    }
   }
 
   function addTime() {
@@ -141,63 +142,11 @@ export function MedForm({ open, onClose, onCreated }: Props) {
   return (
     <Sheet open={open} onClose={handleClose} title="Adicionar remédio">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Nome */}
-        <Input
-          label="Nome"
-          placeholder="Ex: Fenobarbital"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoFocus
-        />
-
-        {/* Categoria */}
-        <div>
-          <label className={labelCls}>Categoria</label>
-          <select
-            className={cn(fieldBase, "min-h-12 py-3 px-3.5")}
-            value={category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-          >
-            {CATEGORY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Forma */}
-        <div>
-          <label className={labelCls}>Forma</label>
-          <select
-            className={cn(fieldBase, "min-h-12 py-3 px-3.5")}
-            value={form}
-            onChange={(e) => setForm(e.target.value)}
-          >
-            {FORM_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Concentração */}
-        <Input
-          label="Concentração (mg)"
-          placeholder="Ex: 97,5"
-          inputMode="decimal"
-          value={strengthMg}
-          onChange={(e) => setStrengthMg(e.target.value)}
-          hint="Opcional"
-        />
-
-        {/* Dias de antecedência */}
-        <Input
-          label="Dias de antecedência para reabastecer"
-          inputMode="numeric"
-          value={leadDays}
-          onChange={(e) => setLeadDays(e.target.value)}
+        {/* Shared detail fields: Nome, Categoria, Forma, Concentração, Dias */}
+        <MedDetailsFields
+          value={{ name, category, form, strengthMg, leadDays }}
+          onChange={handleDetailsChange}
+          autoFocusName
         />
 
         {/* Horários */}
