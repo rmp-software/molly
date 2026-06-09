@@ -5,6 +5,9 @@
    ============================================================ */
 
 :root {
+  /* Native controls (date/time pickers, scrollbars, form widgets) follow the theme. */
+  color-scheme: light;
+
   /* ---------- RAW PALETTE ---------------------------------- */
   --gold-50:  #FBF5E9;
   --gold-100: #F5E6C6;
@@ -213,6 +216,8 @@
 
 /* ---------- SEMANTIC — DARK ------------------------------ */
 [data-theme="dark"] {
+  color-scheme: dark;
+
   --bg:              #1A1712;
   --bg-2:            #211D17;
   --surface:         #262119;

@@ -6,6 +6,7 @@ import { TabBar } from "@/app/components/TabBar";
 import { Sheet } from "@/app/components/Sheet";
 import { Home, Pill, TrendingUp, PawPrint } from "lucide-react";
 import { LogSeizure } from "@/app/components/LogSeizure";
+import { ThemeSwitcher } from "@/app/components/ThemeSwitcher";
 
 // Context so child pages (e.g. Home) can open the log sheet without prop-drilling
 export interface LogSheetContextValue {
@@ -68,11 +69,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-[100dvh] bg-bg flex flex-col">
       {/* Header */}
-      <header className="no-print pt-5 px-5 pb-3 font-display max-w-[var(--app-max)] w-full mx-auto box-border">
-        <h1 className="m-0 text-2xl font-bold tracking-tight text-fg leading-[1.1]">
-          {meta.greet}
-        </h1>
-        <p className="mt-1 mb-0 text-sm text-fg-muted font-body">{meta.sub}</p>
+      <header className="no-print pt-5 px-5 pb-3 font-display max-w-[var(--app-max)] w-full mx-auto box-border flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <h1 className="m-0 text-2xl font-bold tracking-tight text-fg leading-[1.1]">
+            {meta.greet}
+          </h1>
+          <p className="mt-1 mb-0 text-sm text-fg-muted font-body">{meta.sub}</p>
+        </div>
+        {pathname === "/profile" && <ThemeSwitcher />}
       </header>
 
       {/* Main scrollable area */}
