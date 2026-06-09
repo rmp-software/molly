@@ -14,6 +14,28 @@ user-facing copy, layout, or the design system.
 - `npx tsc --noEmit` — typecheck. Must be clean before committing.
 - `npm run lint` — ESLint. There are pre-existing `react-hooks/set-state-in-effect`
   warnings; don't add new lint issues.
+
+## Verifying UI changes (required)
+
+**Unit/JS tests are necessary but never sufficient for UI work.** They don't prove a
+component rendered, a chart drew, a layout held, or copy/contrast is right. Any change
+that touches user-facing UI MUST also be verified by driving the running app:
+
+- Use **Playwright** (the `playwright` MCP server is available) to load the affected
+  route(s), assert the expected elements/text/state are actually present, and exercise
+  the relevant interactions (range/filter toggles, forms, navigation).
+- **Always test at a phone viewport** (e.g. iPhone ~390×844 / 393px wide) — NOT tablet
+  or desktop. This is a mobile-first PWA; the phone is the real surface.
+- **Capture screenshots and visually review them** for layout/overflow/contrast — a
+  green assertion is not a passing render.
+- **Visual jank is a blocker.** "Not broken but janky" — misalignment, overflow,
+  clipped text, cramped spacing, bad wrapping, jumpy/unsettled charts — fails the gate
+  even when the feature functionally works. Fix it before the change is considered done.
+- Verify on **WebKit (iPhone-emulated)** as well as desktop (this is a mobile-first
+  PWA; see the iOS native-date-input gotcha below — verify platform fixes on the real
+  engine, not Chromium).
+- Seed deterministic fixture data that covers the states the UI must show (empty,
+  populated, edge/threshold cases) rather than relying on whatever is in the dev DB.
 - Database: `./init.sh` (Docker Postgres on :5433 + Prisma migrate + seed), or
   `docker compose up -d` then `npx prisma migrate dev`. Admin login + DB creds are
   in `.env`.
