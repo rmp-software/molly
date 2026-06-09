@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Package, RefreshCw, Calendar, CalendarPlus } from "lucide-react";
+import { Package, RefreshCw, Calendar, CalendarPlus, SquarePen } from "lucide-react";
 import { Sheet } from "@/app/components/Sheet";
 import { cn } from "@/lib/cn";
 import type { EnrichedMed } from "@/app/api/medications/enrich";
@@ -13,6 +13,7 @@ interface Props {
   onRestock: (med: EnrichedMed) => void;
   onAdjust: (med: EnrichedMed) => void;
   onSchedule: (med: EnrichedMed) => void;
+  onEdit: (med: EnrichedMed) => void;
 }
 
 // A single row in the action drawer. Either a tappable button (runs an action)
@@ -48,6 +49,7 @@ export function MedActionDrawer({
   onRestock,
   onAdjust,
   onSchedule,
+  onEdit,
 }: Props) {
   // Typed list — RMP-180/181 append "Editar remédio" / "Arquivar remédio" here.
   const rows: ActionRow[] = [
@@ -86,6 +88,16 @@ export function MedActionDrawer({
         `Adicionar ${m.name} ao Google Agenda (baixar .ics)`,
     });
   }
+
+  // Edit the med's own details. Sits after Agendamento / Google Agenda and
+  // before the future Arquivar danger row (RMP-181).
+  rows.push({
+    kind: "button",
+    key: "edit",
+    label: "Editar remédio",
+    icon: <SquarePen size={20} />,
+    onSelect: onEdit,
+  });
 
   // Sequence close → run flow to avoid Vaul drawer-over-drawer races on iOS.
   function runAfterClose(fn: (med: EnrichedMed) => void) {
