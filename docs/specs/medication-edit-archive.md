@@ -1,10 +1,10 @@
 ---
 slug: medication-edit-archive
-status: draft
+status: planned
 created: 2026-06-08
-linear_project_id:
-linear_parent_issue:
-feature_branch:
+linear_project_id: e8a0cc19-bc1b-4780-a279-b976334a5291
+linear_parent_issue: RMP-175
+feature_branch: feature/medication-edit-archive
 ---
 
 # Medication edit & archive — design
